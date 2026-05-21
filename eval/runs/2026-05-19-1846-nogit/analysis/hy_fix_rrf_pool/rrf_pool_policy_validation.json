@@ -1,0 +1,287 @@
+{
+  "schema_version": "hy-fix-02b-validate.v1",
+  "run_id": "2026-05-19-1846-nogit",
+  "generated_at": "2026-05-21T21:22:31Z",
+  "source_artifacts": {
+    "rrf_pool_trace": "analysis/hy_fix_rrf_pool/rrf_pool_trace.json",
+    "localization": "analysis/hy_fix_localize/localization.json"
+  },
+  "config": {
+    "CANDIDATE_POOL": 1500,
+    "RERANK_POOL": 800,
+    "RRF_K": 15,
+    "RERANK_TOP_K": 50,
+    "FINAL_TOP_K": 5,
+    "SEMANTIC_WEIGHT": 1.0,
+    "BM25_WEIGHT": 1.0
+  },
+  "fixed_defect_qids": [
+    "q05",
+    "q07",
+    "q08",
+    "q10"
+  ],
+  "affected_fixed_defect_qids": {
+    "q05": {
+      "has_rrf_pool_trace_data": false,
+      "localization_category": "mixed"
+    },
+    "q07": {
+      "has_rrf_pool_trace_data": false,
+      "localization_category": "reranker_scoring"
+    },
+    "q08": {
+      "has_rrf_pool_trace_data": true,
+      "localization_category": "recall_depth_fusion_pool"
+    },
+    "q10": {
+      "has_rrf_pool_trace_data": false,
+      "localization_category": "mixed"
+    }
+  },
+  "q08_arm_requirements": {
+    "pinned": {
+      "rrf_rank": 183,
+      "minimum_cutoff_needed": 184,
+      "target_source_count": 1,
+      "current_rerank_top_k": 50,
+      "in_pool_source_mix": {
+        "dual_source": 21,
+        "semantic_only": 16,
+        "bm25_only": 13
+      }
+    },
+    "no_llm": {
+      "rrf_rank": 79,
+      "minimum_cutoff_needed": 80,
+      "target_source_count": 1,
+      "current_rerank_top_k": 50,
+      "in_pool_source_mix": {
+        "dual_source": 16,
+        "semantic_only": 15,
+        "bm25_only": 19
+      }
+    }
+  },
+  "policies": [
+    {
+      "policy_id": "cutoff_only_top_80",
+      "q08_no_llm_rescued_before_rerank_pool": true,
+      "q08_pinned_rescued_before_rerank_pool": false,
+      "minimum_cutoff_needed": {
+        "no_llm": 80,
+        "pinned": 184
+      },
+      "affected_fixed_defect_qids": {
+        "q05": "no_rrf_pool_trace_data",
+        "q07": "no_rrf_pool_trace_data",
+        "q08": "trace_data_available",
+        "q10": "no_rrf_pool_trace_data"
+      },
+      "estimated_candidate_count_memory_risk": {
+        "level": "low",
+        "current_rerank_top_k": 50,
+        "candidate_count": 80,
+        "candidate_growth_multiplier": 1.6,
+        "notes": "Cross-encoder candidate count grows roughly linearly with RERANK_TOP_K."
+      },
+      "minimal": false,
+      "safe_enough_for_hy_fix_02b": false,
+      "exact_allowed_src_config_files": [],
+      "stop_reason": "does_not_rescue_both_deterministic_arms",
+      "rationale": "Set RERANK_TOP_K to 80; this is a direct cutoff-only policy and increases cross-encoder candidates linearly."
+    },
+    {
+      "policy_id": "cutoff_only_top_100",
+      "q08_no_llm_rescued_before_rerank_pool": true,
+      "q08_pinned_rescued_before_rerank_pool": false,
+      "minimum_cutoff_needed": {
+        "no_llm": 80,
+        "pinned": 184
+      },
+      "affected_fixed_defect_qids": {
+        "q05": "no_rrf_pool_trace_data",
+        "q07": "no_rrf_pool_trace_data",
+        "q08": "trace_data_available",
+        "q10": "no_rrf_pool_trace_data"
+      },
+      "estimated_candidate_count_memory_risk": {
+        "level": "medium",
+        "current_rerank_top_k": 50,
+        "candidate_count": 100,
+        "candidate_growth_multiplier": 2.0,
+        "notes": "Cross-encoder candidate count grows roughly linearly with RERANK_TOP_K."
+      },
+      "minimal": false,
+      "safe_enough_for_hy_fix_02b": false,
+      "exact_allowed_src_config_files": [],
+      "stop_reason": "does_not_rescue_both_deterministic_arms",
+      "rationale": "Set RERANK_TOP_K to 100; this is a direct cutoff-only policy and increases cross-encoder candidates linearly."
+    },
+    {
+      "policy_id": "cutoff_only_top_150",
+      "q08_no_llm_rescued_before_rerank_pool": true,
+      "q08_pinned_rescued_before_rerank_pool": false,
+      "minimum_cutoff_needed": {
+        "no_llm": 80,
+        "pinned": 184
+      },
+      "affected_fixed_defect_qids": {
+        "q05": "no_rrf_pool_trace_data",
+        "q07": "no_rrf_pool_trace_data",
+        "q08": "trace_data_available",
+        "q10": "no_rrf_pool_trace_data"
+      },
+      "estimated_candidate_count_memory_risk": {
+        "level": "medium",
+        "current_rerank_top_k": 50,
+        "candidate_count": 150,
+        "candidate_growth_multiplier": 3.0,
+        "notes": "Cross-encoder candidate count grows roughly linearly with RERANK_TOP_K."
+      },
+      "minimal": false,
+      "safe_enough_for_hy_fix_02b": false,
+      "exact_allowed_src_config_files": [],
+      "stop_reason": "does_not_rescue_both_deterministic_arms",
+      "rationale": "Set RERANK_TOP_K to 150; this is a direct cutoff-only policy and increases cross-encoder candidates linearly."
+    },
+    {
+      "policy_id": "cutoff_only_top_200",
+      "q08_no_llm_rescued_before_rerank_pool": true,
+      "q08_pinned_rescued_before_rerank_pool": true,
+      "minimum_cutoff_needed": {
+        "no_llm": 80,
+        "pinned": 184
+      },
+      "affected_fixed_defect_qids": {
+        "q05": "no_rrf_pool_trace_data",
+        "q07": "no_rrf_pool_trace_data",
+        "q08": "trace_data_available",
+        "q10": "no_rrf_pool_trace_data"
+      },
+      "estimated_candidate_count_memory_risk": {
+        "level": "high",
+        "current_rerank_top_k": 50,
+        "candidate_count": 200,
+        "candidate_growth_multiplier": 4.0,
+        "notes": "Cross-encoder candidate count grows roughly linearly with RERANK_TOP_K."
+      },
+      "minimal": true,
+      "safe_enough_for_hy_fix_02b": false,
+      "exact_allowed_src_config_files": [],
+      "stop_reason": "pinned_q08_requires_cutoff_at_or_above_200_medium_high_risk",
+      "rationale": "Set RERANK_TOP_K to 200; this is a direct cutoff-only policy and increases cross-encoder candidates linearly."
+    },
+    {
+      "policy_id": "cutoff_only_top_250",
+      "q08_no_llm_rescued_before_rerank_pool": true,
+      "q08_pinned_rescued_before_rerank_pool": true,
+      "minimum_cutoff_needed": {
+        "no_llm": 80,
+        "pinned": 184
+      },
+      "affected_fixed_defect_qids": {
+        "q05": "no_rrf_pool_trace_data",
+        "q07": "no_rrf_pool_trace_data",
+        "q08": "trace_data_available",
+        "q10": "no_rrf_pool_trace_data"
+      },
+      "estimated_candidate_count_memory_risk": {
+        "level": "high",
+        "current_rerank_top_k": 50,
+        "candidate_count": 250,
+        "candidate_growth_multiplier": 5.0,
+        "notes": "Cross-encoder candidate count grows roughly linearly with RERANK_TOP_K."
+      },
+      "minimal": false,
+      "safe_enough_for_hy_fix_02b": false,
+      "exact_allowed_src_config_files": [],
+      "stop_reason": "pinned_q08_requires_cutoff_at_or_above_200_medium_high_risk",
+      "rationale": "Set RERANK_TOP_K to 250; this is a direct cutoff-only policy and increases cross-encoder candidates linearly."
+    },
+    {
+      "policy_id": "quota_preserve_semantic_bm25_small",
+      "q08_no_llm_rescued_before_rerank_pool": false,
+      "q08_pinned_rescued_before_rerank_pool": false,
+      "minimum_cutoff_needed": {
+        "no_llm": 80,
+        "pinned": 184
+      },
+      "affected_fixed_defect_qids": {
+        "q05": "no_rrf_pool_trace_data",
+        "q07": "no_rrf_pool_trace_data",
+        "q08": "trace_data_available",
+        "q10": "no_rrf_pool_trace_data"
+      },
+      "estimated_candidate_count_memory_risk": {
+        "level": "low",
+        "multiplier": 1.2,
+        "notes": "small reserved quota estimate"
+      },
+      "minimal": false,
+      "safe_enough_for_hy_fix_02b": false,
+      "exact_allowed_src_config_files": [],
+      "stop_reason": "trace_lacks_full_source_rank_lists_to_prove_quota_rescue",
+      "rationale": "A small source-preserving quota cannot be proven from the q08 RRF neighborhood alone because q08 is outside the captured neighborhood in both deterministic arms."
+    },
+    {
+      "policy_id": "fusion_depth_increase_small",
+      "q08_no_llm_rescued_before_rerank_pool": false,
+      "q08_pinned_rescued_before_rerank_pool": false,
+      "minimum_cutoff_needed": {
+        "no_llm": 80,
+        "pinned": 184
+      },
+      "affected_fixed_defect_qids": {
+        "q05": "no_rrf_pool_trace_data",
+        "q07": "no_rrf_pool_trace_data",
+        "q08": "trace_data_available",
+        "q10": "no_rrf_pool_trace_data"
+      },
+      "estimated_candidate_count_memory_risk": {
+        "level": "low",
+        "multiplier": 1.0,
+        "notes": "RERANK_TOP_K unchanged"
+      },
+      "minimal": false,
+      "safe_enough_for_hy_fix_02b": false,
+      "exact_allowed_src_config_files": [],
+      "stop_reason": "q08_already_present_in_rrf_list_so_depth_increase_does_not_change_pool_cutoff",
+      "rationale": "Increasing fused-list depth does not rescue a target already in the RRF list while RERANK_TOP_K remains unchanged."
+    },
+    {
+      "policy_id": "tie_or_boundary_fix_only",
+      "q08_no_llm_rescued_before_rerank_pool": false,
+      "q08_pinned_rescued_before_rerank_pool": false,
+      "minimum_cutoff_needed": {
+        "no_llm": 80,
+        "pinned": 184
+      },
+      "affected_fixed_defect_qids": {
+        "q05": "no_rrf_pool_trace_data",
+        "q07": "no_rrf_pool_trace_data",
+        "q08": "trace_data_available",
+        "q10": "no_rrf_pool_trace_data"
+      },
+      "estimated_candidate_count_memory_risk": {
+        "level": "low",
+        "multiplier": 1.0,
+        "notes": "ordering-only policy"
+      },
+      "minimal": false,
+      "safe_enough_for_hy_fix_02b": false,
+      "exact_allowed_src_config_files": [],
+      "stop_reason": "q08_is_not_at_the_rerank_pool_boundary",
+      "rationale": "A boundary tie exists in the trace, but q08 itself is rank 79 or 183, so tie handling cannot rescue it."
+    }
+  ],
+  "recommended_policy": null,
+  "implementation_recommended": false,
+  "implementation_allowed_files": [],
+  "decision": {
+    "status": "implementation_not_justified",
+    "reason": "No policy both rescues q08 in pinned/no_llm controls and keeps candidate growth bounded by the available trace evidence.",
+    "next_action": "continue_to_hy_fix_03_reranker_scoring_q07",
+    "external_review": "optional_non_blocking"
+  }
+}
