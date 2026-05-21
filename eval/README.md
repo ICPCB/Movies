@@ -24,6 +24,7 @@ eval/
     hybrid_gap_trace.py
     hybrid_expansion_stability.py
     hy_fix_localize.py
+    hy_fix_rrf_pool_trace.py
     hybrid_live_trace.py
     hybrid_stage_trace.py
     build_regrade_sheet.py
