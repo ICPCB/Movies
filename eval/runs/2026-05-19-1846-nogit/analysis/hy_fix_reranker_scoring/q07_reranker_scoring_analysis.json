@@ -1,0 +1,259 @@
+{
+  "schema_version": "hy-fix-03-reranker-q07.v1",
+  "run_id": "2026-05-19-1846-nogit",
+  "generated_at": "2026-05-21T21:28:44Z",
+  "source_artifacts": {
+    "localization": "analysis/hy_fix_localize/localization.json",
+    "stability_trace": "analysis/hybrid_expansion_stability/stability_trace.jsonl",
+    "candidates": "candidates.jsonl",
+    "error_report": "analysis/error_report/per_query_mode.gold.jsonl"
+  },
+  "qid": "q07",
+  "tmdb_id": 63700,
+  "title": "My Babysitter's a Vampire",
+  "consolidated_fix_category": "reranker_scoring",
+  "evidence": {
+    "deterministic_arms": {
+      "pinned": {
+        "loss_stage": "rerank_demoted",
+        "fix_category": "reranker_scoring",
+        "semantic_rank": 3,
+        "rrf_rank": 11,
+        "target_in_rerank_pool": true,
+        "rerank_score": 0.01246710680425167,
+        "rerank_rank": 20,
+        "final_score": 0.18172001902722296,
+        "final_rank": 25,
+        "in_top5": false
+      },
+      "no_llm": {
+        "loss_stage": "rerank_demoted",
+        "fix_category": "reranker_scoring",
+        "semantic_rank": 4,
+        "rrf_rank": 13,
+        "target_in_rerank_pool": true,
+        "rerank_score": 0.012467117980122566,
+        "rerank_rank": 17,
+        "final_score": 0.17166886976131357,
+        "final_rank": 29,
+        "in_top5": false
+      }
+    },
+    "trace_summary": {
+      "rows_for_q07": 15,
+      "by_arm": {
+        "live": {
+          "repeats": 5,
+          "loss_classification_counts": {
+            "rerank_demoted": 4,
+            "retrieved_dropped_before_rerank_pool": 1
+          },
+          "rerank_ranks": [
+            16,
+            20,
+            16,
+            16
+          ],
+          "final_ranks": [
+            20,
+            25,
+            20,
+            20
+          ]
+        },
+        "pinned": {
+          "repeats": 5,
+          "loss_classification_counts": {
+            "rerank_demoted": 5
+          },
+          "rerank_ranks": [
+            20,
+            20,
+            20,
+            20,
+            20
+          ],
+          "final_ranks": [
+            25,
+            25,
+            25,
+            25,
+            25
+          ]
+        },
+        "no_llm": {
+          "repeats": 5,
+          "loss_classification_counts": {
+            "rerank_demoted": 5
+          },
+          "rerank_ranks": [
+            17,
+            17,
+            17,
+            17,
+            17
+          ],
+          "final_ranks": [
+            29,
+            29,
+            29,
+            29,
+            29
+          ]
+        }
+      }
+    },
+    "mode_comparison": {
+      "basic": {
+        "strict_hit_at_k": 1,
+        "first_relevant_rank": 2,
+        "first_perfect_rank": 5,
+        "top_titles": [
+          "What We Do in the Shadows: Interviews with Some Vampires",
+          "Bloodsucking Bastards",
+          "What We Do in the Shadows",
+          "Vamp",
+          "My Babysitter's a Vampire"
+        ]
+      },
+      "advanced": {
+        "strict_hit_at_k": 0,
+        "first_relevant_rank": 2,
+        "first_perfect_rank": null,
+        "top_titles": [
+          "What We Do in the Shadows: Interviews with Some Vampires",
+          "What We Do in the Shadows",
+          "Vampyres",
+          "True Bloodthirst",
+          "Vampires"
+        ]
+      },
+      "hybrid": {
+        "strict_hit_at_k": 0,
+        "first_relevant_rank": 5,
+        "first_perfect_rank": null,
+        "top_titles": [
+          "What We Do in the Shadows: Interviews with Some Vampires",
+          "Vampyres",
+          "The Strange Thing About the Johnsons",
+          "True Bloodthirst",
+          "Vamps"
+        ]
+      }
+    },
+    "candidate_summary": {
+      "candidate_rows_for_q07": 10,
+      "target_present_in_candidate_union": true,
+      "target_candidate_modes": [
+        "basic"
+      ],
+      "target_has_hybrid_candidate_row": false,
+      "hybrid_top5_from_candidates": [
+        {
+          "rank": 0,
+          "tmdb_id": 411354,
+          "title": "What We Do in the Shadows: Interviews with Some Vampires",
+          "rerank_score": 0.7343214154243469,
+          "rrf_score": 0.08689024390243902,
+          "final_score": 1.0501430235016689
+        },
+        {
+          "rank": 1,
+          "tmdb_id": 30885,
+          "title": "Vampyres",
+          "rerank_score": 0.12088507413864136,
+          "rrf_score": 0.04554655870445344,
+          "final_score": 0.3589703950527129
+        },
+        {
+          "rank": 2,
+          "tmdb_id": 164052,
+          "title": "The Strange Thing About the Johnsons",
+          "rerank_score": 0.0007194935460574925,
+          "rrf_score": 0.09698275862068965,
+          "final_score": 0.3504070327547476
+        },
+        {
+          "rank": 3,
+          "tmdb_id": 120092,
+          "title": "True Bloodthirst",
+          "rerank_score": 0.016991933807730675,
+          "rrf_score": 0.06521739130434782,
+          "final_score": 0.2891912438409501
+        },
+        {
+          "rank": 4,
+          "tmdb_id": 73935,
+          "title": "Vamps",
+          "rerank_score": 0.01980251632630825,
+          "rrf_score": 0.05624168725061752,
+          "final_score": 0.28599956227041956
+        }
+      ]
+    }
+  },
+  "policies": [
+    {
+      "policy_id": "final_blend_reweight_only",
+      "q07_pinned_rescued_to_top5": false,
+      "q07_no_llm_rescued_to_top5": false,
+      "basic_first_perfect_rank": 5,
+      "hybrid_first_perfect_rank": null,
+      "minimal": false,
+      "safe_enough_for_hy_fix_03": false,
+      "exact_allowed_src_files": [],
+      "estimated_risk": "medium_high",
+      "stop_reason": "target_cross_encoder_rank_is_17_to_20_and_full_q07_pool_score_decomposition_is_missing",
+      "rationale": "The target enters the rerank pool but is already below top 5 by rerank score; changing blend weights is not proven to rescue q07 and could broadly reorder results."
+    },
+    {
+      "policy_id": "reranker_document_text_change",
+      "q07_pinned_rescued_to_top5": false,
+      "q07_no_llm_rescued_to_top5": false,
+      "basic_first_perfect_rank": 5,
+      "hybrid_first_perfect_rank": null,
+      "minimal": false,
+      "safe_enough_for_hy_fix_03": false,
+      "exact_allowed_src_files": [],
+      "estimated_risk": "high",
+      "stop_reason": "requires_model_scoring_validation_and_src_reranker_behavior_change",
+      "rationale": "Changing the candidate document text may affect all reranked results and needs model-backed validation not available in this analysis-only ticket."
+    },
+    {
+      "policy_id": "rerank_query_change",
+      "q07_pinned_rescued_to_top5": false,
+      "q07_no_llm_rescued_to_top5": false,
+      "basic_first_perfect_rank": 5,
+      "hybrid_first_perfect_rank": null,
+      "minimal": false,
+      "safe_enough_for_hy_fix_03": false,
+      "exact_allowed_src_files": [],
+      "estimated_risk": "high",
+      "stop_reason": "requires_query_or_movie_label_judgment_not_deterministic_src_fix",
+      "rationale": "q07 basic already places the target at top 5 while hybrid's intent query prefers different vampire mockumentary results; altering the query is an eval-data or label judgment, not a localized product fix."
+    },
+    {
+      "policy_id": "final_top_k_expand_only",
+      "q07_pinned_rescued_to_top5": false,
+      "q07_no_llm_rescued_to_top5": false,
+      "basic_first_perfect_rank": 5,
+      "hybrid_first_perfect_rank": null,
+      "minimal": false,
+      "safe_enough_for_hy_fix_03": false,
+      "exact_allowed_src_files": [],
+      "estimated_risk": "medium",
+      "minimum_final_top_k_needed_if_rank_is_zero_based": 30,
+      "stop_reason": "does_not_rescue_top5_metric_or_strict_hit_at_5",
+      "rationale": "Returning more final results would only surface q07 near rank 30; it does not fix top-5 accuracy."
+    }
+  ],
+  "recommended_policy": null,
+  "implementation_recommended": false,
+  "implementation_allowed_files": [],
+  "decision": {
+    "status": "implementation_not_justified",
+    "reason": "q07 is a true reranker-scoring defect, but existing artifacts do not prove a minimal bounded-risk scorer or reranker change.",
+    "next_action": "continue_to_mixed_q05_q10_analysis",
+    "external_review": "optional_non_blocking"
+  }
+}
