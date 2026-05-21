@@ -145,3 +145,47 @@ Every ticket/checkpoint appended below must include:
 - **Next action:** Continue to mixed q05/q10 analysis.
 - **External review:** Optional non-blocking; recommended before any future
   reranker or scoring implementation.
+
+### 2026-05-21T21:33:43Z - HY-FIX-04-Q05-Q10
+
+- **Branch:** `automation/cinematch-accuracy-audit-full`
+- **Phase/ticket id:** `HY-FIX-04-Q05-Q10`
+- **Status:** PASS / SELF-REVIEWED / IMPLEMENTATION NOT JUSTIFIED
+- **Files changed:**
+  - `docs/superpowers/plans/2026-05-22-hy-fix-04-mixed-q05-q10-analysis.md`
+  - `eval/scripts/hy_fix_mixed_q05_q10.py`
+  - `eval/tests/test_hy_fix_mixed_q05_q10.py`
+  - `eval/runs/2026-05-19-1846-nogit/analysis/hy_fix_mixed/q05_q10_mixed_analysis.json`
+- **Artifacts written:**
+  - `docs/superpowers/plans/2026-05-22-hy-fix-04-mixed-q05-q10-analysis.md`
+  - `eval/runs/2026-05-19-1846-nogit/analysis/hy_fix_mixed/q05_q10_mixed_analysis.json`
+- **Commands run:**
+  - `git status --short --branch`
+  - `git log --oneline --decorate -8`
+  - `python -m compileall eval/scripts`
+  - `python -m unittest discover -s eval/tests -v`
+  - `python -m eval.scripts.hy_fix_mixed_q05_q10 --run 2026-05-19-1846-nogit`
+  - `git status --ignored --short -- 'eval/runs/2026-05-19-1846-nogit/analysis/hy_fix_mixed/q05_q10_mixed_analysis.json'`
+  - `git add -- docs/superpowers/plans/2026-05-22-hy-fix-04-mixed-q05-q10-analysis.md eval/scripts/hy_fix_mixed_q05_q10.py eval/tests/test_hy_fix_mixed_q05_q10.py`
+  - `git add -f -- eval/runs/2026-05-19-1846-nogit/analysis/hy_fix_mixed/q05_q10_mixed_analysis.json`
+  - `git commit -m "eval: analyze HY-FIX-04 mixed q05 q10"`
+- **Validation results:**
+  - `python -m compileall eval/scripts` passed.
+  - `python -m unittest discover -s eval/tests -v` passed: 171 tests OK.
+  - HY-FIX-04 CLI passed and wrote `q05_q10_mixed_analysis.json`.
+  - Artifact decision: `implementation_recommended=false`,
+    `recommended_policy=null`, `decision=implementation_not_justified`,
+    `next_action=final_closeout_no_safe_localized_fixes_remaining`.
+  - q05/q10 evidence: q05 pinned needs rerank top-k 67 while no_llm is
+    rerank rank 4/final rank 9; q10 pinned needs rerank top-k 54 while
+    no_llm is rerank rank 6/final rank 7.
+- **Commit hash:** `05eef28`
+- **Failures/blockers:** No validation failures. A single mixed-defect
+  implementation remains blocked because q05/q10 require different recall,
+  final-blend, and reranker-scoring changes, and prior HY-FIX-02B/HY-FIX-03
+  artifacts rejected safe global cutoff and scorer changes.
+- **Assumptions:** The remaining q05/q10 defects should not be fixed by a
+  broad product rewrite inside this automation branch.
+- **Next action:** Write final closeout; no safe localized fixes remain.
+- **External review:** Optional non-blocking; recommended for deciding whether
+  query/label review or a broader architecture ticket is warranted.
