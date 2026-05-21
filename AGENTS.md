@@ -30,11 +30,6 @@ This file is read by Claude Code Pro, Codex CLI, Copilot CLI, and ChatGPT Plus.
 
 ### Explicit conflicts to preserve
 
-- Existing rule conflict: Hard rule 8 says not to commit unless the human
-  approves; Core Agent Operating Rule 10 and the autonomous approval protocol
-  require checkpoint commits after validated automation steps. Treat an
-  explicit human request for long-running automation as approval for the named
-  checkpoint commits only. Otherwise, Hard rule 8 still applies.
 - Existing scope conflict: the "Out of scope" section forbids editing
   `AGENTS.md` or `CLAUDE.md` without a ticket. A direct human request to update
   these files is the ticket for that rules-only change.
@@ -148,9 +143,6 @@ This file is read by Claude Code Pro, Codex CLI, Copilot CLI, and ChatGPT Plus.
 7. **Do not change retrieval or ranking behavior** unless the ticket
    explicitly allows it. This includes BM25, RRF fusion, reranker thresholds,
    embedding model, and ChromaDB query parameters.
-8. **Do not commit unless the human approves.** Plans and tickets are not
-   approval to merge.
-
 ---
 
 ## Validation

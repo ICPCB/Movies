@@ -1,0 +1,48 @@
+# Generated data and indexes
+data/chroma_bgem3/
+data/chroma_bgem3.*/
+data/movies_clean.csv
+data/movies_clean.*.csv
+data/TMDB_movie_dataset*.csv
+data/raw/
+
+# Evaluation outputs
+eval/*.txt
+eval/*.csv
+eval/runs/**
+!eval/runs/
+!eval/runs/2026-05-19-1846-nogit/
+eval/runs/2026-05-19-1846-nogit/**
+!eval/runs/2026-05-19-1846-nogit/analysis/
+eval/runs/2026-05-19-1846-nogit/analysis/**
+!eval/runs/2026-05-19-1846-nogit/analysis/hy_fix_localize/
+!eval/runs/2026-05-19-1846-nogit/analysis/hy_fix_localize/localization.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# Models / caches
+ollama_models/
+*.bin
+*.safetensors
+
+# Local tool settings
+.codex-handoff*
+.codex-prompts/
+.claude/settings.local.json
+.gradio/
+.remember/
+logs/
+settings.json
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.log
