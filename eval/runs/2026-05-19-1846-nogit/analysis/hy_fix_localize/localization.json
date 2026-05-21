@@ -1,0 +1,451 @@
+{
+  "schema_version": "hy-fix-01.v1",
+  "run_id": "2026-05-19-1846-nogit",
+  "generated_at": "2026-05-21T20:48:03Z",
+  "source_artifacts": {
+    "stability_trace": "analysis/hybrid_expansion_stability/stability_trace.jsonl",
+    "stability_diagnosis": "analysis/hybrid_expansion_stability/stability_diagnosis.json"
+  },
+  "fixed_defect_qids": [
+    "q05",
+    "q07",
+    "q08",
+    "q10"
+  ],
+  "priority_order": [
+    "q08",
+    "q07",
+    "q05",
+    "q10"
+  ],
+  "stage_pipeline": [
+    "semantic",
+    "bm25",
+    "rrf",
+    "rerank",
+    "final"
+  ],
+  "config": {
+    "CANDIDATE_POOL": 1500,
+    "RERANK_POOL": 800,
+    "RERANK_TOP_K": 50,
+    "FINAL_TOP_K": 5
+  },
+  "per_target": [
+    {
+      "qid": "q05",
+      "tmdb_id": 144204,
+      "title": "Thanatomorphose",
+      "attribution": "fixed_defect",
+      "arms": {
+        "pinned": {
+          "deterministic": true,
+          "stage_table": {
+            "semantic": {
+              "present": true,
+              "rank": 32,
+              "score": 0.5671476721763611,
+              "list_len": 1500
+            },
+            "bm25": {
+              "present": false,
+              "rank": null,
+              "score": null,
+              "list_len": 1500
+            },
+            "rrf": {
+              "present": true,
+              "rank": 66,
+              "score": 0.020833333333333332,
+              "list_len": 800
+            },
+            "rerank": {
+              "in_pool": false,
+              "rerank_score": null,
+              "rerank_rank": null
+            },
+            "final": {
+              "final_score": null,
+              "final_rank": null,
+              "in_top5": false,
+              "in_top15": false
+            }
+          },
+          "loss_stage": "retrieved_dropped_before_rerank_pool",
+          "fix_category": "recall_depth_fusion_pool"
+        },
+        "no_llm": {
+          "deterministic": true,
+          "stage_table": {
+            "semantic": {
+              "present": true,
+              "rank": 0,
+              "score": 0.6267713308334351,
+              "list_len": 1500
+            },
+            "bm25": {
+              "present": false,
+              "rank": null,
+              "score": null,
+              "list_len": 1500
+            },
+            "rrf": {
+              "present": true,
+              "rank": 1,
+              "score": 0.0625,
+              "list_len": 800
+            },
+            "rerank": {
+              "in_pool": true,
+              "rerank_score": 0.018819298595190048,
+              "rerank_rank": 4
+            },
+            "final": {
+              "final_score": 0.25699349423128154,
+              "final_rank": 9,
+              "in_top5": false,
+              "in_top15": true
+            }
+          },
+          "loss_stage": "rerank_recovered_final_demoted",
+          "fix_category": "final_blend"
+        },
+        "live": {
+          "deterministic": false,
+          "repeats": 5,
+          "loss_stage_per_repeat": [
+            "retrieved_dropped_before_rerank_pool",
+            "retrieved_dropped_before_rerank_pool",
+            "retrieved_dropped_before_rerank_pool",
+            "rerank_recovered_final_demoted",
+            "rerank_recovered_final_demoted"
+          ],
+          "final_rank_summary": {
+            "min": 26,
+            "median": 32.0,
+            "max": 38,
+            "n_present": 2
+          }
+        }
+      },
+      "consolidated_fix_category": "mixed",
+      "arms_agree": false,
+      "notes": "q05 is mixed: pinned loss_stage=retrieved_dropped_before_rerank_pool (recall_depth_fusion_pool), no_llm loss_stage=rerank_recovered_final_demoted (final_blend)."
+    },
+    {
+      "qid": "q07",
+      "tmdb_id": 63700,
+      "title": "My Babysitter's a Vampire",
+      "attribution": "fixed_defect",
+      "arms": {
+        "pinned": {
+          "deterministic": true,
+          "stage_table": {
+            "semantic": {
+              "present": true,
+              "rank": 3,
+              "score": 0.578305184841156,
+              "list_len": 1500
+            },
+            "bm25": {
+              "present": false,
+              "rank": null,
+              "score": null,
+              "list_len": 1500
+            },
+            "rrf": {
+              "present": true,
+              "rank": 11,
+              "score": 0.05263157894736842,
+              "list_len": 800
+            },
+            "rerank": {
+              "in_pool": true,
+              "rerank_score": 0.01246710680425167,
+              "rerank_rank": 20
+            },
+            "final": {
+              "final_score": 0.18172001902722296,
+              "final_rank": 25,
+              "in_top5": false,
+              "in_top15": false
+            }
+          },
+          "loss_stage": "rerank_demoted",
+          "fix_category": "reranker_scoring"
+        },
+        "no_llm": {
+          "deterministic": true,
+          "stage_table": {
+            "semantic": {
+              "present": true,
+              "rank": 4,
+              "score": 0.5635905265808105,
+              "list_len": 1500
+            },
+            "bm25": {
+              "present": false,
+              "rank": null,
+              "score": null,
+              "list_len": 1500
+            },
+            "rrf": {
+              "present": true,
+              "rank": 13,
+              "score": 0.05,
+              "list_len": 800
+            },
+            "rerank": {
+              "in_pool": true,
+              "rerank_score": 0.012467117980122566,
+              "rerank_rank": 17
+            },
+            "final": {
+              "final_score": 0.17166886976131357,
+              "final_rank": 29,
+              "in_top5": false,
+              "in_top15": false
+            }
+          },
+          "loss_stage": "rerank_demoted",
+          "fix_category": "reranker_scoring"
+        },
+        "live": {
+          "deterministic": false,
+          "repeats": 5,
+          "loss_stage_per_repeat": [
+            "rerank_demoted",
+            "retrieved_dropped_before_rerank_pool",
+            "rerank_demoted",
+            "rerank_demoted",
+            "rerank_demoted"
+          ],
+          "final_rank_summary": {
+            "min": 20,
+            "median": 20.0,
+            "max": 25,
+            "n_present": 4
+          }
+        }
+      },
+      "consolidated_fix_category": "reranker_scoring",
+      "arms_agree": true,
+      "notes": "q07 enters the rerank pool with rerank ranks 20 and 17; the final top-k cutoff is 5."
+    },
+    {
+      "qid": "q08",
+      "tmdb_id": 545611,
+      "title": "Everything Everywhere All at Once",
+      "attribution": "fixed_defect",
+      "arms": {
+        "pinned": {
+          "deterministic": true,
+          "stage_table": {
+            "semantic": {
+              "present": true,
+              "rank": 90,
+              "score": 0.5395097136497498,
+              "list_len": 1500
+            },
+            "bm25": {
+              "present": false,
+              "rank": null,
+              "score": null,
+              "list_len": 1500
+            },
+            "rrf": {
+              "present": true,
+              "rank": 183,
+              "score": 0.009433962264150943,
+              "list_len": 800
+            },
+            "rerank": {
+              "in_pool": false,
+              "rerank_score": null,
+              "rerank_rank": null
+            },
+            "final": {
+              "final_score": null,
+              "final_rank": null,
+              "in_top5": false,
+              "in_top15": false
+            }
+          },
+          "loss_stage": "retrieved_dropped_before_rerank_pool",
+          "fix_category": "recall_depth_fusion_pool"
+        },
+        "no_llm": {
+          "deterministic": true,
+          "stage_table": {
+            "semantic": {
+              "present": true,
+              "rank": 37,
+              "score": 0.5847514271736145,
+              "list_len": 1499
+            },
+            "bm25": {
+              "present": false,
+              "rank": null,
+              "score": null,
+              "list_len": 1500
+            },
+            "rrf": {
+              "present": true,
+              "rank": 79,
+              "score": 0.018867924528301886,
+              "list_len": 800
+            },
+            "rerank": {
+              "in_pool": false,
+              "rerank_score": null,
+              "rerank_rank": null
+            },
+            "final": {
+              "final_score": null,
+              "final_rank": null,
+              "in_top5": false,
+              "in_top15": false
+            }
+          },
+          "loss_stage": "retrieved_dropped_before_rerank_pool",
+          "fix_category": "recall_depth_fusion_pool"
+        },
+        "live": {
+          "deterministic": false,
+          "repeats": 5,
+          "loss_stage_per_repeat": [
+            "retrieved_dropped_before_rerank_pool",
+            "retrieved_dropped_at_fusion",
+            "retrieved_dropped_before_rerank_pool",
+            "retrieved_dropped_before_rerank_pool",
+            "retrieved_dropped_before_rerank_pool"
+          ],
+          "final_rank_summary": {
+            "min": null,
+            "median": null,
+            "max": null,
+            "n_present": 0
+          }
+        }
+      },
+      "consolidated_fix_category": "recall_depth_fusion_pool",
+      "arms_agree": true,
+      "notes": "q08 reaches RRF at ranks 183/800 and 79/800; the cross-encoder pool is top 50, so it is lost before reranking."
+    },
+    {
+      "qid": "q10",
+      "tmdb_id": 8329,
+      "title": "[REC]",
+      "attribution": "fixed_defect",
+      "arms": {
+        "pinned": {
+          "deterministic": true,
+          "stage_table": {
+            "semantic": {
+              "present": true,
+              "rank": 30,
+              "score": 0.5581005811691284,
+              "list_len": 1500
+            },
+            "bm25": {
+              "present": true,
+              "rank": 916,
+              "score": 23.363858946515695,
+              "list_len": 1500
+            },
+            "rrf": {
+              "present": true,
+              "rank": 53,
+              "score": 0.022812091808173167,
+              "list_len": 800
+            },
+            "rerank": {
+              "in_pool": false,
+              "rerank_score": null,
+              "rerank_rank": null
+            },
+            "final": {
+              "final_score": null,
+              "final_rank": null,
+              "in_top5": false,
+              "in_top15": false
+            }
+          },
+          "loss_stage": "retrieved_dropped_before_rerank_pool",
+          "fix_category": "recall_depth_fusion_pool"
+        },
+        "no_llm": {
+          "deterministic": true,
+          "stage_table": {
+            "semantic": {
+              "present": true,
+              "rank": 7,
+              "score": 0.5693913102149963,
+              "list_len": 1500
+            },
+            "bm25": {
+              "present": true,
+              "rank": 54,
+              "score": 33.06810663142012,
+              "list_len": 1500
+            },
+            "rrf": {
+              "present": true,
+              "rank": 10,
+              "score": 0.0577639751552795,
+              "list_len": 800
+            },
+            "rerank": {
+              "in_pool": true,
+              "rerank_score": 0.06651505082845688,
+              "rerank_rank": 6
+            },
+            "final": {
+              "final_score": 0.3470504085429986,
+              "final_rank": 7,
+              "in_top5": false,
+              "in_top15": true
+            }
+          },
+          "loss_stage": "rerank_demoted",
+          "fix_category": "reranker_scoring"
+        },
+        "live": {
+          "deterministic": false,
+          "repeats": 5,
+          "loss_stage_per_repeat": [
+            "rerank_demoted",
+            "rerank_demoted",
+            "retrieved_dropped_before_rerank_pool",
+            "rerank_demoted",
+            "retrieved_dropped_before_rerank_pool"
+          ],
+          "final_rank_summary": {
+            "min": 8,
+            "median": 10,
+            "max": 10,
+            "n_present": 3
+          }
+        }
+      },
+      "consolidated_fix_category": "mixed",
+      "arms_agree": false,
+      "notes": "q10 is mixed: pinned loss_stage=retrieved_dropped_before_rerank_pool (recall_depth_fusion_pool), no_llm loss_stage=rerank_demoted (reranker_scoring)."
+    }
+  ],
+  "fix_category_summary": {
+    "recall_depth_fusion_pool": 1,
+    "reranker_scoring": 1,
+    "final_blend": 0,
+    "mixed": 2,
+    "none": 0,
+    "inconclusive": 0
+  },
+  "recommended_sequence": [
+    "q08",
+    "q07",
+    "q05",
+    "q10"
+  ],
+  "recommended_first_fix": "recall_depth_fusion_pool"
+}
