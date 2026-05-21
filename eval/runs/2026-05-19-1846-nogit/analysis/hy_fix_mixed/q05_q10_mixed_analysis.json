@@ -1,0 +1,290 @@
+{
+  "schema_version": "hy-fix-04-mixed-q05-q10.v1",
+  "run_id": "2026-05-19-1846-nogit",
+  "generated_at": "2026-05-21T21:33:16Z",
+  "source_artifacts": {
+    "localization": "analysis/hy_fix_localize/localization.json",
+    "stability_trace": "analysis/hybrid_expansion_stability/stability_trace.jsonl",
+    "error_report": "analysis/error_report/per_query_mode.gold.jsonl",
+    "rrf_policy_validation": "analysis/hy_fix_rrf_pool/rrf_pool_policy_validation.json",
+    "q07_reranker_analysis": "analysis/hy_fix_reranker_scoring/q07_reranker_scoring_analysis.json"
+  },
+  "qids": [
+    "q05",
+    "q10"
+  ],
+  "evidence": {
+    "per_qid": {
+      "q05": {
+        "tmdb_id": 144204,
+        "title": "Thanatomorphose",
+        "consolidated_fix_category": "mixed",
+        "arms_agree": false,
+        "deterministic_arms": {
+          "pinned": {
+            "loss_stage": "retrieved_dropped_before_rerank_pool",
+            "fix_category": "recall_depth_fusion_pool",
+            "semantic_rank": 32,
+            "bm25_rank": null,
+            "rrf_rank": 66,
+            "minimum_rerank_top_k_needed_if_rrf_rank_zero_based": 67,
+            "target_in_rerank_pool": false,
+            "rerank_score": null,
+            "rerank_rank": null,
+            "minimum_rerank_rank_top_k_needed_if_zero_based": null,
+            "final_score": null,
+            "final_rank": null,
+            "minimum_final_top_k_needed_if_zero_based": null,
+            "in_top5": false
+          },
+          "no_llm": {
+            "loss_stage": "rerank_recovered_final_demoted",
+            "fix_category": "final_blend",
+            "semantic_rank": 0,
+            "bm25_rank": null,
+            "rrf_rank": 1,
+            "minimum_rerank_top_k_needed_if_rrf_rank_zero_based": 2,
+            "target_in_rerank_pool": true,
+            "rerank_score": 0.018819298595190048,
+            "rerank_rank": 4,
+            "minimum_rerank_rank_top_k_needed_if_zero_based": 5,
+            "final_score": 0.25699349423128154,
+            "final_rank": 9,
+            "minimum_final_top_k_needed_if_zero_based": 10,
+            "in_top5": false
+          }
+        },
+        "trace_summary": {
+          "rows_for_qid": 15,
+          "by_arm": {
+            "live": {
+              "repeats": 5,
+              "loss_classification_counts": {
+                "retrieved_dropped_before_rerank_pool": 3,
+                "rerank_recovered_final_demoted": 2
+              }
+            },
+            "pinned": {
+              "repeats": 5,
+              "loss_classification_counts": {
+                "retrieved_dropped_before_rerank_pool": 5
+              }
+            },
+            "no_llm": {
+              "repeats": 5,
+              "loss_classification_counts": {
+                "rerank_recovered_final_demoted": 5
+              }
+            }
+          }
+        },
+        "mode_comparison": {
+          "basic": {
+            "strict_hit_at_k": 1,
+            "first_relevant_rank": 1,
+            "first_perfect_rank": 1,
+            "top_titles": [
+              "Thanatomorphose",
+              "The Beast Within",
+              "Bad Biology",
+              "Insanitarium",
+              "Hostile"
+            ]
+          },
+          "advanced": {
+            "strict_hit_at_k": 0,
+            "first_relevant_rank": 1,
+            "first_perfect_rank": null,
+            "top_titles": [
+              "The Beast Within",
+              "John Dies at the End",
+              "A Cat in the Brain",
+              "Body Melt",
+              "The Experiment"
+            ]
+          },
+          "hybrid": {
+            "strict_hit_at_k": 0,
+            "first_relevant_rank": 1,
+            "first_perfect_rank": null,
+            "top_titles": [
+              "The Beast Within",
+              "John Dies at the End",
+              "Irreversible",
+              "Desire",
+              "Amer"
+            ]
+          }
+        }
+      },
+      "q10": {
+        "tmdb_id": 8329,
+        "title": "[REC]",
+        "consolidated_fix_category": "mixed",
+        "arms_agree": false,
+        "deterministic_arms": {
+          "pinned": {
+            "loss_stage": "retrieved_dropped_before_rerank_pool",
+            "fix_category": "recall_depth_fusion_pool",
+            "semantic_rank": 30,
+            "bm25_rank": 916,
+            "rrf_rank": 53,
+            "minimum_rerank_top_k_needed_if_rrf_rank_zero_based": 54,
+            "target_in_rerank_pool": false,
+            "rerank_score": null,
+            "rerank_rank": null,
+            "minimum_rerank_rank_top_k_needed_if_zero_based": null,
+            "final_score": null,
+            "final_rank": null,
+            "minimum_final_top_k_needed_if_zero_based": null,
+            "in_top5": false
+          },
+          "no_llm": {
+            "loss_stage": "rerank_demoted",
+            "fix_category": "reranker_scoring",
+            "semantic_rank": 7,
+            "bm25_rank": 54,
+            "rrf_rank": 10,
+            "minimum_rerank_top_k_needed_if_rrf_rank_zero_based": 11,
+            "target_in_rerank_pool": true,
+            "rerank_score": 0.06651505082845688,
+            "rerank_rank": 6,
+            "minimum_rerank_rank_top_k_needed_if_zero_based": 7,
+            "final_score": 0.3470504085429986,
+            "final_rank": 7,
+            "minimum_final_top_k_needed_if_zero_based": 8,
+            "in_top5": false
+          }
+        },
+        "trace_summary": {
+          "rows_for_qid": 15,
+          "by_arm": {
+            "live": {
+              "repeats": 5,
+              "loss_classification_counts": {
+                "rerank_demoted": 3,
+                "retrieved_dropped_before_rerank_pool": 2
+              }
+            },
+            "pinned": {
+              "repeats": 5,
+              "loss_classification_counts": {
+                "retrieved_dropped_before_rerank_pool": 5
+              }
+            },
+            "no_llm": {
+              "repeats": 5,
+              "loss_classification_counts": {
+                "rerank_demoted": 5
+              }
+            }
+          }
+        },
+        "mode_comparison": {
+          "basic": {
+            "strict_hit_at_k": 1,
+            "first_relevant_rank": 1,
+            "first_perfect_rank": 5,
+            "top_titles": [
+              "Ghost Team One",
+              "The Crazies",
+              "Grave Encounters",
+              "Lost After Dark",
+              "[REC]"
+            ]
+          },
+          "advanced": {
+            "strict_hit_at_k": 1,
+            "first_relevant_rank": 1,
+            "first_perfect_rank": 4,
+            "top_titles": [
+              "Apartment 143",
+              "Ghost Team One",
+              "Grave Encounters",
+              "[REC]",
+              "Mr. Jones"
+            ]
+          },
+          "hybrid": {
+            "strict_hit_at_k": 0,
+            "first_relevant_rank": 1,
+            "first_perfect_rank": null,
+            "top_titles": [
+              "Ghost Team One",
+              "Apartment 143",
+              "Grave Encounters",
+              "The Houses October Built 2",
+              "Phoenix Forgotten"
+            ]
+          }
+        }
+      }
+    },
+    "prior_blockers": {
+      "hy_fix_02b_status": "implementation_not_justified",
+      "hy_fix_02b_reason": "No policy both rescues q08 in pinned/no_llm controls and keeps candidate growth bounded by the available trace evidence.",
+      "hy_fix_03_q07_status": "implementation_not_justified",
+      "hy_fix_03_q07_reason": "q07 is a true reranker-scoring defect, but existing artifacts do not prove a minimal bounded-risk scorer or reranker change."
+    }
+  },
+  "policies": [
+    {
+      "policy_id": "global_cutoff_small",
+      "q05_rescued_to_top5": false,
+      "q10_rescued_to_top5": false,
+      "minimal": false,
+      "safe_enough_for_hy_fix_04": false,
+      "exact_allowed_src_files": [],
+      "estimated_risk": "medium",
+      "q05_pinned_minimum_rerank_top_k": 67,
+      "q10_pinned_minimum_rerank_top_k": 54,
+      "stop_reason": "cutoff_addresses_only_pinned_recall_arm_and_contradicts_hy_fix_02b_no_safe_global_cutoff",
+      "rationale": "Small cutoff increases could admit q05/q10 pinned targets, but the no_llm arms still need final-blend or reranker changes and HY-FIX-02B already rejected a safe global cutoff policy."
+    },
+    {
+      "policy_id": "final_blend_reweight_for_mixed",
+      "q05_rescued_to_top5": false,
+      "q10_rescued_to_top5": false,
+      "minimal": false,
+      "safe_enough_for_hy_fix_04": false,
+      "exact_allowed_src_files": [],
+      "estimated_risk": "medium_high",
+      "q05_no_llm_final_top_k_needed": 10,
+      "q10_no_llm_final_top_k_needed": 8,
+      "stop_reason": "needs_full_pool_decomposition_and_regression_validation",
+      "rationale": "q05 no_llm is rerank rank 4 but final rank 9, and q10 no_llm is rerank rank 6/final rank 7. This suggests blend pressure, but the artifact lacks full-pool decomposition to prove a safe global reweight."
+    },
+    {
+      "policy_id": "reranker_scoring_adjustment",
+      "q05_rescued_to_top5": false,
+      "q10_rescued_to_top5": false,
+      "minimal": false,
+      "safe_enough_for_hy_fix_04": false,
+      "exact_allowed_src_files": [],
+      "estimated_risk": "high",
+      "q10_no_llm_rerank_top_k_needed": 7,
+      "stop_reason": "mixed_failures_do_not_identify_one_reranker_scoring_change",
+      "rationale": "q05 and q10 combine recall cutoff, final blend, and reranker-rank misses. A scorer change would affect all reranked results and is not localized by the current evidence."
+    },
+    {
+      "policy_id": "query_or_label_review",
+      "q05_rescued_to_top5": false,
+      "q10_rescued_to_top5": false,
+      "minimal": false,
+      "safe_enough_for_hy_fix_04": false,
+      "exact_allowed_src_files": [],
+      "estimated_risk": "external_review_required",
+      "stop_reason": "requires_human_or_external_movie_label_judgment",
+      "rationale": "Basic or advanced already finds the perfect target for q05/q10, while hybrid misses. Deciding whether to change query wording or labels is outside deterministic src implementation."
+    }
+  ],
+  "recommended_policy": null,
+  "implementation_recommended": false,
+  "implementation_allowed_files": [],
+  "decision": {
+    "status": "implementation_not_justified",
+    "reason": "q05/q10 failures are mixed across recall depth, final blend, and reranker scoring; no single bounded src change is proven.",
+    "next_action": "final_closeout_no_safe_localized_fixes_remaining",
+    "external_review": "optional_non_blocking"
+  }
+}
