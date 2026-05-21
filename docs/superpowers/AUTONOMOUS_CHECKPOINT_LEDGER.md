@@ -101,3 +101,47 @@ Every ticket/checkpoint appended below must include:
 - **Next action:** Continue to `HY-FIX-03` reranker scoring analysis for q07.
 - **External review:** Optional non-blocking; recommended before any future
   `src/*` implementation.
+
+### 2026-05-21T21:29:10Z - HY-FIX-03-Q07
+
+- **Branch:** `automation/cinematch-accuracy-audit-full`
+- **Phase/ticket id:** `HY-FIX-03-Q07`
+- **Status:** PASS / SELF-REVIEWED / IMPLEMENTATION NOT JUSTIFIED
+- **Files changed:**
+  - `docs/superpowers/plans/2026-05-22-hy-fix-03-reranker-scoring-q07-analysis.md`
+  - `eval/scripts/hy_fix_reranker_scoring_q07.py`
+  - `eval/tests/test_hy_fix_reranker_scoring_q07.py`
+  - `eval/runs/2026-05-19-1846-nogit/analysis/hy_fix_reranker_scoring/q07_reranker_scoring_analysis.json`
+- **Artifacts written:**
+  - `docs/superpowers/plans/2026-05-22-hy-fix-03-reranker-scoring-q07-analysis.md`
+  - `eval/runs/2026-05-19-1846-nogit/analysis/hy_fix_reranker_scoring/q07_reranker_scoring_analysis.json`
+- **Commands run:**
+  - `git status --short --branch`
+  - `git log --oneline --decorate -8`
+  - `python -m compileall eval/scripts`
+  - `python -m unittest discover -s eval/tests -v`
+  - `python -m eval.scripts.hy_fix_reranker_scoring_q07 --run 2026-05-19-1846-nogit`
+  - `git status --ignored --short -- 'eval/runs/2026-05-19-1846-nogit/analysis/hy_fix_reranker_scoring/q07_reranker_scoring_analysis.json'`
+  - `git add -- docs/superpowers/plans/2026-05-22-hy-fix-03-reranker-scoring-q07-analysis.md eval/scripts/hy_fix_reranker_scoring_q07.py eval/tests/test_hy_fix_reranker_scoring_q07.py`
+  - `git add -f -- eval/runs/2026-05-19-1846-nogit/analysis/hy_fix_reranker_scoring/q07_reranker_scoring_analysis.json`
+  - `git commit -m "eval: analyze HY-FIX-03 q07 reranker scoring"`
+- **Validation results:**
+  - `python -m compileall eval/scripts` passed.
+  - `python -m unittest discover -s eval/tests -v` passed: 164 tests OK.
+  - HY-FIX-03 q07 CLI passed and wrote
+    `q07_reranker_scoring_analysis.json`.
+  - Artifact decision: `implementation_recommended=false`,
+    `recommended_policy=null`, `decision=implementation_not_justified`,
+    `next_action=continue_to_mixed_q05_q10_analysis`.
+  - q07 evidence: pinned rerank rank 20/final rank 25; no_llm rerank rank
+    17/final rank 29; basic has first perfect rank 5 while hybrid has no
+    perfect top-5 hit.
+- **Commit hash:** `7d6b73d`
+- **Failures/blockers:** No validation failures. A scorer or reranker
+  implementation remains blocked because the available artifacts do not
+  include full q07 pool score decomposition or alternative model scores.
+- **Assumptions:** Existing localization, stability trace, candidate union,
+  and gold error report artifacts are authoritative for q07.
+- **Next action:** Continue to mixed q05/q10 analysis.
+- **External review:** Optional non-blocking; recommended before any future
+  reranker or scoring implementation.
