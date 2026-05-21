@@ -1,0 +1,1504 @@
+{
+  "schema_version": "hy-fix-02.v1",
+  "run_id": "2026-05-19-1846-nogit",
+  "generated_at": "2026-05-21T20:57:18Z",
+  "source_artifacts": {
+    "stability_trace": "analysis/hybrid_expansion_stability/stability_trace.jsonl",
+    "localization": "analysis/hy_fix_localize/localization.json"
+  },
+  "config": {
+    "CANDIDATE_POOL": 1500,
+    "RERANK_POOL": 800,
+    "RRF_K": 15,
+    "RERANK_TOP_K": 50,
+    "FINAL_TOP_K": 5,
+    "SEMANTIC_WEIGHT": 1.0,
+    "BM25_WEIGHT": 1.0
+  },
+  "neighborhood_margin": 25,
+  "per_qid": [
+    {
+      "qid": "q08",
+      "tmdb_id": 545611,
+      "title": "Everything Everywhere All at Once",
+      "movie_key": "title:everything everywhere all at once|year:2022",
+      "pinned_arm_fix_category": "recall_depth_fusion_pool",
+      "arms": {
+        "pinned": {
+          "retrieval_query": "forgiveness, self-acceptance, family, multiverse, comedy, tax, laundry, martial arts, motherhood, personal growth, redemption",
+          "rerank_query": "a multiverse family comedy about taxes, laundry, martial arts, and a tired mother trying to forgive herself across several impossible lives",
+          "rrf_list_len": 800,
+          "target": {
+            "semantic": {
+              "present": true,
+              "rank": 90,
+              "score": 0.5395097136497498
+            },
+            "bm25": {
+              "present": false,
+              "rank": null,
+              "score": null
+            },
+            "rrf": {
+              "present": true,
+              "rank": 183,
+              "score": 0.009433962264150943
+            },
+            "source_count": 1,
+            "in_rerank_pool": false
+          },
+          "recorded_rrf_rank": 183,
+          "reproduced_matches_recorded": true,
+          "cutoff": {
+            "rerank_top_k": 50,
+            "last_in_pool": {
+              "rrf_rank": 49,
+              "movie_key": "title:the purge|year:2013",
+              "title": "The Purge",
+              "rrf_score": 0.02564102564102564,
+              "semantic_rank": 23,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            "first_out_of_pool": {
+              "rrf_rank": 50,
+              "movie_key": "title:naked killer|year:1992",
+              "title": "Naked Killer",
+              "rrf_score": 0.02564102564102564,
+              "semantic_rank": null,
+              "bm25_rank": 23,
+              "source_count": 1
+            },
+            "target_rrf_rank": 183,
+            "ranks_below_cutoff": 134,
+            "rrf_score_gap_to_last_in_pool": 0.0162070633768747
+          },
+          "neighborhood": [
+            {
+              "rrf_rank": 0,
+              "movie_key": "title:martial law|year:1990",
+              "title": "Martial Law",
+              "rrf_score": 0.0703125,
+              "semantic_rank": 112,
+              "bm25_rank": 0,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 1,
+              "movie_key": "title:joe somebody|year:2001",
+              "title": "Joe Somebody",
+              "rrf_score": 0.06778309409888357,
+              "semantic_rank": 50,
+              "bm25_rank": 3,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 2,
+              "movie_key": "title:the art of self defense|year:2019",
+              "title": "The Art of Self-Defense",
+              "rrf_score": 0.06367785630153121,
+              "semantic_rank": 0,
+              "bm25_rank": 833,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 3,
+              "movie_key": "title:a force of one|year:1979",
+              "title": "A Force of One",
+              "rrf_score": 0.060094177442260255,
+              "semantic_rank": 771,
+              "bm25_rank": 1,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 4,
+              "movie_key": "title:only god forgives|year:2013",
+              "title": "Only God Forgives",
+              "rrf_score": 0.058823529411764705,
+              "semantic_rank": 1,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 5,
+              "movie_key": "title:the debt collector|year:2018",
+              "title": "The Debt Collector",
+              "rrf_score": 0.058258258258258255,
+              "semantic_rank": 2,
+              "bm25_rank": 354,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 6,
+              "movie_key": "title:crippled avengers|year:1978",
+              "title": "Crippled Avengers",
+              "rrf_score": 0.05555555555555555,
+              "semantic_rank": null,
+              "bm25_rank": 2,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 7,
+              "movie_key": "title:definitely maybe|year:2008",
+              "title": "Definitely, Maybe",
+              "rrf_score": 0.05263157894736842,
+              "semantic_rank": 3,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 8,
+              "movie_key": "title:martial law ii undercover|year:1991",
+              "title": "Martial Law II: Undercover",
+              "rrf_score": 0.05131926121372032,
+              "semantic_rank": 742,
+              "bm25_rank": 4,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 9,
+              "movie_key": "title:the last dragon|year:1985",
+              "title": "The Last Dragon",
+              "rrf_score": 0.05056890012642225,
+              "semantic_rank": 323,
+              "bm25_rank": 5,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 10,
+              "movie_key": "title:intolerable cruelty|year:2003",
+              "title": "Intolerable Cruelty",
+              "rrf_score": 0.05,
+              "semantic_rank": 4,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 11,
+              "movie_key": "title:fighting with my family|year:2019",
+              "title": "Fighting with My Family",
+              "rrf_score": 0.04997753818508535,
+              "semantic_rank": 5,
+              "bm25_rank": 408,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 12,
+              "movie_key": "title:the whale|year:2022",
+              "title": "The Whale",
+              "rrf_score": 0.04609144542772861,
+              "semantic_rank": 8,
+              "bm25_rank": 210,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 13,
+              "movie_key": "title:warrior|year:2011",
+              "title": "Warrior",
+              "rrf_score": 0.04607843137254902,
+              "semantic_rank": 18,
+              "bm25_rank": 44,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 14,
+              "movie_key": "title:volver|year:2006",
+              "title": "Volver",
+              "rrf_score": 0.045454545454545456,
+              "semantic_rank": 6,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 15,
+              "movie_key": "title:five fingers of death|year:1972",
+              "title": "Five Fingers of Death",
+              "rrf_score": 0.045454545454545456,
+              "semantic_rank": null,
+              "bm25_rank": 6,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 16,
+              "movie_key": "title:fatherhood|year:2021",
+              "title": "Fatherhood",
+              "rrf_score": 0.043478260869565216,
+              "semantic_rank": 7,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 17,
+              "movie_key": "title:once upon a time in china|year:1991",
+              "title": "Once Upon a Time in China",
+              "rrf_score": 0.043478260869565216,
+              "semantic_rank": null,
+              "bm25_rank": 7,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 18,
+              "movie_key": "title:orgazmo|year:1998",
+              "title": "Orgazmo",
+              "rrf_score": 0.04313543599257885,
+              "semantic_rank": 33,
+              "bm25_rank": 28,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 19,
+              "movie_key": "title:i am bruce lee|year:2012",
+              "title": "I Am Bruce Lee",
+              "rrf_score": 0.041666666666666664,
+              "semantic_rank": null,
+              "bm25_rank": 8,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 20,
+              "movie_key": "title:life during wartime|year:2009",
+              "title": "Life During Wartime",
+              "rrf_score": 0.04153846153846154,
+              "semantic_rank": 309,
+              "bm25_rank": 10,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 21,
+              "movie_key": "title:kung fu jungle|year:2014",
+              "title": "Kung Fu Jungle",
+              "rrf_score": 0.04075815011372252,
+              "semantic_rank": 1303,
+              "bm25_rank": 9,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 22,
+              "movie_key": "title:bad moms|year:2016",
+              "title": "Bad Moms",
+              "rrf_score": 0.04073426573426574,
+              "semantic_rank": 10,
+              "bm25_rank": 424,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 23,
+              "movie_key": "title:house of fury|year:2005",
+              "title": "House of Fury",
+              "rrf_score": 0.04020496649586125,
+              "semantic_rank": 27,
+              "bm25_rank": 43,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 24,
+              "movie_key": "title:the upside of anger|year:2005",
+              "title": "The Upside of Anger",
+              "rrf_score": 0.04,
+              "semantic_rank": 9,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 25,
+              "movie_key": "title:big stan|year:2007",
+              "title": "Big Stan",
+              "rrf_score": 0.03840947546531303,
+              "semantic_rank": 181,
+              "bm25_rank": 14,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 26,
+              "movie_key": "title:sidekicks|year:1992",
+              "title": "Sidekicks",
+              "rrf_score": 0.03757648310720936,
+              "semantic_rank": 521,
+              "bm25_rank": 12,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 27,
+              "movie_key": "title:pay it forward|year:2000",
+              "title": "Pay It Forward",
+              "rrf_score": 0.037037037037037035,
+              "semantic_rank": 11,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 28,
+              "movie_key": "title:one armed boxer|year:1972",
+              "title": "One-Armed Boxer",
+              "rrf_score": 0.037037037037037035,
+              "semantic_rank": null,
+              "bm25_rank": 11,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 29,
+              "movie_key": "title:terms of endearment|year:1983",
+              "title": "Terms of Endearment",
+              "rrf_score": 0.03571428571428571,
+              "semantic_rank": 12,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 30,
+              "movie_key": "title:saving grace|year:2000",
+              "title": "Saving Grace",
+              "rrf_score": 0.034482758620689655,
+              "semantic_rank": 13,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 31,
+              "movie_key": "title:gabriel s inferno|year:2020",
+              "title": "Gabriel's Inferno",
+              "rrf_score": 0.034482758620689655,
+              "semantic_rank": null,
+              "bm25_rank": 13,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 32,
+              "movie_key": "title:sunshine cleaning|year:2008",
+              "title": "Sunshine Cleaning",
+              "rrf_score": 0.03359675260180507,
+              "semantic_rank": 15,
+              "bm25_rank": 731,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 33,
+              "movie_key": "title:the confirmation|year:2016",
+              "title": "The Confirmation",
+              "rrf_score": 0.03333333333333333,
+              "semantic_rank": 14,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 34,
+              "movie_key": "title:amy schumer growing|year:2019",
+              "title": "Amy Schumer: Growing",
+              "rrf_score": 0.03231723585912487,
+              "semantic_rank": 921,
+              "bm25_rank": 16,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 35,
+              "movie_key": "title:birdcage inn|year:1998",
+              "title": "Birdcage Inn",
+              "rrf_score": 0.03225806451612903,
+              "semantic_rank": null,
+              "bm25_rank": 15,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 36,
+              "movie_key": "title:hanging up|year:2000",
+              "title": "Hanging Up",
+              "rrf_score": 0.03125,
+              "semantic_rank": 16,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 37,
+              "movie_key": "title:levity|year:2003",
+              "title": "Levity",
+              "rrf_score": 0.030405405405405407,
+              "semantic_rank": 21,
+              "bm25_rank": 280,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 38,
+              "movie_key": "title:daddy s little girls|year:2007",
+              "title": "Daddy's Little Girls",
+              "rrf_score": 0.030303030303030304,
+              "semantic_rank": 17,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 39,
+              "movie_key": "title:fearless|year:2006",
+              "title": "Fearless",
+              "rrf_score": 0.030303030303030304,
+              "semantic_rank": null,
+              "bm25_rank": 17,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 40,
+              "movie_key": "title:eulogy|year:2004",
+              "title": "Eulogy",
+              "rrf_score": 0.029508833236264805,
+              "semantic_rank": 35,
+              "bm25_rank": 85,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 41,
+              "movie_key": "title:dragon inn|year:1967",
+              "title": "Dragon Inn",
+              "rrf_score": 0.029411764705882353,
+              "semantic_rank": null,
+              "bm25_rank": 18,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 42,
+              "movie_key": "title:juno|year:2007",
+              "title": "Juno",
+              "rrf_score": 0.02857142857142857,
+              "semantic_rank": 19,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 43,
+              "movie_key": "title:dragon tiger gate|year:2006",
+              "title": "Dragon Tiger Gate",
+              "rrf_score": 0.02857142857142857,
+              "semantic_rank": null,
+              "bm25_rank": 19,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 44,
+              "movie_key": "title:fierce people|year:2007",
+              "title": "Fierce People",
+              "rrf_score": 0.027777777777777776,
+              "semantic_rank": 20,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 45,
+              "movie_key": "title:the king of the kickboxers|year:1990",
+              "title": "The King of the Kickboxers",
+              "rrf_score": 0.027777777777777776,
+              "semantic_rank": null,
+              "bm25_rank": 20,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 46,
+              "movie_key": "title:kung fu panda secrets of the furious five|year:2008",
+              "title": "Kung Fu Panda: Secrets of the Furious Five",
+              "rrf_score": 0.02702702702702703,
+              "semantic_rank": null,
+              "bm25_rank": 21,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 47,
+              "movie_key": "title:mother s day|year:2016",
+              "title": "Mother's Day",
+              "rrf_score": 0.02631578947368421,
+              "semantic_rank": 22,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 48,
+              "movie_key": "title:tai chi hero|year:2012",
+              "title": "Tai Chi Hero",
+              "rrf_score": 0.02631578947368421,
+              "semantic_rank": null,
+              "bm25_rank": 22,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 49,
+              "movie_key": "title:the purge|year:2013",
+              "title": "The Purge",
+              "rrf_score": 0.02564102564102564,
+              "semantic_rank": 23,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 50,
+              "movie_key": "title:naked killer|year:1992",
+              "title": "Naked Killer",
+              "rrf_score": 0.02564102564102564,
+              "semantic_rank": null,
+              "bm25_rank": 23,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 51,
+              "movie_key": "title:the winning season|year:2009",
+              "title": "The Winning Season",
+              "rrf_score": 0.02501906941266209,
+              "semantic_rank": 53,
+              "bm25_rank": 79,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 52,
+              "movie_key": "title:validation|year:2007",
+              "title": "Validation",
+              "rrf_score": 0.025,
+              "semantic_rank": 24,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 53,
+              "movie_key": "title:baaghi|year:2016",
+              "title": "Baaghi",
+              "rrf_score": 0.025,
+              "semantic_rank": null,
+              "bm25_rank": 24,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 54,
+              "movie_key": "title:sorry we missed you|year:2019",
+              "title": "Sorry We Missed You",
+              "rrf_score": 0.02458600878675228,
+              "semantic_rank": 28,
+              "bm25_rank": 522,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 55,
+              "movie_key": "title:imagine that|year:2009",
+              "title": "Imagine That",
+              "rrf_score": 0.024390243902439025,
+              "semantic_rank": 25,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 56,
+              "movie_key": "title:game of death|year:1978",
+              "title": "Game of Death",
+              "rrf_score": 0.024390243902439025,
+              "semantic_rank": null,
+              "bm25_rank": 25,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 57,
+              "movie_key": "title:mother|year:1996",
+              "title": "Mother",
+              "rrf_score": 0.024156458199011393,
+              "semantic_rank": 29,
+              "bm25_rank": 501,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 58,
+              "movie_key": "title:no retreat no surrender 3 blood brothers|year:1990",
+              "title": "No Retreat, No Surrender 3: Blood Brothers",
+              "rrf_score": 0.02402092489457483,
+              "semantic_rank": 1291,
+              "bm25_rank": 27,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 59,
+              "movie_key": "title:big george foreman|year:2023",
+              "title": "Big George Foreman",
+              "rrf_score": 0.023809523809523808,
+              "semantic_rank": 26,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 60,
+              "movie_key": "title:street fighter|year:1994",
+              "title": "Street Fighter",
+              "rrf_score": 0.023809523809523808,
+              "semantic_rank": null,
+              "bm25_rank": 26,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 61,
+              "movie_key": "title:tai chi master|year:1993",
+              "title": "Tai-Chi Master",
+              "rrf_score": 0.0231841329402305,
+              "semantic_rank": 75,
+              "bm25_rank": 66,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 62,
+              "movie_key": "title:here comes the boom|year:2012",
+              "title": "Here Comes the Boom",
+              "rrf_score": 0.022460110968308203,
+              "semantic_rank": 1371,
+              "bm25_rank": 30,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 63,
+              "movie_key": "title:lone wolf mcquade|year:1983",
+              "title": "Lone Wolf McQuade",
+              "rrf_score": 0.022222222222222223,
+              "semantic_rank": null,
+              "bm25_rank": 29,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 64,
+              "movie_key": "title:the single moms club|year:2014",
+              "title": "The Single Moms Club",
+              "rrf_score": 0.021739130434782608,
+              "semantic_rank": 30,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 65,
+              "movie_key": "title:dad in training|year:2016",
+              "title": "Dad in Training",
+              "rrf_score": 0.021383647798742137,
+              "semantic_rank": 44,
+              "bm25_rank": 196,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 66,
+              "movie_key": "title:diary of a mad black woman|year:2005",
+              "title": "Diary of a Mad Black Woman",
+              "rrf_score": 0.02127659574468085,
+              "semantic_rank": 31,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 67,
+              "movie_key": "title:shootfighter fight to the death|year:1993",
+              "title": "Shootfighter: Fight to the Death",
+              "rrf_score": 0.02127659574468085,
+              "semantic_rank": null,
+              "bm25_rank": 31,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 68,
+              "movie_key": "title:get hard|year:2015",
+              "title": "Get Hard",
+              "rrf_score": 0.020833333333333332,
+              "semantic_rank": 32,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 69,
+              "movie_key": "title:the kung fu cult master|year:1993",
+              "title": "The Kung Fu Cult Master",
+              "rrf_score": 0.020833333333333332,
+              "semantic_rank": null,
+              "bm25_rank": 32,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 70,
+              "movie_key": "title:brothers|year:2015",
+              "title": "Brothers",
+              "rrf_score": 0.020471643518518517,
+              "semantic_rank": 496,
+              "bm25_rank": 38,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 71,
+              "movie_key": "title:bruised|year:2020",
+              "title": "Bruised",
+              "rrf_score": 0.020451554115622154,
+              "semantic_rank": 103,
+              "bm25_rank": 67,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 72,
+              "movie_key": "title:hard target 2|year:2016",
+              "title": "Hard Target 2",
+              "rrf_score": 0.02040816326530612,
+              "semantic_rank": null,
+              "bm25_rank": 33,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 73,
+              "movie_key": "title:bringing down the house|year:2003",
+              "title": "Bringing Down the House",
+              "rrf_score": 0.02,
+              "semantic_rank": 34,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 74,
+              "movie_key": "title:half a loaf of kung fu|year:1978",
+              "title": "Half a Loaf of Kung Fu",
+              "rrf_score": 0.02,
+              "semantic_rank": null,
+              "bm25_rank": 34,
+              "source_count": 1
+            }
+          ],
+          "neighborhood_source_mix": {
+            "dual_source": 30,
+            "semantic_only": 23,
+            "bm25_only": 22
+          },
+          "in_pool_source_mix": {
+            "dual_source": 21,
+            "semantic_only": 16,
+            "bm25_only": 13
+          }
+        },
+        "no_llm": {
+          "retrieval_query": "a multiverse family comedy about taxes, laundry, martial arts, and a tired mother trying to forgive herself across several impossible lives",
+          "rerank_query": "a multiverse family comedy about taxes, laundry, martial arts, and a tired mother trying to forgive herself across several impossible lives",
+          "rrf_list_len": 800,
+          "target": {
+            "semantic": {
+              "present": true,
+              "rank": 37,
+              "score": 0.5847514271736145
+            },
+            "bm25": {
+              "present": false,
+              "rank": null,
+              "score": null
+            },
+            "rrf": {
+              "present": true,
+              "rank": 79,
+              "score": 0.018867924528301886
+            },
+            "source_count": 1,
+            "in_rerank_pool": false
+          },
+          "recorded_rrf_rank": 79,
+          "reproduced_matches_recorded": true,
+          "cutoff": {
+            "rerank_top_k": 50,
+            "last_in_pool": {
+              "rrf_rank": 49,
+              "movie_key": "title:kung fu dunk|year:2008",
+              "title": "Kung Fu Dunk",
+              "rrf_score": 0.02631578947368421,
+              "semantic_rank": null,
+              "bm25_rank": 22,
+              "source_count": 1
+            },
+            "first_out_of_pool": {
+              "rrf_rank": 50,
+              "movie_key": "title:here comes the boom|year:2012",
+              "title": "Here Comes the Boom",
+              "rrf_score": 0.02575357950263753,
+              "semantic_rank": 1311,
+              "bm25_rank": 24,
+              "source_count": 2
+            },
+            "target_rrf_rank": 79,
+            "ranks_below_cutoff": 30,
+            "rrf_score_gap_to_last_in_pool": 0.007447864945382323
+          },
+          "neighborhood": [
+            {
+              "rrf_rank": 0,
+              "movie_key": "title:bad moms|year:2016",
+              "title": "Bad Moms",
+              "rrf_score": 0.0625,
+              "semantic_rank": 0,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 1,
+              "movie_key": "title:half a loaf of kung fu|year:1978",
+              "title": "Half a Loaf of Kung Fu",
+              "rrf_score": 0.0625,
+              "semantic_rank": null,
+              "bm25_rank": 0,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 2,
+              "movie_key": "title:sunshine cleaning|year:2008",
+              "title": "Sunshine Cleaning",
+              "rrf_score": 0.06096491228070175,
+              "semantic_rank": 3,
+              "bm25_rank": 104,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 3,
+              "movie_key": "title:mother|year:1996",
+              "title": "Mother",
+              "rrf_score": 0.06040330824272837,
+              "semantic_rank": 1,
+              "bm25_rank": 617,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 4,
+              "movie_key": "title:martial law|year:1990",
+              "title": "Martial Law",
+              "rrf_score": 0.060084563459684,
+              "semantic_rank": 777,
+              "bm25_rank": 1,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 5,
+              "movie_key": "title:it runs in the family|year:2003",
+              "title": "It Runs in the Family",
+              "rrf_score": 0.05658119658119658,
+              "semantic_rank": 2,
+              "bm25_rank": 959,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 6,
+              "movie_key": "title:martial law ii undercover|year:1991",
+              "title": "Martial Law II: Undercover",
+              "rrf_score": 0.05555555555555555,
+              "semantic_rank": null,
+              "bm25_rank": 2,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 7,
+              "movie_key": "title:crippled avengers|year:1978",
+              "title": "Crippled Avengers",
+              "rrf_score": 0.05263157894736842,
+              "semantic_rank": null,
+              "bm25_rank": 3,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 8,
+              "movie_key": "title:the mitchells vs the machines|year:2021",
+              "title": "The Mitchells vs. the Machines",
+              "rrf_score": 0.05,
+              "semantic_rank": 4,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 9,
+              "movie_key": "title:five fingers of death|year:1972",
+              "title": "Five Fingers of Death",
+              "rrf_score": 0.05,
+              "semantic_rank": null,
+              "bm25_rank": 4,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 10,
+              "movie_key": "title:mother s day|year:2016",
+              "title": "Mother's Day",
+              "rrf_score": 0.047619047619047616,
+              "semantic_rank": 5,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 11,
+              "movie_key": "title:game of death|year:1978",
+              "title": "Game of Death",
+              "rrf_score": 0.047619047619047616,
+              "semantic_rank": null,
+              "bm25_rank": 5,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 12,
+              "movie_key": "title:mental|year:2012",
+              "title": "Mental",
+              "rrf_score": 0.045454545454545456,
+              "semantic_rank": 6,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 13,
+              "movie_key": "title:the punisher dirty laundry|year:2012",
+              "title": "The Punisher: Dirty Laundry",
+              "rrf_score": 0.045454545454545456,
+              "semantic_rank": null,
+              "bm25_rank": 6,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 14,
+              "movie_key": "title:three monkeys|year:2008",
+              "title": "Three Monkeys",
+              "rrf_score": 0.045172947857511615,
+              "semantic_rank": 10,
+              "bm25_rank": 133,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 15,
+              "movie_key": "title:serial mom|year:1994",
+              "title": "Serial Mom",
+              "rrf_score": 0.044607843137254896,
+              "semantic_rank": 8,
+              "bm25_rank": 324,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 16,
+              "movie_key": "title:the last dragon|year:1985",
+              "title": "The Last Dragon",
+              "rrf_score": 0.044179031717497944,
+              "semantic_rank": 1411,
+              "bm25_rank": 7,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 17,
+              "movie_key": "title:mercy|year:2016",
+              "title": "Mercy",
+              "rrf_score": 0.043478260869565216,
+              "semantic_rank": 7,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 18,
+              "movie_key": "title:one armed boxer|year:1972",
+              "title": "One-Armed Boxer",
+              "rrf_score": 0.041666666666666664,
+              "semantic_rank": null,
+              "bm25_rank": 8,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 19,
+              "movie_key": "title:mommy|year:2014",
+              "title": "Mommy",
+              "rrf_score": 0.04,
+              "semantic_rank": 9,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 20,
+              "movie_key": "title:the kung fu cult master|year:1993",
+              "title": "The Kung Fu Cult Master",
+              "rrf_score": 0.04,
+              "semantic_rank": null,
+              "bm25_rank": 9,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 21,
+              "movie_key": "title:fighting with my family|year:2019",
+              "title": "Fighting with My Family",
+              "rrf_score": 0.039762868710237126,
+              "semantic_rank": 12,
+              "bm25_rank": 231,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 22,
+              "movie_key": "title:the addams family|year:2019",
+              "title": "The Addams Family",
+              "rrf_score": 0.03962264150943396,
+              "semantic_rank": 14,
+              "bm25_rank": 143,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 23,
+              "movie_key": "title:big stan|year:2007",
+              "title": "Big Stan",
+              "rrf_score": 0.038461538461538464,
+              "semantic_rank": null,
+              "bm25_rank": 10,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 24,
+              "movie_key": "title:house of fury|year:2005",
+              "title": "House of Fury",
+              "rrf_score": 0.03811188811188811,
+              "semantic_rank": 49,
+              "bm25_rank": 28,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 25,
+              "movie_key": "title:jinxed|year:2013",
+              "title": "Jinxed",
+              "rrf_score": 0.037037037037037035,
+              "semantic_rank": 11,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 26,
+              "movie_key": "title:kung fu jungle|year:2014",
+              "title": "Kung Fu Jungle",
+              "rrf_score": 0.037037037037037035,
+              "semantic_rank": null,
+              "bm25_rank": 11,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 27,
+              "movie_key": "title:the house|year:2022",
+              "title": "The House",
+              "rrf_score": 0.03590785907859079,
+              "semantic_rank": 107,
+              "bm25_rank": 20,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 28,
+              "movie_key": "title:shootfighter fight to the death|year:1993",
+              "title": "Shootfighter: Fight to the Death",
+              "rrf_score": 0.03571428571428571,
+              "semantic_rank": null,
+              "bm25_rank": 12,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 29,
+              "movie_key": "title:hanging up|year:2000",
+              "title": "Hanging Up",
+              "rrf_score": 0.034482758620689655,
+              "semantic_rank": 13,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 30,
+              "movie_key": "title:naked killer|year:1992",
+              "title": "Naked Killer",
+              "rrf_score": 0.034482758620689655,
+              "semantic_rank": null,
+              "bm25_rank": 13,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 31,
+              "movie_key": "title:lone wolf mcquade|year:1983",
+              "title": "Lone Wolf McQuade",
+              "rrf_score": 0.03333333333333333,
+              "semantic_rank": null,
+              "bm25_rank": 14,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 32,
+              "movie_key": "title:mixtape|year:2021",
+              "title": "Mixtape",
+              "rrf_score": 0.03225806451612903,
+              "semantic_rank": 15,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 33,
+              "movie_key": "title:the original kings of comedy|year:2000",
+              "title": "The Original Kings of Comedy",
+              "rrf_score": 0.03225806451612903,
+              "semantic_rank": null,
+              "bm25_rank": 15,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 34,
+              "movie_key": "title:madea s big happy family|year:2011",
+              "title": "Madea's Big Happy Family",
+              "rrf_score": 0.03146937787460663,
+              "semantic_rank": 18,
+              "bm25_rank": 470,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 35,
+              "movie_key": "title:one more time|year:2016",
+              "title": "One More Time",
+              "rrf_score": 0.03125,
+              "semantic_rank": 16,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 36,
+              "movie_key": "title:out live|year:2000",
+              "title": "Out Live",
+              "rrf_score": 0.03125,
+              "semantic_rank": null,
+              "bm25_rank": 16,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 37,
+              "movie_key": "title:motherhood|year:2009",
+              "title": "Motherhood",
+              "rrf_score": 0.030303030303030304,
+              "semantic_rank": 17,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 38,
+              "movie_key": "title:dragon|year:2011",
+              "title": "Dragon",
+              "rrf_score": 0.030303030303030304,
+              "semantic_rank": null,
+              "bm25_rank": 17,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 39,
+              "movie_key": "title:men chicken|year:2015",
+              "title": "Men & Chicken",
+              "rrf_score": 0.029411764705882353,
+              "semantic_rank": null,
+              "bm25_rank": 18,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 40,
+              "movie_key": "title:lady and the tramp|year:2019",
+              "title": "Lady and the Tramp",
+              "rrf_score": 0.02926013380558835,
+              "semantic_rank": 1436,
+              "bm25_rank": 19,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 41,
+              "movie_key": "title:four christmases|year:2008",
+              "title": "Four Christmases",
+              "rrf_score": 0.02857142857142857,
+              "semantic_rank": 19,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 42,
+              "movie_key": "title:family|year:2018",
+              "title": "Family",
+              "rrf_score": 0.027777777777777776,
+              "semantic_rank": 20,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 43,
+              "movie_key": "title:box|year:2015",
+              "title": "Box",
+              "rrf_score": 0.02735042735042735,
+              "semantic_rank": 29,
+              "bm25_rank": 179,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 44,
+              "movie_key": "title:mother|year:2020",
+              "title": "MOTHER",
+              "rrf_score": 0.027105154484363854,
+              "semantic_rank": 23,
+              "bm25_rank": 667,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 45,
+              "movie_key": "title:brothers|year:2015",
+              "title": "Brothers",
+              "rrf_score": 0.02705314009661836,
+              "semantic_rank": 191,
+              "bm25_rank": 29,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 46,
+              "movie_key": "title:freaky friday|year:2018",
+              "title": "Freaky Friday",
+              "rrf_score": 0.02702702702702703,
+              "semantic_rank": 21,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 47,
+              "movie_key": "title:bloodsport|year:1988",
+              "title": "Bloodsport",
+              "rrf_score": 0.02702702702702703,
+              "semantic_rank": null,
+              "bm25_rank": 21,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 48,
+              "movie_key": "title:a bad moms christmas|year:2017",
+              "title": "A Bad Moms Christmas",
+              "rrf_score": 0.02631578947368421,
+              "semantic_rank": 22,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 49,
+              "movie_key": "title:kung fu dunk|year:2008",
+              "title": "Kung Fu Dunk",
+              "rrf_score": 0.02631578947368421,
+              "semantic_rank": null,
+              "bm25_rank": 22,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 50,
+              "movie_key": "title:here comes the boom|year:2012",
+              "title": "Here Comes the Boom",
+              "rrf_score": 0.02575357950263753,
+              "semantic_rank": 1311,
+              "bm25_rank": 24,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 51,
+              "movie_key": "title:bko bangkok knockout|year:2010",
+              "title": "BKO: Bangkok Knockout",
+              "rrf_score": 0.02564102564102564,
+              "semantic_rank": null,
+              "bm25_rank": 23,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 52,
+              "movie_key": "title:the guilt trip|year:2012",
+              "title": "The Guilt Trip",
+              "rrf_score": 0.025,
+              "semantic_rank": 24,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 53,
+              "movie_key": "title:mother|year:1926",
+              "title": "Mother",
+              "rrf_score": 0.024765546754074476,
+              "semantic_rank": 1030,
+              "bm25_rank": 26,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 54,
+              "movie_key": "title:multiplicity|year:1996",
+              "title": "Multiplicity",
+              "rrf_score": 0.024390243902439025,
+              "semantic_rank": 25,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 55,
+              "movie_key": "title:time for loving|year:1983",
+              "title": "Time for Loving",
+              "rrf_score": 0.024390243902439025,
+              "semantic_rank": null,
+              "bm25_rank": 25,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 56,
+              "movie_key": "title:a bag of hammers|year:2011",
+              "title": "A Bag of Hammers",
+              "rrf_score": 0.023809523809523808,
+              "semantic_rank": 26,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 57,
+              "movie_key": "title:madea s family reunion|year:2006",
+              "title": "Madea's Family Reunion",
+              "rrf_score": 0.023255813953488372,
+              "semantic_rank": 27,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 58,
+              "movie_key": "title:rosetta|year:1999",
+              "title": "Rosetta",
+              "rrf_score": 0.023255813953488372,
+              "semantic_rank": null,
+              "bm25_rank": 27,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 59,
+              "movie_key": "title:all i wish|year:2018",
+              "title": "All I Wish",
+              "rrf_score": 0.022727272727272728,
+              "semantic_rank": 28,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 60,
+              "movie_key": "title:mother|year:2009",
+              "title": "Mother",
+              "rrf_score": 0.021961063627730294,
+              "semantic_rank": 88,
+              "bm25_rank": 65,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 61,
+              "movie_key": "title:under wraps|year:1997",
+              "title": "Under Wraps",
+              "rrf_score": 0.021739130434782608,
+              "semantic_rank": 30,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 62,
+              "movie_key": "title:the karate kid|year:1984",
+              "title": "The Karate Kid",
+              "rrf_score": 0.021739130434782608,
+              "semantic_rank": null,
+              "bm25_rank": 30,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 63,
+              "movie_key": "title:l fe happens|year:2011",
+              "title": "L!fe Happens",
+              "rrf_score": 0.021638655462184873,
+              "semantic_rank": 120,
+              "bm25_rank": 54,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 64,
+              "movie_key": "title:friendsgiving|year:2020",
+              "title": "Friendsgiving",
+              "rrf_score": 0.02127659574468085,
+              "semantic_rank": 31,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 65,
+              "movie_key": "title:no retreat no surrender 3 blood brothers|year:1990",
+              "title": "No Retreat, No Surrender 3: Blood Brothers",
+              "rrf_score": 0.02127659574468085,
+              "semantic_rank": null,
+              "bm25_rank": 31,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 66,
+              "movie_key": "title:the meddler|year:2016",
+              "title": "The Meddler",
+              "rrf_score": 0.020833333333333332,
+              "semantic_rank": 32,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 67,
+              "movie_key": "title:true legend|year:2010",
+              "title": "True Legend",
+              "rrf_score": 0.020833333333333332,
+              "semantic_rank": null,
+              "bm25_rank": 32,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 68,
+              "movie_key": "title:puzzle|year:2018",
+              "title": "Puzzle",
+              "rrf_score": 0.02040816326530612,
+              "semantic_rank": 33,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 69,
+              "movie_key": "title:master of the flying guillotine|year:1976",
+              "title": "Master of the Flying Guillotine",
+              "rrf_score": 0.02040816326530612,
+              "semantic_rank": null,
+              "bm25_rank": 33,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 70,
+              "movie_key": "title:diary of a mad black woman|year:2005",
+              "title": "Diary of a Mad Black Woman",
+              "rrf_score": 0.02,
+              "semantic_rank": 34,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 71,
+              "movie_key": "title:the overtaxed|year:1959",
+              "title": "The Overtaxed",
+              "rrf_score": 0.02,
+              "semantic_rank": null,
+              "bm25_rank": 34,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 72,
+              "movie_key": "title:mother and child|year:2009",
+              "title": "Mother and Child",
+              "rrf_score": 0.019905956112852664,
+              "semantic_rank": 564,
+              "bm25_rank": 39,
+              "source_count": 2
+            },
+            {
+              "rrf_rank": 73,
+              "movie_key": "title:the comedy|year:2012",
+              "title": "The Comedy",
+              "rrf_score": 0.0196078431372549,
+              "semantic_rank": 35,
+              "bm25_rank": null,
+              "source_count": 1
+            },
+            {
+              "rrf_rank": 74,
+              "movie_key": "title:hard target 2|year:2016",
+              "title": "Hard Target 2",
+              "rrf_score": 0.0196078431372549,
+              "semantic_rank": null,
+              "bm25_rank": 35,
+              "source_count": 1
+            }
+          ],
+          "neighborhood_source_mix": {
+            "dual_source": 21,
+            "semantic_only": 26,
+            "bm25_only": 28
+          },
+          "in_pool_source_mix": {
+            "dual_source": 16,
+            "semantic_only": 15,
+            "bm25_only": 19
+          }
+        }
+      }
+    }
+  ]
+}
