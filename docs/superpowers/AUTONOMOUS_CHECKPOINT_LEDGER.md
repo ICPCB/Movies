@@ -523,3 +523,71 @@ Every ticket/checkpoint appended below must include:
   reranker/cross-encoder architecture investigation (not created yet).
 - **External review:** Optional non-blocking; recommended before any future
   reranker/cross-encoder architecture change.
+
+### 2026-05-22T15:33:26Z - RERANK-01
+
+- **Branch:** `automation/cinematch-accuracy-audit-full`
+- **Phase/ticket id:** `RERANK-01`
+- **Status:** INCOMPLETE — analysis_complete=False, superseded pending RERANK-01A
+  - **Gate review (Claude, 2026-05-22):** verdict INCOMPLETE. RERANK-01
+    mechanics are valid and validation passed; the ticket objective (a
+    complete q05/q10 characterization) was not reached because 4 q05
+    false-positive document texts could not be safely reconstructed from
+    `candidates.jsonl` + `data/movies_clean.csv`. The script correctly
+    detected the gap and did not guess. Remedy: ticket RERANK-01A
+    (hermetic document-text source repair), then re-run RERANK-01.
+    The gitignored characterization JSON is left on disk, NOT force-added,
+    because it is incomplete (`failure_mode=inconclusive`).
+- **Files changed:**
+  - `eval/scripts/rerank_failure_q05_q10.py`
+  - `eval/tests/test_rerank_failure_q05_q10.py`
+  - `docs/superpowers/reports/rerank-01-q05-q10.md`
+  - `docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md`
+- **Artifacts written (gitignored under `eval/runs/`, not staged):**
+  - `eval/runs/2026-05-19-1846-nogit/analysis/rerank_failure/q05_q10_reranker_characterization.json`
+- **Commands run:**
+  - `git status --short`
+  - `git log --oneline --decorate -6`
+  - `./venv/Scripts/python.exe -m compileall eval/scripts`
+  - `./venv/Scripts/python.exe -m unittest discover -s eval/tests`
+  - `./venv/Scripts/python.exe -m eval.scripts.rerank_failure_q05_q10 --run 2026-05-19-1846-nogit`
+  - `git diff --name-only -- src/`
+- **Validation results:**
+  - `compileall` passed: `Listing 'eval/scripts'...`.
+  - `unittest discover` passed: 201 tests OK.
+  - RERANK-01 runner passed and wrote the artifact/report:
+    `failure_mode=inconclusive`, `analysis_complete=False`,
+    `unresolved_text_members=4`, `phase5_gate=blocked`.
+  - `git diff --name-only -- src/` was empty.
+- **Failure-mode classification:** `inconclusive`.
+  - Required q05 false positives above the target could not be safely
+    reconstructed from the allowed text sources:
+    tmdb 24218 (`The Bold, the Corrupt and the Beautiful`) and tmdb 21993
+    (`On the Job`) missing from both `candidates.jsonl` and
+    `movies_clean.csv`; tmdb 25394 (`Posse`) missing from both sources;
+    tmdb 8353 resolves in `movies_clean.csv` to title `Limite`, contradicting
+    DECOMP title `Supernova`.
+  - Clean no_llm stage evidence remains recorded: q05 no_llm RRF rank 1 /
+    rerank rank 5 / final rank 10; q10 no_llm RRF rank 10 / rerank rank 7 /
+    final rank 7.
+  - Pinned arms are attributed as RRF recall primary, with final-blend
+    secondary context, not as clean reranker losses.
+- **Failures/blockers:** No remaining validation failures. One intermediate
+  unit-test fixture failed before correction:
+  `FAIL: test_document_field_analysis_records_presence_and_truncation
+  (test_rerank_failure_q05_q10.RerankFailureQ05Q10Tests.test_document_field_analysis_records_presence_and_truncation)`
+  with traceback
+  `File "D:\ICPCB\OneDrive\Documents\Code\Project\Movies\eval\tests\test_rerank_failure_q05_q10.py", line 29, in test_document_field_analysis_records_presence_and_truncation`
+  and assertion
+  `AssertionError: True is not false`. The fixture was corrected to use a
+  non-degenerate document length; the full suite then passed.
+- **Assumptions:** The DECOMP-01 artifact is authoritative for scores and
+  ranks; missing/mismatched text sources must not be guessed from title/year
+  alone because that would not reconstruct the exact cross-encoder document.
+- **Next action:** Phase 5 remains BLOCKED. Before a model-backed RERANK-02,
+  repair or snapshot the missing allowed document sources, then compare the
+  same q05/q10 no_llm pairs against an alternative cross-encoder. Confirm
+  with the Human whether to force-add the gitignored RERANK-01 JSON artifact
+  before committing.
+- **External review:** Optional non-blocking for mechanics; recommended before
+  scoping RERANK-02 because the classification is intentionally inconclusive.
