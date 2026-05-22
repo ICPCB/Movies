@@ -650,3 +650,53 @@ Every ticket/checkpoint appended below must include:
   `movie_key`) to reach a complete, non-`inconclusive` characterization.
 - **External review:** Optional non-blocking for mechanics.
 - **Phase 5:** remains BLOCKED.
+
+### 2026-05-22T16:20Z - RERANK-01B
+
+- **Branch:** `automation/cinematch-accuracy-audit-full`
+- **Phase/ticket id:** `RERANK-01B` (q05/q10 reranker characterization re-run
+  on the RERANK-01A text snapshot)
+- **Status:** COMPLETE / validated / ready to commit
+- **Plan:** `docs/superpowers/plans/2026-05-22-rerank-01b-recharacterization-rerun.md`
+  Section 2.
+- **Files changed:**
+  - `eval/scripts/rerank_failure_q05_q10.py`
+  - `eval/tests/test_rerank_failure_q05_q10.py`
+  - `docs/superpowers/reports/rerank-01-q05-q10.md`
+  - `docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md` (this entry)
+- **Artifact regenerated (gitignored under `eval/runs/`, not staged):**
+  - `eval/runs/2026-05-19-1846-nogit/analysis/rerank_failure/q05_q10_reranker_characterization.json`
+- **Commands run:**
+  - `./venv/Scripts/python.exe -m py_compile eval/scripts/rerank_failure_q05_q10.py eval/tests/test_rerank_failure_q05_q10.py`
+  - `./venv/Scripts/python.exe -m unittest eval.tests.test_rerank_failure_q05_q10`
+  - `git status --short --branch`
+  - `./venv/Scripts/python.exe -m compileall eval/scripts`
+  - `./venv/Scripts/python.exe -m unittest discover -s eval/tests`
+  - `./venv/Scripts/python.exe -m eval.scripts.rerank_failure_q05_q10 --run 2026-05-19-1846-nogit`
+  - `git diff --name-only -- src/`
+- **Validation results:**
+  - `py_compile` passed for the edited script and test.
+  - Targeted unit test passed: 11 tests OK.
+  - `compileall` passed: `Listing 'eval/scripts'...`.
+  - Full eval unit suite passed: 211 tests OK.
+  - RERANK-01B runner passed: `failure_mode=model_capability_limit_hypothesis`,
+    `analysis_complete=True`, `unresolved_text_members=0`,
+    `phase5_gate=blocked`.
+  - Artifact inspection confirmed 27 characterized records, all with non-null
+    `document_text`, `document_fields`, and `source_stage`; source stages were
+    `bm25_only=4`, `semantic=2`, `semantic+bm25=21`.
+  - `git diff --name-only -- src/` empty.
+- **Failure mode classification:** `model_capability_limit_hypothesis`.
+  Evidence cited in the regenerated report: both no_llm arms are clean
+  reranker demotions, the targets have atypical title/domain signals
+  (`Thanatomorphose`, `[REC]`), and pinned arms remain RRF/final-blend context.
+- **Failures/blockers:** None.
+- **Assumptions:** The RERANK-01A snapshot is the authoritative document-text
+  source; DECOMP-01 remains authoritative for pool membership, reranker scores,
+  stage ranks, score gaps, and stage-disagreement attribution.
+- **Commit:** `eval: complete q05 q10 reranker characterization (RERANK-01B)`;
+  stage only the script, test, regenerated report, and this ledger entry. Leave
+  the gitignored characterization JSON on disk and do not stage `src/*` or
+  `graphify-out/`.
+- **Next action:** Phase 5 remains BLOCKED. Claude gate-review of RERANK-01B
+  is recommended before any RERANK-02 model-backed comparison is scoped.

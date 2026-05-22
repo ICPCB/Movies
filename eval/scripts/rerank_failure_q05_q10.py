@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 import argparse
-import csv
 import json
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Iterable, Mapping, Optional, Sequence
+from typing import Any, Dict, Mapping, Optional, Sequence
 
 
 if __package__ in (None, ""):
@@ -18,10 +17,10 @@ if __package__ in (None, ""):
         sys.path.insert(0, project_root_str)
 
 from eval.scripts import _run_io  # noqa: E402
-from src.retrieval.reranker import build_movie_document  # noqa: E402
 
 
 SCHEMA_VERSION = "rerank-01-q05-q10.v1"
+TEXT_SNAPSHOT_SCHEMA_VERSION = "rerank-01a-text-snapshot.v1"
 QIDS = ("q05", "q10")
 CONTROL_ARMS = ("pinned", "no_llm")
 FAILURE_MODE_VALUES = {
@@ -39,7 +38,9 @@ DECOMP_RELATIVE_PATH = (
 LOCALIZATION_RELATIVE_PATH = (
     Path("analysis") / "hy_fix_localize" / "localization.json"
 )
-CANDIDATES_RELATIVE_PATH = Path("candidates.jsonl")
+TEXT_SNAPSHOT_RELATIVE_PATH = (
+    Path("analysis") / "rerank_failure" / "q05_q10_text_snapshot.json"
+)
 OUTPUT_RELATIVE_PATH = (
     Path("analysis") / "rerank_failure" / "q05_q10_reranker_characterization.json"
 )
@@ -72,8 +73,7 @@ def load_inputs(run_id: str) -> Dict[str, Any]:
     paths = {
         "decomp": run_path / DECOMP_RELATIVE_PATH,
         "localization": run_path / LOCALIZATION_RELATIVE_PATH,
-        "candidates": run_path / CANDIDATES_RELATIVE_PATH,
-        "movies": _run_io.PROJECT_ROOT / "data" / "movies_clean.csv",
+        "text_snapshot": run_path / TEXT_SNAPSHOT_RELATIVE_PATH,
     }
     missing = [path for path in paths.values() if not path.exists()]
     if missing:
@@ -83,14 +83,12 @@ def load_inputs(run_id: str) -> Dict[str, Any]:
 
     decomp = _read_json_object(paths["decomp"])
     localization = _read_json_object(paths["localization"])
-    candidates = _read_jsonl_objects(paths["candidates"])
-    movies = _read_movies_csv(paths["movies"])
+    text_snapshot = _read_json_object(paths["text_snapshot"])
+    _assert_text_snapshot_complete(text_snapshot)
     return {
         "decomp": decomp,
         "localization": localization,
-        "candidates_by_qid_tmdb": _index_candidates_by_qid_tmdb(candidates),
-        "candidates_by_tmdb": _index_candidates_by_tmdb(candidates),
-        "movies_by_tmdb": movies,
+        "snapshot_by_member_key": _index_text_snapshot(text_snapshot),
     }
 
 
@@ -126,7 +124,6 @@ def build_characterization(run_id: str, inputs: Mapping[str, Any]) -> Dict[str, 
                 qid=qid,
                 arm=arm,
                 target_tmdb_id=int(qid_row["tmdb_id"]),
-                target_title=str(qid_row["title"]),
                 decomp_arm=decomp_arm,
                 inputs=inputs,
                 standard_cutoff=standard_cutoff,
@@ -152,14 +149,14 @@ def build_characterization(run_id: str, inputs: Mapping[str, Any]) -> Dict[str, 
             "reranker_scores_recomputed": False,
             "gpu_required": False,
             "network_required": False,
-            "src_import": "src.retrieval.reranker.build_movie_document",
+            "src_import": False,
             "src_edit": False,
         },
         "source_artifacts": {
             "decomp_pool_q05_q10": str(DECOMP_RELATIVE_PATH).replace("\\", "/"),
             "decomp_schema_version": decomp.get("schema_version"),
-            "candidates": str(CANDIDATES_RELATIVE_PATH).replace("\\", "/"),
-            "movies_clean": "data/movies_clean.csv",
+            "text_snapshot": str(TEXT_SNAPSHOT_RELATIVE_PATH).replace("\\", "/"),
+            "text_snapshot_schema_version": TEXT_SNAPSHOT_SCHEMA_VERSION,
             "localization": str(LOCALIZATION_RELATIVE_PATH).replace("\\", "/"),
         },
         "qids": list(QIDS),
@@ -178,7 +175,6 @@ def characterize_arm(
     qid: str,
     arm: str,
     target_tmdb_id: int,
-    target_title: str,
     decomp_arm: Mapping[str, Any],
     inputs: Mapping[str, Any],
     standard_cutoff: int,
@@ -199,24 +195,24 @@ def characterize_arm(
 
     target_record, target_unresolved = characterize_candidate(
         qid=qid,
+        arm=arm,
         role="target",
         row=target_row,
         target_score=float(target_row["rerank_score"]),
         rerank_query=str(decomp_arm["rerank_query"]),
         inputs=inputs,
-        expected_title=target_title,
     )
     false_positives = []
     unresolved = list(target_unresolved)
     for row in false_positive_rows:
         record, record_unresolved = characterize_candidate(
             qid=qid,
+            arm=arm,
             role="false_positive",
             row=row,
             target_score=float(target_row["rerank_score"]),
             rerank_query=str(decomp_arm["rerank_query"]),
             inputs=inputs,
-            expected_title=str(row.get("title", "")),
         )
         false_positives.append(record)
         unresolved.extend(record_unresolved)
@@ -241,55 +237,51 @@ def characterize_arm(
 def characterize_candidate(
     *,
     qid: str,
+    arm: str,
     role: str,
     row: Mapping[str, Any],
     target_score: float,
     rerank_query: str,
     inputs: Mapping[str, Any],
-    expected_title: str,
 ) -> tuple[Dict[str, Any], list[Dict[str, Any]]]:
     tmdb_id = int(row["tmdb_id"])
-    source = resolve_movie_text_fields(
+    movie_key = _required_movie_key(row)
+    source = resolve_snapshot_member(
         qid=qid,
-        tmdb_id=tmdb_id,
-        expected_title=expected_title,
+        arm=arm,
+        movie_key=movie_key,
         inputs=inputs,
     )
-    unresolved: list[Dict[str, Any]] = []
-    document_text: Optional[str] = None
-    document_fields: Dict[str, Any]
-    if source["resolved"]:
-        movie = source["movie"]
-        document_text = build_movie_document(movie)
-        document_fields = analyze_document_fields(movie, document_text)
-    else:
-        document_fields = unresolved_document_fields()
-        unresolved.append(
-            {
-                "qid": qid,
-                "role": role,
-                "tmdb_id": tmdb_id,
-                "title": row.get("title"),
-                "rerank_rank": row.get("rerank_rank"),
-                "reason": source["reason"],
-                "source_attempts": source["source_attempts"],
-            }
-        )
+    document_text = _required_document_text(source, qid=qid, arm=arm, movie_key=movie_key)
+    document_fields = _required_document_fields(
+        source,
+        qid=qid,
+        arm=arm,
+        movie_key=movie_key,
+    )
+    source_stage = _required_source_stage(
+        source,
+        qid=qid,
+        arm=arm,
+        movie_key=movie_key,
+    )
 
     return (
         {
             "role": role,
             "tmdb_id": tmdb_id,
+            "movie_key": movie_key,
             "title": str(row.get("title", "")),
             "year": row.get("year"),
             "rerank_query": rerank_query,
             "document_text": document_text,
-            "document_source": source["source"],
-            "document_source_status": (
-                "resolved" if source["resolved"] else "unresolved"
-            ),
-            "document_source_note": source["reason"],
+            "document_source": str(TEXT_SNAPSHOT_RELATIVE_PATH).replace("\\", "/"),
+            "document_source_status": "resolved",
+            "document_source_note": "resolved_by_movie_key",
             "document_fields": document_fields,
+            "source_stage": source_stage,
+            "id_semantics": source.get("id_semantics"),
+            "resolved_from": source.get("resolved_from"),
             "stage_ranks": {
                 "semantic_rank": row.get("semantic_rank"),
                 "bm25_rank": row.get("bm25_rank"),
@@ -311,52 +303,25 @@ def characterize_candidate(
                 target_score,
             ),
         },
-        unresolved,
+        [],
     )
 
 
-def resolve_movie_text_fields(
+def resolve_snapshot_member(
     *,
     qid: str,
-    tmdb_id: int,
-    expected_title: str,
+    arm: str,
+    movie_key: str,
     inputs: Mapping[str, Any],
 ) -> Dict[str, Any]:
-    source_attempts: list[str] = []
-    row = inputs["candidates_by_qid_tmdb"].get((qid, tmdb_id))
-    if row is not None:
-        source_attempts.append("candidates:qid_tmdb")
-        return _resolved_source("candidates.jsonl", row, source_attempts)
-
-    row = inputs["candidates_by_tmdb"].get(tmdb_id)
-    if row is not None:
-        source_attempts.append("candidates:tmdb")
-        return _resolved_source("candidates.jsonl", row, source_attempts)
-
-    row = inputs["movies_by_tmdb"].get(tmdb_id)
-    source_attempts.append("movies_clean:tmdb")
-    if row is None:
-        return {
-            "resolved": False,
-            "source": None,
-            "movie": None,
-            "reason": "missing_from_candidates_and_movies_clean",
-            "source_attempts": source_attempts,
-        }
-
-    source_title = str(row.get("title", "") or "").strip()
-    if _normalize_title(source_title) != _normalize_title(expected_title):
-        return {
-            "resolved": False,
-            "source": "data/movies_clean.csv",
-            "movie": None,
-            "reason": (
-                "movies_clean_title_mismatch: "
-                f"expected={expected_title!r} actual={source_title!r}"
-            ),
-            "source_attempts": source_attempts,
-        }
-    return _resolved_source("data/movies_clean.csv", row, source_attempts)
+    key = (qid, arm, movie_key)
+    member = inputs["snapshot_by_member_key"].get(key)
+    if member is None:
+        raise RerankFailureError(
+            "text snapshot missing characterized candidate: "
+            f"qid={qid} arm={arm} movie_key={movie_key!r}"
+        )
+    return dict(member)
 
 
 def analyze_document_fields(
@@ -585,7 +550,7 @@ def write_report(path: Path, data: Mapping[str, Any]) -> None:
     lines = [
         "# RERANK-01 q05/q10 Cross-Encoder Characterization",
         "",
-        f"Ticket: RERANK-01",
+        "Ticket: RERANK-01B",
         f"Timestamp: {data['generated_at']}",
         f"Run: `{data['run_id']}`",
         "Scope: eval/report only; no src/* edits; hermetic.",
@@ -594,11 +559,17 @@ def write_report(path: Path, data: Mapping[str, Any]) -> None:
         "",
         (
             "The runner consumed the DECOMP-01 pool decomposition, "
-            "`candidates.jsonl`, `data/movies_clean.csv`, and localization "
-            "for consistency checks. It imported only `_run_io` and the pure "
-            "`build_movie_document` function from `src.retrieval.reranker`; "
-            "it made no model, GPU, LLM, Ollama, network, or reranker scoring call."
+            "the RERANK-01A text snapshot keyed by `(qid, arm, movie_key)`, "
+            "and localization for consistency checks. It consumed snapshot "
+            "`document_text` verbatim, kept reranker scores and ranks from "
+            "DECOMP-01, imported no `src/*` code, and made no model, GPU, LLM, "
+            "Ollama, network, or reranker scoring call."
         ),
+        "",
+        "## Completeness",
+        "",
+        f"- analysis_complete: `{data['analysis_complete']}`",
+        f"- unresolved_text_members: `{len(data['unresolved_text_members'])}`",
         "",
     ]
 
@@ -612,8 +583,8 @@ def write_report(path: Path, data: Mapping[str, Any]) -> None:
                     "",
                     f"### {qid} {arm}",
                     "",
-                    "| role | tmdb_id | title | rerank_rank | rerank_score | score_gap_vs_target | doc_len | overview_chars | fields_present |",
-                    "|---|---:|---|---:|---:|---:|---:|---:|---|",
+                    "| role | tmdb_id | title | source_stage | rerank_rank | rerank_score | score_gap_vs_target | doc_len | overview_chars | fields_present |",
+                    "|---|---:|---|---|---:|---:|---:|---:|---:|---|",
                 ]
             )
             records = [arm_data["target"]] + arm_data["false_positives_above_target"]
@@ -625,6 +596,7 @@ def write_report(path: Path, data: Mapping[str, Any]) -> None:
                     f"{record['role']} | "
                     f"{record['tmdb_id']} | "
                     f"{_md(record['title'])} | "
+                    f"{_md(record['source_stage'])} | "
                     f"{record['rerank_rank']} | "
                     f"{_fmt_float(record['rerank_score'])} | "
                     f"{_fmt_float(record['rerank_score_gap_vs_target'])} | "
@@ -733,51 +705,140 @@ def _read_json_object(path: Path) -> Dict[str, Any]:
     return data
 
 
-def _read_jsonl_objects(path: Path) -> list[Dict[str, Any]]:
-    rows: list[Dict[str, Any]] = []
-    with path.open("r", encoding="utf-8") as handle:
-        for line_number, line in enumerate(handle, start=1):
-            text = line.strip()
-            if not text:
-                continue
-            data = json.loads(text)
-            if not isinstance(data, dict):
-                raise RerankFailureError(f"{path}:{line_number}: row must be object")
-            rows.append(data)
-    return rows
+def _assert_text_snapshot_complete(snapshot: Mapping[str, Any]) -> None:
+    schema_version = snapshot.get("schema_version")
+    if schema_version != TEXT_SNAPSHOT_SCHEMA_VERSION:
+        raise RerankFailureError(
+            "unexpected text snapshot schema_version: "
+            f"{schema_version!r}"
+        )
+    if snapshot.get("analysis_complete") is not True:
+        unresolved = snapshot.get("unresolved")
+        unresolved_count = len(unresolved) if isinstance(unresolved, list) else "unknown"
+        raise RerankFailureError(
+            "text snapshot is incomplete: "
+            f"analysis_complete={snapshot.get('analysis_complete')!r} "
+            f"unresolved={unresolved_count}"
+        )
 
 
-def _read_movies_csv(path: Path) -> Dict[int, Dict[str, Any]]:
-    rows: Dict[int, Dict[str, Any]] = {}
-    with path.open("r", encoding="utf-8-sig", newline="") as handle:
-        reader = csv.DictReader(handle)
-        for line_number, row in enumerate(reader, start=2):
-            try:
-                tmdb_id = int(float(str(row.get("id", ""))))
-            except (TypeError, ValueError) as exc:
+def _index_text_snapshot(
+    snapshot: Mapping[str, Any],
+) -> Dict[tuple[str, str, str], Dict[str, Any]]:
+    rows = snapshot.get("per_qid")
+    if not isinstance(rows, list):
+        raise RerankFailureError("text snapshot missing per_qid list")
+
+    result: Dict[tuple[str, str, str], Dict[str, Any]] = {}
+    seen_qids: set[str] = set()
+    for qid_row in rows:
+        if not isinstance(qid_row, dict):
+            raise RerankFailureError("text snapshot per_qid row must be object")
+        qid = str(qid_row.get("qid"))
+        seen_qids.add(qid)
+        arms = qid_row.get("arms")
+        if not isinstance(arms, dict):
+            raise RerankFailureError(f"text snapshot {qid} missing arms object")
+        for arm in CONTROL_ARMS:
+            arm_data = arms.get(arm)
+            if not isinstance(arm_data, dict):
                 raise RerankFailureError(
-                    f"{path}:{line_number}: id must be a TMDB integer"
-                ) from exc
-            rows[tmdb_id] = dict(row)
-    return rows
+                    f"text snapshot {qid} {arm} missing arm object"
+                )
+            members = arm_data.get("members")
+            if not isinstance(members, list):
+                raise RerankFailureError(
+                    f"text snapshot {qid} {arm} missing members list"
+                )
+            for member in members:
+                if not isinstance(member, dict):
+                    raise RerankFailureError(
+                        f"text snapshot {qid} {arm} member must be object"
+                    )
+                member_qid = str(member.get("qid", qid))
+                member_arm = str(member.get("arm", arm))
+                if member_qid != qid or member_arm != arm:
+                    raise RerankFailureError(
+                        "text snapshot member qid/arm mismatch: "
+                        f"container={qid}/{arm} member={member_qid}/{member_arm}"
+                    )
+                movie_key = str(member.get("movie_key", "") or "").strip()
+                if not movie_key:
+                    raise RerankFailureError(
+                        f"text snapshot {qid} {arm} member missing movie_key"
+                    )
+                key = (qid, arm, movie_key)
+                if key in result:
+                    raise RerankFailureError(
+                        "text snapshot duplicate member key: "
+                        f"qid={qid} arm={arm} movie_key={movie_key!r}"
+                    )
+                result[key] = dict(member)
 
-
-def _index_candidates_by_qid_tmdb(
-    rows: Iterable[Mapping[str, Any]],
-) -> Dict[tuple[str, int], Dict[str, Any]]:
-    result: Dict[tuple[str, int], Dict[str, Any]] = {}
-    for row in rows:
-        result[(str(row.get("qid")), int(row["tmdb_id"]))] = dict(row)
+    missing = [qid for qid in QIDS if qid not in seen_qids]
+    if missing:
+        raise RerankFailureError(
+            "text snapshot missing qids: " + ", ".join(missing)
+        )
     return result
 
 
-def _index_candidates_by_tmdb(
-    rows: Iterable[Mapping[str, Any]],
-) -> Dict[int, Dict[str, Any]]:
-    result: Dict[int, Dict[str, Any]] = {}
-    for row in rows:
-        result.setdefault(int(row["tmdb_id"]), dict(row))
-    return result
+def _required_movie_key(row: Mapping[str, Any]) -> str:
+    movie_key = str(row.get("movie_key", "") or "").strip()
+    if not movie_key:
+        raise RerankFailureError(
+            "DECOMP row missing movie_key for characterized candidate: "
+            f"tmdb_id={row.get('tmdb_id')} title={row.get('title')!r}"
+        )
+    return movie_key
+
+
+def _required_document_text(
+    member: Mapping[str, Any],
+    *,
+    qid: str,
+    arm: str,
+    movie_key: str,
+) -> str:
+    document_text = member.get("document_text")
+    if not isinstance(document_text, str) or not document_text:
+        raise RerankFailureError(
+            "text snapshot member missing document_text: "
+            f"qid={qid} arm={arm} movie_key={movie_key!r}"
+        )
+    return document_text
+
+
+def _required_document_fields(
+    member: Mapping[str, Any],
+    *,
+    qid: str,
+    arm: str,
+    movie_key: str,
+) -> Dict[str, Any]:
+    document_fields = member.get("document_fields")
+    if not isinstance(document_fields, dict):
+        raise RerankFailureError(
+            "text snapshot member missing document_fields: "
+            f"qid={qid} arm={arm} movie_key={movie_key!r}"
+        )
+    return dict(document_fields)
+
+
+def _required_source_stage(
+    member: Mapping[str, Any],
+    *,
+    qid: str,
+    arm: str,
+    movie_key: str,
+) -> str:
+    source_stage = str(member.get("source_stage", "") or "").strip()
+    if not source_stage:
+        raise RerankFailureError(
+            "text snapshot member missing source_stage: "
+            f"qid={qid} arm={arm} movie_key={movie_key!r}"
+        )
+    return source_stage
 
 
 def _decomp_by_qid(decomp: Mapping[str, Any]) -> Dict[str, Mapping[str, Any]]:
@@ -820,41 +881,8 @@ def _target_row(
     return matches[0]
 
 
-def _resolved_source(
-    source: str,
-    row: Mapping[str, Any],
-    source_attempts: Sequence[str],
-) -> Dict[str, Any]:
-    return {
-        "resolved": True,
-        "source": source,
-        "movie": _movie_text_fields(row),
-        "reason": "resolved",
-        "source_attempts": list(source_attempts),
-    }
-
-
-def _movie_text_fields(row: Mapping[str, Any]) -> Dict[str, Any]:
-    tmdb_id = row.get("tmdb_id", row.get("id"))
-    return {
-        "id": tmdb_id,
-        "tmdb_id": tmdb_id,
-        "title": row.get("title", ""),
-        "year": row.get("year", ""),
-        "release_date": row.get("release_date", ""),
-        "genres": row.get("genres", ""),
-        "tagline": row.get("tagline", ""),
-        "overview": row.get("overview", ""),
-        "keywords": row.get("keywords", ""),
-    }
-
-
 def _clean_text(value: Any) -> str:
     return str(value or "").strip()
-
-
-def _normalize_title(value: str) -> str:
-    return " ".join(value.lower().replace("[", "").replace("]", "").split())
 
 
 def _coerce_int(value: Any) -> Optional[int]:
