@@ -340,3 +340,55 @@ Every ticket/checkpoint appended below must include:
   Track A changes labels and recomputes authoritative metrics at A3. A1 +
   recovery is self-reviewed; the recovery restored prior human grades and
   created no new label judgments.
+
+### 2026-05-22T14:05:00Z - RG-03-A3
+
+- **Branch:** `automation/cinematch-accuracy-audit-full`
+- **Phase/ticket id:** `RG-03` phase A3 (check + merge + closeout docs)
+- **Status:** COMPLETE / SELF-REVIEWED — RG-03 closed (A1 + A2 + A3)
+- **Files changed:**
+  - `docs/superpowers/reports/rg-03-q07-regrade.md` (new)
+  - `docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md` (this entry)
+- **Artifacts written (gitignored under `eval/runs/`, not committed):**
+  - `eval/runs/2026-05-19-1846-nogit/analysis/regrade/regrade_check.json`
+    (refreshed — `complete: false -> true`)
+  - `eval/runs/2026-05-19-1846-nogit/gold_labels.jsonl` (re-merged — 55 gold)
+  - `eval/runs/2026-05-19-1846-nogit/metrics.json` (recomputed —
+    non-provisional)
+  - `eval/runs/2026-05-19-1846-nogit/metrics.json.pre_a3.20260522T140111Z.bak`
+  - `eval/runs/2026-05-19-1846-nogit/gold_labels.jsonl.pre_a3.20260522T140111Z.bak`
+- **Commands run:**
+  - `python -m eval.scripts.check_regrade_sheet --run 2026-05-19-1846-nogit`
+  - `python -m eval.scripts.merge_labels --run 2026-05-19-1846-nogit`
+  - `python -m compileall eval/scripts`
+  - `python -m unittest discover -s eval/tests`
+  - `git diff --name-only -- src/`
+  - `git status --short`
+- **Validation results:**
+  - `check_regrade_sheet`: `complete=true`, `rows_total 55`,
+    `rows_filled 55`, `pending_by_batch {1:0, 2:0, 3:0}`; q07 `by_qid`
+    `filled 10, changed 6`.
+  - `merge_labels` (unmodified): `merged 55 gold over 220 silver;
+    metrics.json provisional=false`. `label_provenance` gold `45 -> 55`,
+    silver `175 -> 165`; `regraded_queries` adds `q07`.
+  - `python -m compileall eval/scripts` passed.
+  - `python -m unittest discover -s eval/tests` passed: 190 tests OK.
+  - `git diff --name-only -- src/` empty; no `src/*` and no
+    `merge_labels.py` change.
+  - Metric deltas (q07-only, all >= 0; no regressions): advanced
+    `strict_hit@5/@10` +0.05; hybrid `strict_hit@10` +0.05; MRR@5 up in
+    all three modes (basic +0.025, advanced +0.025, hybrid +0.040).
+- **Commit hash:** Not committed — held per explicit "do not commit"
+  instruction. The two docs above are staged-ready; `eval/runs/` artifacts
+  are gitignored.
+- **Failures/blockers:** None. `regrade_sheet.jsonl` was not modified at A3
+  (both A3 tools read it read-only); it carries the A2 human grades.
+- **Assumptions:** A2 (human regrade of the 10 q07 batch-3 rows) is
+  complete and verified 7/7 per the A2 handoff; `regrade_sheet.jsonl` with
+  55/55 filled `gold_grade` is authoritative input to A3.
+- **Next action:** RG-03 is closed. External review required before merge
+  outside this branch (label change + recomputed authoritative metrics).
+  DECOMP-01 (Track B) not started; Phase 5 remains BLOCKED.
+- **External review:** Required before merge outside this branch — A3
+  changes labels and recomputes authoritative metrics (private-data
+  decision under the automation rules).
