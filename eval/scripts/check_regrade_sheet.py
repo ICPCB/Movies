@@ -14,7 +14,7 @@ from eval.scripts import _run_io, build_regrade_sheet
 
 GOLD_KEYS = {"gold_grade", "gold_notes"}
 GRADE_VALUES = {0, 1, 2, 3}
-PREFERRED_QID_ORDER = ("q12", "q13", "q03", "q08")
+PREFERRED_QID_ORDER = ("q12", "q13", "q03", "q08", "q07")
 
 
 class CheckError(ValueError):
@@ -88,6 +88,18 @@ def _expected_rows(run_dir: Path, manifest: dict[str, Any]) -> list[dict[str, An
             silver_reasons=silver_reasons,
         )
     )
+
+    rows_by_batch = manifest.get("rows_by_batch", {})
+    if "3" in rows_by_batch:
+        rows.extend(
+            build_regrade_sheet._build_batch3(
+                per_query_rows,
+                queries=queries,
+                candidates=candidates,
+                silver_reasons=silver_reasons,
+            )
+        )
+
     rows.sort(key=lambda row: (row["batch"], row["qid"], row["tmdb_id"]))
     return rows
 

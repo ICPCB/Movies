@@ -31,8 +31,15 @@ REVIEW_ROW_KEYS = [
 ROW_KEYS = REVIEW_ROW_KEYS + ["batch", "batch_purpose"]
 REVIEW_QIDS = ("q12", "q13")
 RETRIEVAL_MISS_QIDS = ("q03", "q08")
+Q07_FOLLOWUP_QIDS = ("q07",)
 OVERWRITE_MESSAGE = (
     "regrade_sheet.jsonl already exists — delete it manually to rebuild"
+)
+SHEET_NOT_FOUND_MESSAGE = (
+    "regrade_sheet.jsonl not found — run the base build before adding q07 batch 3"
+)
+Q07_BATCH_PRESENT_MESSAGE = (
+    "regrade_sheet.jsonl already includes q07 batch 3 — nothing to add"
 )
 
 
@@ -107,13 +114,14 @@ def _build_batch1(review_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 def _collect_top5_union(
     per_query_rows: list[dict[str, Any]],
+    qids: tuple[str, ...] = RETRIEVAL_MISS_QIDS,
 ) -> dict[tuple[str, int], dict[str, Any]]:
     collected: dict[tuple[str, int], dict[str, Any]] = {}
     modes_by_pair: dict[tuple[str, int], set[str]] = defaultdict(set)
 
     for mode_row in per_query_rows:
         qid = mode_row.get("qid")
-        if qid not in RETRIEVAL_MISS_QIDS:
+        if qid not in qids:
             continue
         mode = mode_row.get("mode")
         if not isinstance(mode, str):
@@ -144,15 +152,19 @@ def _collect_top5_union(
     return collected
 
 
-def _build_batch2(
+def _build_union_batch(
     per_query_rows: list[dict[str, Any]],
     *,
+    qids: tuple[str, ...],
     queries: dict[str, str],
     candidates: dict[tuple[str, int], dict[str, Any]],
     silver_reasons: dict[tuple[str, int], Any],
+    batch: int,
+    batch_purpose: str,
+    flag_reason: str,
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
-    for key, top_fields in _collect_top5_union(per_query_rows).items():
+    for key, top_fields in _collect_top5_union(per_query_rows, qids).items():
         qid, tmdb_id = key
         if qid not in queries:
             raise ValueError(f"missing query text for {qid}")
@@ -173,20 +185,58 @@ def _build_batch2(
             "silver_confidence": top_fields["silver_confidence"],
             "silver_reason": silver_reasons.get(key),
             "in_top_5_of": in_top_5_of,
-            "flag_reasons": ["regrade_q03_q08"]
+            "flag_reasons": [flag_reason]
             + [f"top_5_{mode}" for mode in in_top_5_of],
             "gold_grade": None,
             "gold_notes": None,
-            "batch": 2,
-            "batch_purpose": "retrieval_miss_audit",
+            "batch": batch,
+            "batch_purpose": batch_purpose,
         }
         rows.append(row)
     return rows
 
 
+def _build_batch2(
+    per_query_rows: list[dict[str, Any]],
+    *,
+    queries: dict[str, str],
+    candidates: dict[tuple[str, int], dict[str, Any]],
+    silver_reasons: dict[tuple[str, int], Any],
+) -> list[dict[str, Any]]:
+    return _build_union_batch(
+        per_query_rows,
+        qids=RETRIEVAL_MISS_QIDS,
+        queries=queries,
+        candidates=candidates,
+        silver_reasons=silver_reasons,
+        batch=2,
+        batch_purpose="retrieval_miss_audit",
+        flag_reason="regrade_q03_q08",
+    )
+
+
+def _build_batch3(
+    per_query_rows: list[dict[str, Any]],
+    *,
+    queries: dict[str, str],
+    candidates: dict[tuple[str, int], dict[str, Any]],
+    silver_reasons: dict[tuple[str, int], Any],
+) -> list[dict[str, Any]]:
+    return _build_union_batch(
+        per_query_rows,
+        qids=Q07_FOLLOWUP_QIDS,
+        queries=queries,
+        candidates=candidates,
+        silver_reasons=silver_reasons,
+        batch=3,
+        batch_purpose="ql_01_label_followup",
+        flag_reason="regrade_q07",
+    )
+
+
 def _build_manifest(run_id: str, rows: list[dict[str, Any]]) -> dict[str, Any]:
     rows_by_batch = Counter(str(row["batch"]) for row in rows)
-    rows_by_qid = Counter(row["qid"] for row in rows)
+    rows_by_qid = Counter(str(row["qid"]) for row in rows)
     snapshot: dict[str, Any] = {}
 
     for row in rows:
@@ -202,16 +252,8 @@ def _build_manifest(run_id: str, rows: list[dict[str, Any]]) -> dict[str, Any]:
             "q03_q08_source": "analysis/error_report/per_query_mode.jsonl",
         },
         "rows_total": len(rows),
-        "rows_by_batch": {
-            "1": rows_by_batch.get("1", 0),
-            "2": rows_by_batch.get("2", 0),
-        },
-        "rows_by_qid": {
-            "q12": rows_by_qid.get("q12", 0),
-            "q13": rows_by_qid.get("q13", 0),
-            "q03": rows_by_qid.get("q03", 0),
-            "q08": rows_by_qid.get("q08", 0),
-        },
+        "rows_by_batch": dict(sorted(rows_by_batch.items())),
+        "rows_by_qid": dict(sorted(rows_by_qid.items())),
         "silver_grade_snapshot": snapshot,
     }
 
@@ -257,6 +299,51 @@ def build_regrade_sheet(run_id: str) -> tuple[Path, Path]:
     return sheet_path, manifest_path
 
 
+def add_q07_batch(run_id: str) -> tuple[Path, Path]:
+    run_dir = _run_io.run_dir(run_id)
+    regrade_dir = run_dir / "analysis" / "regrade"
+    sheet_path = regrade_dir / "regrade_sheet.jsonl"
+    manifest_path = regrade_dir / "regrade_manifest.json"
+
+    if not sheet_path.exists():
+        raise FileNotFoundError(SHEET_NOT_FOUND_MESSAGE)
+
+    existing_rows = _load_jsonl(sheet_path)
+    if any(row.get("batch") == 3 for row in existing_rows):
+        raise FileExistsError(Q07_BATCH_PRESENT_MESSAGE)
+
+    with open(sheet_path, "rb") as handle:
+        handle.seek(-1, 2)
+        last_byte = handle.read(1)
+    needs_newline = last_byte != b"\n"
+
+    per_query_rows = _load_jsonl(
+        run_dir / "analysis" / "error_report" / "per_query_mode.jsonl"
+    )
+    queries = _load_queries(_run_io.EVAL_DIR / "queries" / "v1.jsonl")
+    candidates = _load_candidates(run_dir / "candidates.jsonl")
+    silver_reasons = _load_silver_reasons(run_dir / "silver_labels.jsonl")
+
+    batch3_rows = _build_batch3(
+        per_query_rows,
+        queries=queries,
+        candidates=candidates,
+        silver_reasons=silver_reasons,
+    )
+    batch3_rows.sort(key=lambda row: (row["qid"], row["tmdb_id"]))
+
+    with open(sheet_path, "a", encoding="utf-8", newline="\n") as handle:
+        if needs_newline:
+            handle.write("\n")
+        for row in batch3_rows:
+            handle.write(json.dumps(row, ensure_ascii=False) + "\n")
+
+    all_rows = existing_rows + batch3_rows
+    manifest = _build_manifest(run_id, all_rows)
+    _run_io._atomic_write_json(manifest_path, manifest)
+    return sheet_path, manifest_path
+
+
 def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Build a frozen human re-grade sheet from existing artifacts."
@@ -266,6 +353,11 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
         default=None,
         help="Eval run id. Defaults to eval.scripts._run_io.latest_run().",
     )
+    parser.add_argument(
+        "--add-q07-batch",
+        action="store_true",
+        help="Add q07 batch 3 to existing regrade sheet (RG-03 A1).",
+    )
     return parser.parse_args(argv)
 
 
@@ -273,8 +365,11 @@ def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv)
     run_id = args.run or _run_io.latest_run()
     try:
-        sheet_path, manifest_path = build_regrade_sheet(run_id)
-    except FileExistsError as exc:
+        if args.add_q07_batch:
+            sheet_path, manifest_path = add_q07_batch(run_id)
+        else:
+            sheet_path, manifest_path = build_regrade_sheet(run_id)
+    except (FileExistsError, FileNotFoundError) as exc:
         print(str(exc), file=sys.stderr)
         return 1
 

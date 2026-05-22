@@ -282,3 +282,61 @@ Every ticket/checkpoint appended below must include:
 - **External review:** Optional non-blocking for QL-01 itself; required for
   any follow-up ticket that changes a label or query (Track A) before merge
   outside this branch.
+
+### 2026-05-22T10:36:00Z - RG-03-A1
+
+- **Branch:** `automation/cinematch-accuracy-audit-full`
+- **Phase/ticket id:** `RG-03` phase A1 (+ one-time sheet recovery)
+- **Status:** COMPLETE / SELF-REVIEWED
+- **Files changed:**
+  - `eval/scripts/build_regrade_sheet.py`
+  - `eval/scripts/check_regrade_sheet.py`
+  - `eval/scripts/rehydrate_regrade_sheet.py`
+  - `eval/tests/test_build_regrade_sheet.py`
+  - `docs/superpowers/reports/rg-03-a1-recovery.md`
+  - `docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md`
+- **Artifacts written (gitignored under `eval/runs/`, not committed):**
+  - `eval/runs/2026-05-19-1846-nogit/analysis/regrade/regrade_sheet.jsonl`
+    (rehydrated — 45 batch-1/2 gold grades restored)
+  - `eval/runs/2026-05-19-1846-nogit/analysis/regrade/regrade_sheet.jsonl.pre_rehydrate.20260522T103233Z.bak`
+  - `eval/runs/2026-05-19-1846-nogit/analysis/regrade/regrade_sheet.rehydrated_from_gold_labels.jsonl`
+  - `eval/runs/2026-05-19-1846-nogit/analysis/regrade/regrade_check.json`
+- **Commands run:**
+  - `python -m compileall eval/scripts`
+  - `python -m unittest discover -s eval/tests`
+  - `python -m eval.scripts.rehydrate_regrade_sheet`
+  - `python -m eval.scripts.check_regrade_sheet --run 2026-05-19-1846-nogit`
+  - `git diff --name-only -- src/`
+  - `git add` / `git commit`
+- **Validation results:**
+  - `python -m compileall eval/scripts` passed.
+  - `python -m unittest discover -s eval/tests` passed: 190 tests OK
+    (183 prior + 7 `AddQ07BatchTests`).
+  - Recovery `rehydrate_regrade_sheet.py` self-verified 8/8: 55 rows,
+    45 gold restored, q07 batch-3 10 rows all `null`, no duplicate
+    `(qid, tmdb_id)`, q07 batch-3 rows byte-unchanged, key sets intact,
+    no join/integrity problems. Backup SHA256 `de5c2fd5…`; new live sheet
+    SHA256 `89911e74…`.
+  - `check_regrade_sheet`: `rows_total 55`, `rows_filled 45`,
+    `pending_by_batch {1:0, 2:0, 3:10}`, `complete false` — batch-3
+    reconstruction structurally accepted.
+  - `git diff --name-only -- src/` empty; no `src/*`, no `merge_labels.py`,
+    no `eval/queries/*`, no `*_labels.jsonl` modified.
+- **Commit hash:** recorded by the checkpoint commit that carries this entry
+  (see `git log`).
+- **Failures/blockers:** A1 implementation found the run's
+  `regrade_sheet.jsonl` had been rebuilt empty (0/55 `gold_grade`), dropping
+  the 45 batch-1/2 human grades from the sheet. The grades survived in
+  `gold_labels.jsonl`; the one-time `rehydrate_regrade_sheet.py` recovery
+  restored them by `(qid, tmdb_id)` join. No data lost; no metric change.
+- **Assumptions:** `gold_labels.jsonl` (45 `label_source: gold` rows, each
+  with `gold_grade` and `gold_notes`) is the authoritative source for the
+  batch-1/2 grades; `regrade_manifest.json` needed no change (row count,
+  silver snapshot, batch/qid counts unchanged by the recovery).
+- **Next action:** A2 — a human fills `gold_grade` / `gold_notes` for the
+  10 q07 batch-3 rows only. Then A3 (`check_regrade_sheet` → `merge_labels`),
+  separately gated. Phase 5 stays BLOCKED; DECOMP-01 not started.
+- **External review:** Required before merge outside this branch — RG-03
+  Track A changes labels and recomputes authoritative metrics at A3. A1 +
+  recovery is self-reviewed; the recovery restored prior human grades and
+  created no new label judgments.
