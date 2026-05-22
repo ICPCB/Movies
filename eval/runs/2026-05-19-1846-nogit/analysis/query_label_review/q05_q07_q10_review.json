@@ -1,0 +1,673 @@
+{
+  "schema_version": "ql-01-query-label-review.v1",
+  "run_id": "2026-05-19-1846-nogit",
+  "generated_at": "2026-05-22T04:11:46Z",
+  "source_artifacts": {
+    "queries": "queries/v1.jsonl",
+    "gold_labels": "gold_labels.jsonl",
+    "silver_labels": "silver_labels.jsonl",
+    "candidates": "candidates.jsonl",
+    "localization": "analysis/hy_fix_localize/localization.json",
+    "error_report": "analysis/error_report/per_query_mode.gold.jsonl",
+    "stability_trace": "analysis/hybrid_expansion_stability/stability_trace.jsonl"
+  },
+  "label_provenance_note": "q05/q07/q10 eval grades are silver/LLM-pregrade labels (label_source=silver, gold_grade=null); the merged gold_labels.jsonl carries human-gold rows only for q03/q08/q12/q13. A silver_label_issue finding is a recommendation to run an RG-style human regrade, not a dispute of an existing human gold grade.",
+  "queries": [
+    {
+      "qid": "q05",
+      "query_text": "a body horror story where ambition mutates into something intimate and disgusting",
+      "tags": {
+        "era": "1980-2000",
+        "genre": [
+          "horror",
+          "drama"
+        ],
+        "vocab_distance": "medium",
+        "length": "medium",
+        "specificity": "medium",
+        "ambiguity": "medium"
+      },
+      "target": {
+        "tmdb_id": 144204,
+        "title": "Thanatomorphose",
+        "grade_used_for_eval": 3,
+        "label_source": "silver",
+        "gold_grade": null,
+        "silver_grade": 3,
+        "silver_pregrade": {
+          "model": "llama3.2",
+          "confidence": "high",
+          "reason": "The metadata clearly describes a body horror story where ambition mutates into something intimate and disgusting, with the tagline 'Rotting from the inside out' explicitly conveying this theme.",
+          "ts": "2026-05-19T19:32:18Z",
+          "silver_grade": 3
+        }
+      },
+      "evidence": {
+        "consolidated_fix_category": "mixed",
+        "arms_agree": false,
+        "deterministic_arms": {
+          "pinned": {
+            "loss_stage": "retrieved_dropped_before_rerank_pool",
+            "fix_category": "recall_depth_fusion_pool",
+            "semantic_rank": 32,
+            "rrf_rank": 66,
+            "target_in_rerank_pool": false,
+            "rerank_rank": null,
+            "final_rank": null,
+            "in_top5": false
+          },
+          "no_llm": {
+            "loss_stage": "rerank_recovered_final_demoted",
+            "fix_category": "final_blend",
+            "semantic_rank": 0,
+            "rrf_rank": 1,
+            "target_in_rerank_pool": true,
+            "rerank_rank": 4,
+            "final_rank": 9,
+            "in_top5": false
+          }
+        },
+        "mode_comparison": {
+          "basic": {
+            "strict_hit_at_k": 1,
+            "first_relevant_rank": 1,
+            "first_perfect_rank": 1,
+            "top5": [
+              {
+                "rank": 1,
+                "tmdb_id": 144204,
+                "title": "Thanatomorphose",
+                "grade": 3
+              },
+              {
+                "rank": 2,
+                "tmdb_id": 40219,
+                "title": "The Beast Within",
+                "grade": 2
+              },
+              {
+                "rank": 3,
+                "tmdb_id": 15991,
+                "title": "Bad Biology",
+                "grade": 2
+              },
+              {
+                "rank": 4,
+                "tmdb_id": 17166,
+                "title": "Insanitarium",
+                "grade": 2
+              },
+              {
+                "rank": 5,
+                "tmdb_id": 461992,
+                "title": "Hostile",
+                "grade": 1
+              }
+            ]
+          },
+          "advanced": {
+            "strict_hit_at_k": 0,
+            "first_relevant_rank": 1,
+            "first_perfect_rank": null,
+            "top5": [
+              {
+                "rank": 1,
+                "tmdb_id": 40219,
+                "title": "The Beast Within",
+                "grade": 2
+              },
+              {
+                "rank": 2,
+                "tmdb_id": 75761,
+                "title": "John Dies at the End",
+                "grade": 1
+              },
+              {
+                "rank": 3,
+                "tmdb_id": 30870,
+                "title": "A Cat in the Brain",
+                "grade": 1
+              },
+              {
+                "rank": 4,
+                "tmdb_id": 22455,
+                "title": "Body Melt",
+                "grade": 2
+              },
+              {
+                "rank": 5,
+                "tmdb_id": 43549,
+                "title": "The Experiment",
+                "grade": 1
+              }
+            ]
+          },
+          "hybrid": {
+            "strict_hit_at_k": 0,
+            "first_relevant_rank": 1,
+            "first_perfect_rank": null,
+            "top5": [
+              {
+                "rank": 1,
+                "tmdb_id": 40219,
+                "title": "The Beast Within",
+                "grade": 2
+              },
+              {
+                "rank": 2,
+                "tmdb_id": 75761,
+                "title": "John Dies at the End",
+                "grade": 1
+              },
+              {
+                "rank": 3,
+                "tmdb_id": 979,
+                "title": "Irreversible",
+                "grade": 1
+              },
+              {
+                "rank": 4,
+                "tmdb_id": 86331,
+                "title": "Desire",
+                "grade": 1
+              },
+              {
+                "rank": 5,
+                "tmdb_id": 43950,
+                "title": "Amer",
+                "grade": 2
+              }
+            ]
+          }
+        },
+        "target_retrieved_by_mode": {
+          "basic": true,
+          "advanced": false,
+          "hybrid": false
+        },
+        "hybrid_top5": [
+          {
+            "rank": 1,
+            "tmdb_id": 40219,
+            "title": "The Beast Within",
+            "grade": 2,
+            "label_source": "silver"
+          },
+          {
+            "rank": 2,
+            "tmdb_id": 75761,
+            "title": "John Dies at the End",
+            "grade": 1,
+            "label_source": "silver"
+          },
+          {
+            "rank": 3,
+            "tmdb_id": 979,
+            "title": "Irreversible",
+            "grade": 1,
+            "label_source": "silver"
+          },
+          {
+            "rank": 4,
+            "tmdb_id": 86331,
+            "title": "Desire",
+            "grade": 1,
+            "label_source": "silver"
+          },
+          {
+            "rank": 5,
+            "tmdb_id": 43950,
+            "title": "Amer",
+            "grade": 2,
+            "label_source": "silver"
+          }
+        ],
+        "hybrid_expansion_text": "intimate and disgusting transformation of ambition, body horror, psychological mutation, visceral invasion, grotesque intimacy",
+        "hybrid_expansion_source": "analysis/hybrid_expansion_stability/stability_trace.jsonl"
+      },
+      "rule_based_lean": "needs_analyst_review",
+      "rule_trace": [
+        "R2 needs_analyst_review: control arms are not both rerank/blend demotions (pinned=retrieved_dropped_before_rerank_pool, no_llm=rerank_recovered_final_demoted); wording vs label vs expansion judgment required"
+      ]
+    },
+    {
+      "qid": "q07",
+      "query_text": "a mockumentary about vampires sharing chores, rent, and eternal grudges",
+      "tags": {
+        "era": "2000-2015",
+        "genre": [
+          "comedy",
+          "horror"
+        ],
+        "vocab_distance": "medium",
+        "length": "medium",
+        "specificity": "medium",
+        "ambiguity": "medium"
+      },
+      "target": {
+        "tmdb_id": 63700,
+        "title": "My Babysitter's a Vampire",
+        "grade_used_for_eval": 3,
+        "label_source": "silver",
+        "gold_grade": null,
+        "silver_grade": 3,
+        "silver_pregrade": {
+          "model": "llama3.2",
+          "confidence": "high",
+          "reason": "The metadata clearly matches the query, with genres including 'Fantasy' and 'Horror', which are common in mockumentary-style vampire films, as well as a tagline that references the supernatural nature of the main character.",
+          "ts": "2026-05-19T19:32:46Z",
+          "silver_grade": 3
+        }
+      },
+      "evidence": {
+        "consolidated_fix_category": "reranker_scoring",
+        "arms_agree": true,
+        "deterministic_arms": {
+          "pinned": {
+            "loss_stage": "rerank_demoted",
+            "fix_category": "reranker_scoring",
+            "semantic_rank": 3,
+            "rrf_rank": 11,
+            "target_in_rerank_pool": true,
+            "rerank_rank": 20,
+            "final_rank": 25,
+            "in_top5": false
+          },
+          "no_llm": {
+            "loss_stage": "rerank_demoted",
+            "fix_category": "reranker_scoring",
+            "semantic_rank": 4,
+            "rrf_rank": 13,
+            "target_in_rerank_pool": true,
+            "rerank_rank": 17,
+            "final_rank": 29,
+            "in_top5": false
+          }
+        },
+        "mode_comparison": {
+          "basic": {
+            "strict_hit_at_k": 1,
+            "first_relevant_rank": 2,
+            "first_perfect_rank": 5,
+            "top5": [
+              {
+                "rank": 1,
+                "tmdb_id": 411354,
+                "title": "What We Do in the Shadows: Interviews with Some Vampires",
+                "grade": 1
+              },
+              {
+                "rank": 2,
+                "tmdb_id": 317981,
+                "title": "Bloodsucking Bastards",
+                "grade": 2
+              },
+              {
+                "rank": 3,
+                "tmdb_id": 246741,
+                "title": "What We Do in the Shadows",
+                "grade": 2
+              },
+              {
+                "rank": 4,
+                "tmdb_id": 34223,
+                "title": "Vamp",
+                "grade": 1
+              },
+              {
+                "rank": 5,
+                "tmdb_id": 63700,
+                "title": "My Babysitter's a Vampire",
+                "grade": 3
+              }
+            ]
+          },
+          "advanced": {
+            "strict_hit_at_k": 0,
+            "first_relevant_rank": 2,
+            "first_perfect_rank": null,
+            "top5": [
+              {
+                "rank": 1,
+                "tmdb_id": 411354,
+                "title": "What We Do in the Shadows: Interviews with Some Vampires",
+                "grade": 1
+              },
+              {
+                "rank": 2,
+                "tmdb_id": 246741,
+                "title": "What We Do in the Shadows",
+                "grade": 2
+              },
+              {
+                "rank": 3,
+                "tmdb_id": 30885,
+                "title": "Vampyres",
+                "grade": 1
+              },
+              {
+                "rank": 4,
+                "tmdb_id": 120092,
+                "title": "True Bloodthirst",
+                "grade": 1
+              },
+              {
+                "rank": 5,
+                "tmdb_id": 9945,
+                "title": "Vampires",
+                "grade": 1
+              }
+            ]
+          },
+          "hybrid": {
+            "strict_hit_at_k": 0,
+            "first_relevant_rank": 5,
+            "first_perfect_rank": null,
+            "top5": [
+              {
+                "rank": 1,
+                "tmdb_id": 411354,
+                "title": "What We Do in the Shadows: Interviews with Some Vampires",
+                "grade": 1
+              },
+              {
+                "rank": 2,
+                "tmdb_id": 30885,
+                "title": "Vampyres",
+                "grade": 1
+              },
+              {
+                "rank": 3,
+                "tmdb_id": 164052,
+                "title": "The Strange Thing About the Johnsons",
+                "grade": 1
+              },
+              {
+                "rank": 4,
+                "tmdb_id": 120092,
+                "title": "True Bloodthirst",
+                "grade": 1
+              },
+              {
+                "rank": 5,
+                "tmdb_id": 73935,
+                "title": "Vamps",
+                "grade": 2
+              }
+            ]
+          }
+        },
+        "target_retrieved_by_mode": {
+          "basic": true,
+          "advanced": false,
+          "hybrid": false
+        },
+        "hybrid_top5": [
+          {
+            "rank": 1,
+            "tmdb_id": 411354,
+            "title": "What We Do in the Shadows: Interviews with Some Vampires",
+            "grade": 1,
+            "label_source": "silver"
+          },
+          {
+            "rank": 2,
+            "tmdb_id": 30885,
+            "title": "Vampyres",
+            "grade": 1,
+            "label_source": "silver"
+          },
+          {
+            "rank": 3,
+            "tmdb_id": 164052,
+            "title": "The Strange Thing About the Johnsons",
+            "grade": 1,
+            "label_source": "silver"
+          },
+          {
+            "rank": 4,
+            "tmdb_id": 120092,
+            "title": "True Bloodthirst",
+            "grade": 1,
+            "label_source": "silver"
+          },
+          {
+            "rank": 5,
+            "tmdb_id": 73935,
+            "title": "Vamps",
+            "grade": 2,
+            "label_source": "silver"
+          }
+        ],
+        "hybrid_expansion_text": "mockumentary film about vampires sharing household responsibilities, financial obligations, and long-standing resentments",
+        "hybrid_expansion_source": "analysis/hybrid_expansion_stability/stability_trace.jsonl"
+      },
+      "rule_based_lean": "reranker_blend_issue_later_eval",
+      "rule_trace": [
+        "R1 reranker_blend: both control arms show a rerank/blend demotion (pinned=rerank_demoted, no_llm=rerank_demoted)"
+      ]
+    },
+    {
+      "qid": "q10",
+      "query_text": "found footage friends chased through a haunted apartment maze",
+      "tags": {
+        "era": "2000-2015",
+        "genre": [
+          "horror",
+          "thriller"
+        ],
+        "vocab_distance": "medium",
+        "length": "medium",
+        "specificity": "medium",
+        "ambiguity": "medium"
+      },
+      "target": {
+        "tmdb_id": 8329,
+        "title": "[REC]",
+        "grade_used_for_eval": 3,
+        "label_source": "silver",
+        "gold_grade": null,
+        "silver_grade": 3,
+        "silver_pregrade": {
+          "model": "llama3.2",
+          "confidence": "high",
+          "reason": "The metadata clearly matches the query, with keywords like 'found footage', 'haunted apartment', and 'chased' present in both.",
+          "ts": "2026-05-19T19:33:21Z",
+          "silver_grade": 3
+        }
+      },
+      "evidence": {
+        "consolidated_fix_category": "mixed",
+        "arms_agree": false,
+        "deterministic_arms": {
+          "pinned": {
+            "loss_stage": "retrieved_dropped_before_rerank_pool",
+            "fix_category": "recall_depth_fusion_pool",
+            "semantic_rank": 30,
+            "rrf_rank": 53,
+            "target_in_rerank_pool": false,
+            "rerank_rank": null,
+            "final_rank": null,
+            "in_top5": false
+          },
+          "no_llm": {
+            "loss_stage": "rerank_demoted",
+            "fix_category": "reranker_scoring",
+            "semantic_rank": 7,
+            "rrf_rank": 10,
+            "target_in_rerank_pool": true,
+            "rerank_rank": 6,
+            "final_rank": 7,
+            "in_top5": false
+          }
+        },
+        "mode_comparison": {
+          "basic": {
+            "strict_hit_at_k": 1,
+            "first_relevant_rank": 1,
+            "first_perfect_rank": 5,
+            "top5": [
+              {
+                "rank": 1,
+                "tmdb_id": 159638,
+                "title": "Ghost Team One",
+                "grade": 2
+              },
+              {
+                "rank": 2,
+                "tmdb_id": 29427,
+                "title": "The Crazies",
+                "grade": 1
+              },
+              {
+                "rank": 3,
+                "tmdb_id": 50698,
+                "title": "Grave Encounters",
+                "grade": 2
+              },
+              {
+                "rank": 4,
+                "tmdb_id": 298865,
+                "title": "Lost After Dark",
+                "grade": 1
+              },
+              {
+                "rank": 5,
+                "tmdb_id": 8329,
+                "title": "[REC]",
+                "grade": 3
+              }
+            ]
+          },
+          "advanced": {
+            "strict_hit_at_k": 1,
+            "first_relevant_rank": 1,
+            "first_perfect_rank": 4,
+            "top5": [
+              {
+                "rank": 1,
+                "tmdb_id": 97795,
+                "title": "Apartment 143",
+                "grade": 2
+              },
+              {
+                "rank": 2,
+                "tmdb_id": 159638,
+                "title": "Ghost Team One",
+                "grade": 2
+              },
+              {
+                "rank": 3,
+                "tmdb_id": 50698,
+                "title": "Grave Encounters",
+                "grade": 2
+              },
+              {
+                "rank": 4,
+                "tmdb_id": 8329,
+                "title": "[REC]",
+                "grade": 3
+              },
+              {
+                "rank": 5,
+                "tmdb_id": 174678,
+                "title": "Mr. Jones",
+                "grade": 1
+              }
+            ]
+          },
+          "hybrid": {
+            "strict_hit_at_k": 0,
+            "first_relevant_rank": 1,
+            "first_perfect_rank": null,
+            "top5": [
+              {
+                "rank": 1,
+                "tmdb_id": 159638,
+                "title": "Ghost Team One",
+                "grade": 2
+              },
+              {
+                "rank": 2,
+                "tmdb_id": 97795,
+                "title": "Apartment 143",
+                "grade": 2
+              },
+              {
+                "rank": 3,
+                "tmdb_id": 50698,
+                "title": "Grave Encounters",
+                "grade": 2
+              },
+              {
+                "rank": 4,
+                "tmdb_id": 466344,
+                "title": "The Houses October Built 2",
+                "grade": 1
+              },
+              {
+                "rank": 5,
+                "tmdb_id": 443319,
+                "title": "Phoenix Forgotten",
+                "grade": 2
+              }
+            ]
+          }
+        },
+        "target_retrieved_by_mode": {
+          "basic": true,
+          "advanced": true,
+          "hybrid": true
+        },
+        "hybrid_top5": [
+          {
+            "rank": 1,
+            "tmdb_id": 159638,
+            "title": "Ghost Team One",
+            "grade": 2,
+            "label_source": "silver"
+          },
+          {
+            "rank": 2,
+            "tmdb_id": 97795,
+            "title": "Apartment 143",
+            "grade": 2,
+            "label_source": "silver"
+          },
+          {
+            "rank": 3,
+            "tmdb_id": 50698,
+            "title": "Grave Encounters",
+            "grade": 2,
+            "label_source": "silver"
+          },
+          {
+            "rank": 4,
+            "tmdb_id": 466344,
+            "title": "The Houses October Built 2",
+            "grade": 1,
+            "label_source": "silver"
+          },
+          {
+            "rank": 5,
+            "tmdb_id": 443319,
+            "title": "Phoenix Forgotten",
+            "grade": 2,
+            "label_source": "silver"
+          }
+        ],
+        "hybrid_expansion_text": "found footage group of friends navigate labyrinthine haunted apartment complex, being pursued by unseen entities",
+        "hybrid_expansion_source": "analysis/hybrid_expansion_stability/stability_trace.jsonl"
+      },
+      "rule_based_lean": "needs_analyst_review",
+      "rule_trace": [
+        "R2 needs_analyst_review: control arms are not both rerank/blend demotions (pinned=retrieved_dropped_before_rerank_pool, no_llm=rerank_demoted); wording vs label vs expansion judgment required"
+      ]
+    }
+  ],
+  "decision": {
+    "status": "analyst_classification_required",
+    "next_action": "complete_ql_01_report_classification",
+    "external_review": "optional_non_blocking_for_ql_01; required_for_any_label_or_query_change_followup"
+  }
+}
