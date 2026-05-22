@@ -700,3 +700,65 @@ Every ticket/checkpoint appended below must include:
   `graphify-out/`.
 - **Next action:** Phase 5 remains BLOCKED. Claude gate-review of RERANK-01B
   is recommended before any RERANK-02 model-backed comparison is scoped.
+
+### 2026-05-23T00:41+07:00 - RERANK-02B-LOADER-DIAGNOSTIC
+
+- **Branch:** `automation/cinematch-accuracy-audit-full`
+- **Phase/ticket id:** `RERANK-02B-LOADER-DIAGNOSTIC` (bounded loader
+  diagnostic and RERANK-02 Phase B retry)
+- **Status:** COMPLETE / validated / ready to commit
+- **Plan/request:** Human diagnostic request in the Codex thread after
+  RERANK-02 stopped on a CUDA device-side assert.
+- **Files changed:**
+  - `eval/scripts/rerank_model_comparison.py`
+  - `eval/tests/test_rerank_model_comparison.py`
+  - `docs/superpowers/reports/rerank-02-model-comparison.md`
+  - `docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md` (this entry)
+- **Artifacts written (gitignored under `eval/runs/`, not staged):**
+  - `eval/runs/2026-05-19-1846-nogit/analysis/rerank_failure/q05_q10_loader_diagnostic.json`
+  - `eval/runs/2026-05-19-1846-nogit/analysis/rerank_failure/q05_q10_model_comparison.json`
+- **Commands run:**
+  - `git status --short --branch`
+  - `./venv/Scripts/python.exe -m compileall eval/scripts`
+  - `./venv/Scripts/python.exe -m unittest eval.tests.test_rerank_model_comparison`
+  - `./venv/Scripts/python.exe -m eval.scripts.rerank_model_comparison --run 2026-05-19-1846-nogit --phase smoke --device cpu --smoke-count 3`
+  - `$env:CUDA_LAUNCH_BLOCKING='1'; ./venv/Scripts/python.exe -m eval.scripts.rerank_model_comparison --run 2026-05-19-1846-nogit --phase smoke --device cuda --smoke-count 3`
+  - `./venv/Scripts/python.exe -m eval.scripts.rerank_model_comparison --run 2026-05-19-1846-nogit --phase b`
+  - `git status --short`
+  - `git diff --stat`
+  - `git diff --name-only -- src/`
+- **Validation results:**
+  - `compileall` passed: `Listing 'eval/scripts'...`.
+  - Targeted unit suite passed: 12 tests OK.
+  - CPU loader smoke passed on 3 RERANK-01A snapshot pairs.
+  - CUDA loader smoke passed on the same 3 pairs with
+    `CUDA_LAUNCH_BLOCKING=1`.
+  - Bounded Phase B passed on 268 snapshot pairs only:
+    `phase_b=complete`, both approved models `status=success`.
+  - `git diff --name-only -- src/` empty.
+- **Loader decision:** `correct_loader_confirmed`. The Alibaba model card
+  loader works after applying the eval-only in-memory fix for the corrupted
+  non-persistent `new.embeddings.position_ids` buffer:
+  re-register `position_ids = arange(max_position_embeddings)` before
+  inference, tokenize as `list[tuple[query, document]]`, use
+  `AutoModelForSequenceClassification` with `trust_remote_code=True`, and use
+  fp16 on CUDA. The repair was recorded as `position_ids.repaired=True` for
+  `Alibaba-NLP/gte-multilingual-reranker-base` and `False` for MiniLM.
+- **RERANK-02 decision impact:** `model_capability_confirmed`. In the headline
+  no_llm arms, Alibaba ranked q10 `[REC]` at rank 1 (baseline rank 7) and
+  MiniLM ranked q10 at rank 3 (baseline rank 7). Neither approved alternative
+  rescued q05 no_llm (Alibaba rank 7; MiniLM rank 5).
+- **Failures/blockers:** Initial pre-diagnostic Phase B failed before this
+  checkpoint with a CUDA device-side assert. The diagnostic reproduced the
+  root loader issue on CPU as an invalid `position_ids` buffer prefix and did
+  not repeat the CUDA assert after the eval-only repair.
+- **Assumptions:** The RERANK-01A text snapshot and RERANK-01B/DECOMP
+  artifacts remain authoritative; the diagnostic and Phase B retry are bounded
+  to those 268 pairs and do not imply any `src/*` behavior change.
+- **Commit:** stage only the script, test, report, and this ledger entry. Do
+  not stage gitignored artifacts, `src/*`, `graphify-out/`, or
+  `codex-rerank02-last.txt`.
+- **Next action:** Phase 5 remains BLOCKED. Because a model swap is suggested
+  only by bounded q05/q10 evidence, the next ticket must be a separate full
+  gold/silver-set rerank regression-eval plan before any implementation or
+  Phase 5 unblock is considered.
