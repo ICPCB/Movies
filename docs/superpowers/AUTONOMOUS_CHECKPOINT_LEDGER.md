@@ -392,3 +392,134 @@ Every ticket/checkpoint appended below must include:
 - **External review:** Required before merge outside this branch — A3
   changes labels and recomputes authoritative metrics (private-data
   decision under the automation rules).
+
+### 2026-05-22T14:50:44Z - DECOMP-01
+
+- **Branch:** `automation/cinematch-accuracy-audit-full`
+- **Phase/ticket id:** `DECOMP-01`
+- **Status:** COMPLETE / SELF-REVIEWED / NOT COMMITTED PER HUMAN INSTRUCTION
+- **Files changed:**
+  - `eval/scripts/decomp_pool_q05_q10.py`
+  - `eval/tests/test_decomp_pool_q05_q10.py`
+  - `docs/superpowers/reports/decomp-01-q05-q10.md`
+  - `docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md`
+- **Artifacts written (gitignored under `eval/runs/`, not staged):**
+  - `eval/runs/2026-05-19-1846-nogit/analysis/decomp/q05_q10_pool_decomposition.json`
+- **Commands run:**
+  - `./venv/Scripts/python.exe -m compileall eval/scripts`
+  - `./venv/Scripts/python.exe -m unittest discover -s eval/tests`
+  - `$env:CUDA_VISIBLE_DEVICES='-1'; Start-Process -WindowStyle Hidden -FilePath 'ollama' -ArgumentList 'serve'`
+  - `nvidia-smi --query-gpu=memory.total,memory.used --format=csv,noheader,nounits`
+  - `./venv/Scripts/python.exe -m eval.scripts.decomp_pool_q05_q10 --run 2026-05-19-1846-nogit`
+  - `git diff --name-only -- src/`
+  - `git status --short`
+- **Validation results:**
+  - `compileall` passed:
+    `Listing 'eval/scripts'...`; compiled
+    `eval/scripts\decomp_pool_q05_q10.py`.
+  - `unittest discover` passed: 194 tests OK.
+  - DECOMP-01 model-backed run passed:
+    `decision=safe_localized_fix_ruled_out`,
+    `phase5_gate=blocked`, `policy_count=11`.
+  - `git diff --name-only -- src/` was empty.
+  - `git status --short` before this ledger append showed only untracked
+    `docs/superpowers/plans/2026-05-22-pre-phase5-gate-plan.md`,
+    `docs/superpowers/reports/decomp-01-q05-q10.md`,
+    `eval/scripts/decomp_pool_q05_q10.py`,
+    `eval/tests/test_decomp_pool_q05_q10.py`, and pre-existing
+    `graphify-out/`.
+- **Cost/time accounting:**
+  - Expected cost/time: `$0.00`, 900 seconds max runtime, 468 expected rerank
+    pairs, max observed VRAM budget 7800 MiB, extended pool depth budget 75.
+  - Actual cost/time: `$0.00`, 40.881 seconds, max observed VRAM 5320 MiB.
+  - Ollama setup command recorded and run with `CUDA_VISIBLE_DEVICES=-1`;
+    DECOMP-01 reused recorded deterministic arm queries and did not call
+    `expand_query`.
+- **Artifact decision:** `safe_localized_fix_ruled_out`.
+  - No evaluated bounded rerank-cutoff or final-blend reweight policy rescued
+    q05 and q10 across both `pinned` and `no_llm` deterministic arms.
+  - Target extended-pool ranks: q05 pinned RRF 66 / rerank 4 / final 54;
+    q05 no_llm RRF 1 / rerank 5 / final 10; q10 pinned RRF 53 / rerank 7 /
+    final 12; q10 no_llm RRF 10 / rerank 7 / final 7.
+  - All 11 candidate policies had `all_targets_rescued=False`; no safe policy
+    id was recommended.
+- **Failures/blockers:** None in validation. Phase 5 remains blocked because
+  DECOMP-01 ruled out the evaluated safe localized cutoff/reweight fixes.
+- **Assumptions:** The existing HY-STAB/HY-FIX artifacts under
+  `2026-05-19-1846-nogit` are the authoritative deterministic-arm inputs; a
+  67-candidate extended rerank pool is sufficient because it captures the max
+  recorded target RRF rank plus one (q05 pinned rank 66).
+- **Next action:** Stop after DECOMP-01. Do not commit. Do not start Phase 5.
+  Gate-review DECOMP-01 before any unblocking discussion; current evidence
+  keeps Phase 5 blocked.
+- **External review:** Required for the Phase 5 gate decision; this checkpoint
+  is self-reviewed for mechanics only.
+
+### 2026-05-22T15:10:00Z - DECOMP-01-REVIEW
+
+- **Branch:** `automation/cinematch-accuracy-audit-full`
+- **Phase/ticket id:** `DECOMP-01-REVIEW` (G2 gate review per
+  `docs/superpowers/plans/2026-05-22-pre-phase5-gate-plan.md`)
+- **Status:** PASS — DECOMP-01 evidence valid; Phase 5 gate evaluated
+- **Files changed:**
+  - `docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md` (this entry)
+- **Artifacts written:** None (review-only checkpoint).
+- **Commands run:**
+  - `git diff --name-only -- src/`
+  - `git status --short`
+  - `./venv/Scripts/python.exe -m compileall eval/scripts`
+  - `./venv/Scripts/python.exe -m unittest discover -s eval/tests`
+  - artifact extraction of `decision` / `policy_analysis` / per-target ranks
+    from `eval/runs/2026-05-19-1846-nogit/analysis/decomp/q05_q10_pool_decomposition.json`
+- **Review verdict:** **PASS.** Verified against source, the artifact, and a
+  re-run test suite — not the reported summary.
+  - No `src/*` change: `git diff --name-only -- src/` empty; no untracked
+    `src/` files. `decomp_pool_q05_q10.py` imports `src` read-only.
+  - No new LLM call inside retrieval/BM25/RRF/reranker: deterministic arm
+    queries reused from HY-STAB-01 trace rows; `expand_query` not called.
+  - Artifact complete: schema `decomp-01-q05-q10.v1`; q05 + q10; both
+    `pinned` and `no_llm` arms; extended pool depth 67; every member carries
+    five stage scores + the final-blend formula (script raises unless the
+    formula reconstructs `final_score` within 1e-6, and `_assert_reproduced`
+    confirms the re-run matches recorded HY-STAB tables).
+  - Tests: 194 OK (190 prior + 4 new), independently re-run; `compileall` OK.
+  - Long-job accounting recorded: expected `$0.00`/900s/468 pairs/7800 MiB;
+    actual `$0.00`/40.881s/5320 MiB max VRAM.
+  - CUDA/Ollama: `CUDA_VISIBLE_DEVICES=-1` was scoped to the `ollama serve`
+    process (keeps `llama3.2` on CPU); the embedder/reranker run in the
+    python eval process and correctly use `cuda` — intended design; VRAM
+    5320 MiB < 7800 budget. Expected and acceptable.
+- **Decision:** `safe_localized_fix_ruled_out` — **supported by the
+  artifact.** All 11 evaluated policies `all_targets_rescued=False`;
+  `all_targets_rescued_policy_ids=[]`; `recommended_policy=None`. Target
+  ranks (0-indexed) in the extended pool: q05 pinned RRF 66 / rerank 4 /
+  final 54; q05 no_llm RRF 1 / rerank 5 / final 10; q10 pinned RRF 53 /
+  rerank 7 / final 12; q10 no_llm RRF 10 / rerank 7 / final 7. The target's
+  own rerank_score ranks it outside top-5 (rank 5/7/7) in 3 of 4
+  deterministic-arm combos; even the limiting policy (extended pool + all
+  priors zeroed) rescues only q05 pinned. A bounded cutoff increase or
+  final-blend reweight cannot lift a target whose rerank_score is itself
+  outside top-5.
+- **Phase 5 gate status:** **BLOCKED.** Per the gate plan, a
+  `safe_localized_fix_ruled_out` decision is Exit B — Phase 5 stays blocked.
+  - **Reason:** no bounded localized rerank-cutoff or final-blend reweight
+    policy rescues q05 and q10 across both the `pinned` and `no_llm`
+    deterministic arms.
+  - **Escalation:** the defect lies in the reranker / cross-encoder scoring
+    stage (the target's rerank_score itself is outside top-5), not a bounded
+    cutoff/blend tweak. This escalates to a broader reranker/cross-encoder
+    architecture investigation — **not** a Phase 5 localized fix.
+- **Failures/blockers:** None blocking. Minor non-blocking notes: `_decision`
+  cannot emit `inconclusive` (here the result is a genuine rule-out, so
+  unaffected); `exact_allowed_src_file` is hardcoded in the unused `proven`
+  branch; `candidates.jsonl` / `rrf_pool_trace.json` are existence-checked
+  but their contents are not consumed.
+- **Confirmation:** No `src/*` changes; Phase 5 not started; no Phase 5 work
+  performed; `graphify-out/` not staged; the gitignored decomposition
+  artifact not force-added.
+- **Assumptions:** The HY-STAB / HY-FIX artifacts under
+  `2026-05-19-1846-nogit` remain the authoritative deterministic-arm inputs.
+- **Next action:** Phase 5 remains BLOCKED. Open a separate ticket for the
+  reranker/cross-encoder architecture investigation (not created yet).
+- **External review:** Optional non-blocking; recommended before any future
+  reranker/cross-encoder architecture change.
