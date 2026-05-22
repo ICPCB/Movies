@@ -591,3 +591,62 @@ Every ticket/checkpoint appended below must include:
   before committing.
 - **External review:** Optional non-blocking for mechanics; recommended before
   scoping RERANK-02 because the classification is intentionally inconclusive.
+
+### 2026-05-22T16:05Z - RERANK-01A
+
+- **Branch:** `automation/cinematch-accuracy-audit-full`
+- **Phase/ticket id:** `RERANK-01A` (hermetic document-text source repair)
+- **Status:** COMPLETE / validated / committed
+- **Plan:** `docs/superpowers/plans/2026-05-22-rerank-01a-text-source-repair.md`
+  (commit `0347f55`).
+- **Implementation split:** Codex CLI (`codex exec`) authored the two code
+  files (`rerank_text_snapshot.py`, `test_rerank_text_snapshot.py`) but was
+  blocked by its Windows shell sandbox (`windows sandbox: spawn setup
+  refresh`) before it could run validation, generate the artifact, append
+  this ledger entry, or commit. Claude completed validation, generated the
+  snapshot artifact by running the Codex-authored script, appended this
+  ledger entry, and committed — all within Claude's review / commit-discipline
+  ownership. No implementation logic was authored by Claude; the script and
+  tests are exactly as Codex wrote them.
+- **Files changed:**
+  - `eval/scripts/rerank_text_snapshot.py` (new)
+  - `eval/tests/test_rerank_text_snapshot.py` (new)
+  - `docs/superpowers/reports/rerank-01a-text-source-repair.md` (new)
+  - `docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md` (this entry)
+- **Artifact written (gitignored under `eval/runs/`, not staged):**
+  - `eval/runs/2026-05-19-1846-nogit/analysis/rerank_failure/q05_q10_text_snapshot.json`
+- **Commands run:**
+  - `./venv/Scripts/python.exe -m compileall eval/scripts`
+  - `./venv/Scripts/python.exe -m unittest discover -s eval/tests`
+  - `./venv/Scripts/python.exe -m eval.scripts.rerank_text_snapshot --run 2026-05-19-1846-nogit`
+  - `git diff --name-only -- src/`
+- **Validation results:**
+  - `compileall` passed (compiled `rerank_text_snapshot.py`).
+  - `unittest discover` passed: 207 tests OK (201 baseline + 6 new).
+  - Snapshot runner passed: `analysis_complete=True`, `unresolved=0`;
+    every arm 67/67 resolved (q05 pinned, q05 no_llm, q10 pinned, q10
+    no_llm); 268/268 total members resolved.
+  - `git diff --name-only -- src/` empty.
+- **Root cause confirmed:** the pipeline uses two `id` semantics —
+  semantic-stage candidates carry the real TMDB id (Chroma `tmdb_{id}`,
+  `src/retrieval/semantic.py`); BM25-only candidates carry `int(idx)`, a
+  0-based `movies_clean.csv` row index (`src/retrieval/bm25.py:168-169`).
+  DECOMP-01 labelled both as `tmdb_id`. RERANK-01's 4 unresolved q05 false
+  positives (8353, 24218, 21993, 25394) are all BM25-only; resolved here via
+  `movies_clean.csv` `iloc`, all with `movie_key_crosscheck_ok=True`.
+- **tmdb 8353 reconciled:** DECOMP `8353` is a `movies_clean.csv` row index
+  → "Supernova" (CSV TMDB id 10384); real TMDB id 8353 → "Limite". RERANK-01
+  correctly refused the mismatch — it produced no wrong data.
+- **Source-stage breakdown:** 69 `semantic`, 135 `semantic+bm25`, 64
+  `bm25_only`; 204 resolved via Chroma `.get()`, 64 via `movies_clean.csv`
+  `iloc`. Hermetic — no model/embedder/GPU/Ollama/network; Chroma read with
+  `.get()` only.
+- **Commit:** `eval: repair q05 q10 reranker text sources (RERANK-01A)`;
+  staged the script, test, report, and ledger only. The gitignored
+  `q05_q10_text_snapshot.json` left on disk, not force-added (intermediate
+  tooling output). `src/*` and `graphify-out/` not staged.
+- **Next action:** Claude gate-reviews RERANK-01A; then the RERANK-01 re-run
+  (modify `rerank_failure_q05_q10.py` to consume the snapshot keyed by
+  `movie_key`) to reach a complete, non-`inconclusive` characterization.
+- **External review:** Optional non-blocking for mechanics.
+- **Phase 5:** remains BLOCKED.
