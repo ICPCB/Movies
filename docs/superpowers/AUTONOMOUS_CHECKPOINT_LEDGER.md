@@ -865,3 +865,59 @@ Every ticket/checkpoint appended below must include:
   remains BLOCKED.
 - **External review:** Optional non-blocking for the plan; Human authorization
   is required before the regression eval executes.
+
+### 2026-05-23T (overnight) - RERANK-REGRESSION-EVAL-EXT-REVIEW
+
+- **Branch:** `automation/cinematch-accuracy-audit-full`
+- **Phase/ticket id:** `RERANK-REGRESSION-EVAL-EXT-REVIEW` (advisory external
+  AI review of the regression-eval plan + applied revisions)
+- **Status:** COMPLETE / SELF-REVIEWED — advisory review obtained, all
+  concerns applied
+- **Files changed:**
+  - `docs/superpowers/reviews/rerank-regression-eval-review-packet.md` (new)
+  - `docs/superpowers/reviews/rerank-regression-eval-external-ai-review.md`
+    (new)
+  - `docs/superpowers/plans/2026-05-23-rerank-regression-eval-plan.md`
+    (revised — 4 review fixes)
+  - `docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md` (this entry)
+- **Artifacts written:** None under `eval/runs/`.
+- **Commands run:**
+  - `codex --version`; `where codex`
+  - `codex exec --cd . --skip-git-repo-check "<read-only advisory review>"`
+  - `grep -nE "import.*rerank|rerank\(" src/pipelines/*.py` (verify Concern 4)
+  - `./venv/Scripts/python.exe -m compileall eval/scripts`
+  - `./venv/Scripts/python.exe -m unittest discover -s eval/tests`
+  - `git status --short`, `git diff --name-only -- src/`
+- **External review:** Codex CLI (`codex-cli 0.133.0`, OpenAI-compatible),
+  run as a read-only task — **advisory only, not Human approval.** Verdict:
+  **CONCERNS** — plan broadly sound (harness justified, execution-deferral
+  correct, Phase 5 correctly BLOCKED) with four actionable internal-consistency
+  fixes. The review packet redacts to non-secret repo facts only; no API keys,
+  tokens, credentials, or absolute personal paths were sent.
+- **Concerns applied (all four):**
+  1. §4 Stage 2 — retain ≥ top-15 ranked records per `(qid, mode)` per model
+     (was "top-5"; insufficient for `strict_hit_at_10`).
+  2. §5 — a `None` / null-excluded `compute_metrics.py` value or a changed
+     `queries_excluded_null` now yields `gate_inconclusive`, never a silent
+     pass/fail.
+  3. §5 — q10-fix condition pinned to the **`hybrid` mode** (the mode of the
+     original q10 hybrid strict-ranking gap).
+  4. §4 Stage 1 — monkeypatch `src.pipelines.advanced.rerank` and
+     `src.pipelines.hybrid.rerank` (verified both do `from src.retrieval
+     .reranker import rerank`); added a `basic`-mode invariant check.
+- **Validation results:**
+  - `compileall eval/scripts` passed.
+  - `unittest discover -s eval/tests` passed: **223 tests OK** (docs-only
+    revision; no code change).
+  - `git diff --name-only -- src/` empty — the review and revisions touched
+    `docs/` only.
+- **Commit hash:** recorded by the checkpoint commit carrying this entry.
+- **Failures/blockers:** None. The deferred item (regression-eval execution)
+  is unchanged in `MANUAL_REVIEW_QUEUE.md`.
+- **Assumptions:** The external reviewer is advisory; its CONCERNS verdict is
+  evidence the plan is internally consistent **after** the four fixes, not
+  approval to execute or to unblock Phase 5.
+- **Next action (Human):** Unchanged — authorize the regression-eval GPU run
+  from the revised plan. Phase 5 remains BLOCKED.
+- **External review of this checkpoint:** Not required; this entry records an
+  advisory review and self-reviewed doc revisions only.

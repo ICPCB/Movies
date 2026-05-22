@@ -8,6 +8,10 @@ Human (GPU-run authorization + Phase 5 product decision)
 Branch: `automation/cinematch-accuracy-audit-full`
 Predecessors: RERANK-02 / RERANK-02B (`f516d15`, decision
 `model_capability_confirmed`); RERANK-02-REVIEW (gate-review PASS).
+Revision: 2026-05-23 — revised after an advisory external review (Codex CLI;
+`docs/superpowers/reviews/rerank-regression-eval-external-ai-review.md`):
+applied four internal-consistency fixes (top-15 artifact depth, null-metric
+handling, exact q10-fix mode, monkeypatch target + `basic`-mode invariant).
 
 ---
 
@@ -121,11 +125,21 @@ receives, plus per-candidate document fields and the blend inputs
 
 Method (no `src/*` edit):
 
-- Import `src.retrieval.reranker` and **wrap** its `rerank` (or wrap
-  `get_reranker().predict`) from inside the eval script to **record** the
-  `pool`, the `pairs`, and the per-candidate blend inputs on each call, then
-  delegate to the real function. Monkeypatching a reference from the eval
-  process is eval-only; it edits no `src/*` file.
+- Wrap the `rerank` symbol **as the pipelines actually call it**.
+  `src/pipelines/advanced.py:25` and `src/pipelines/hybrid.py:27` both do
+  `from src.retrieval.reranker import rerank`, which binds the name into each
+  pipeline module's own namespace — so the eval script must monkeypatch
+  `src.pipelines.advanced.rerank` **and** `src.pipelines.hybrid.rerank`
+  (patching `src.retrieval.reranker.rerank` alone would be bypassed by the
+  already-bound references). `src/pipelines/basic.py` does **not** call the
+  reranker. Each wrapper records the `pool`, the `pairs`, and the
+  per-candidate blend inputs, then delegates to the real `rerank`. The harness
+  must assert each patched name resolved to a real callable before the run.
+  Monkeypatching a reference from the eval process is eval-only; it edits no
+  `src/*` file.
+- Because `basic` mode does not rerank, its metrics are **invariant** under a
+  reranker swap — Stage 2 must confirm `basic` baseline and alt metrics are
+  identical as a sanity check (any difference means a harness bug).
 - Drive the capture with the **deterministic arm**: pin query expansion exactly
   as DECOMP-01 / HY-STAB did (reuse the recorded deterministic-arm queries so
   no live `llama3.2` call is made and retrieval is reproducible). The headline
@@ -157,7 +171,10 @@ Method (no `src/*` edit):
    models on an identical code path; assert the re-scored baseline reproduces
    the recorded q05/q10 ranks within tolerance as a self-check.
 2. Apply the **exact §3 final-score blend** to each model's `rerank_score`,
-   producing two final top-5 lists per `(qid, mode)`.
+   then rank the full pool by `final_score`. Retain at least the **top-15**
+   ranked records per `(qid, mode)` per model — `compute_metrics.py` evaluates
+   `@5`, `@10`, and `@15`, so a top-5 list is insufficient for the
+   `strict_hit_at_10` headline metric.
 3. Recompute metrics with the **existing** `eval/scripts/compute_metrics.py`
    logic (import it; do not fork it) against the **existing**
    `gold_labels.jsonl` + `silver_labels.jsonl` — labels are **read-only**.
@@ -175,6 +192,9 @@ The artifact ends with exactly one `gate_verdict`, computed mechanically:
 
 Headline metrics, per mode (`basic`, `advanced`, `hybrid`): `strict_hit_at_5`,
 `strict_hit_at_10`, `mrr_at_5`. Per-query unit: `strict_hit_at_5` hit/miss.
+The reranker swap can only move `advanced` and `hybrid` (`basic` does not
+rerank — §4); `basic` metrics must come back unchanged, and a non-zero `basic`
+delta is itself a `gate_inconclusive` harness-bug signal.
 
 - **`gate_pass`** — ALL of:
   1. No aggregate headline metric regresses in any mode
@@ -183,11 +203,17 @@ Headline metrics, per mode (`basic`, `advanced`, `hybrid`): `strict_hit_at_5`,
   2. Per-query `strict_hit_at_5` regressions (hit→miss) summed across all modes
      `== 0`.
   3. The q10 gold target reaches `strict_hit_at_5` under the alt model in the
-     deterministic headline arm (the intended fix lands).
+     **`hybrid` mode** — the mode where the q10 defect was identified (the
+     hybrid strict-ranking gap). The intended fix must land in the mode it was
+     meant to fix.
 - **`gate_fail`** — any aggregate headline metric regresses, OR any per-query
-  `strict_hit_at_5` flips hit→miss, OR q10 is not fixed.
+  `strict_hit_at_5` flips hit→miss, OR q10 is not fixed in `hybrid` mode.
 - **`gate_inconclusive`** — Stage 1 or Stage 2 could not produce a complete
-  artifact (missing pools, model load failure, baseline self-check mismatch).
+  artifact (missing pools, model load failure, baseline self-check mismatch,
+  non-zero `basic`-mode delta), **or** `compute_metrics.py` returns a `None` /
+  null-excluded value for any headline metric in either run (e.g.
+  `queries_excluded_null` differs between baseline and alt). An undefined
+  metric must never be silently scored as a pass or a fail.
 
 `gate_pass` does **not** unblock Phase 5. It makes a Phase 5 reranker-swap plan
 *eligible to be authored and Human-reviewed*. `gate_fail` / `gate_inconclusive`
