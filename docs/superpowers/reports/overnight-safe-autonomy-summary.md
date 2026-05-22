@@ -19,6 +19,7 @@
 | 4 | Gate-review RERANK-02 `model_capability_confirmed` | **PASS** — artifact-supported; ledger checkpoint `RERANK-02-REVIEW` |
 | 5 | Author full-set rerank regression-eval plan | Done — Codex-ready, all 9 handoff fields |
 | 6 | Checkpoint + summary | Ledger entry `OVERNIGHT-SAFE-AUTONOMY`; this report |
+| 7 | Advisory external review of the plan (Codex CLI) | **CONCERNS** — 4 fixes, all applied; ledger `RERANK-REGRESSION-EVAL-EXT-REVIEW` |
 
 All work this run is **docs / planning / review only**. No `src/*`, no
 `eval/scripts/*`, no `eval/tests/*`, no labels, no queries were modified — so
@@ -26,13 +27,16 @@ the 223-test baseline is unchanged and required no re-derivation.
 
 ## 2. Commits created
 
-One local commit (no push — remote untouched per the hard boundaries):
+Local commits only (no push — remote untouched per the hard boundaries):
 
-- `docs: add rerank regression-eval plan and overnight checkpoint` — adds
-  `MANUAL_REVIEW_QUEUE.md`, the regression-eval plan, this summary, and the
-  two ledger checkpoints (`RERANK-02-REVIEW`, `OVERNIGHT-SAFE-AUTONOMY`).
+- `35b939e docs: add rerank regression-eval plan and overnight checkpoint` —
+  adds `MANUAL_REVIEW_QUEUE.md`, the regression-eval plan, this summary, and
+  the `RERANK-02-REVIEW` + `OVERNIGHT-SAFE-AUTONOMY` ledger checkpoints.
+- `7f9d81e docs: apply external review revisions to regression-eval plan` —
+  adds the review packet + saved external review, applies the 4 review fixes
+  to the plan, appends the `RERANK-REGRESSION-EVAL-EXT-REVIEW` checkpoint.
 
-See `git log` on the branch for the hash.
+(A small follow-up commit refreshes this summary with §1 row 7 / §2 / §4.)
 
 ## 3. Tests run
 
@@ -43,11 +47,19 @@ See `git log` on the branch for the hash.
 
 - `docs/superpowers/MANUAL_REVIEW_QUEUE.md` — new manual-review queue.
 - `docs/superpowers/plans/2026-05-23-rerank-regression-eval-plan.md` — the
-  full gold/silver-set reranker-swap regression-eval plan (the Phase 5 gate).
+  full gold/silver-set reranker-swap regression-eval plan (the Phase 5 gate),
+  revised per the external review.
+- `docs/superpowers/reviews/rerank-regression-eval-review-packet.md` — the
+  redacted external-review packet.
+- `docs/superpowers/reviews/rerank-regression-eval-external-ai-review.md` —
+  the saved advisory review result (Codex CLI, CONCERNS).
 - `docs/superpowers/reports/overnight-safe-autonomy-summary.md` — this report.
-- `docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md` — two new checkpoints.
+- `docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md` — three new checkpoints.
 
 No `eval/runs/` artifacts were produced (no model-backed run was executed).
+Untracked working files left in place, not staged (consistent with prior
+checkpoints): `codex-rerank02-last.txt`, `codex-regression-review-raw.txt`
+(the raw review transcript), `graphify-out/`.
 
 ## 5. Deferred manual-review items
 
