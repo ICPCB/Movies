@@ -224,3 +224,61 @@ Every ticket/checkpoint appended below must include:
   broader experiment or implementation.
 - **External review:** Optional non-blocking; recommended for project
   governance and next-ticket selection.
+
+### 2026-05-22T04:12:00Z - QL-01
+
+- **Branch:** `automation/cinematch-accuracy-audit-full`
+- **Phase/ticket id:** `QL-01`
+- **Status:** COMPLETE / SELF-REVIEWED
+- **Files changed:**
+  - `docs/superpowers/plans/2026-05-22-ql-01-query-label-review.md`
+  - `eval/scripts/ql_query_label_review.py`
+  - `eval/tests/test_ql_query_label_review.py`
+  - `eval/runs/2026-05-19-1846-nogit/analysis/query_label_review/q05_q07_q10_review.json`
+  - `docs/superpowers/reports/ql-01-query-label-review.md`
+  - `docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md`
+- **Artifacts written:**
+  - `eval/runs/2026-05-19-1846-nogit/analysis/query_label_review/q05_q07_q10_review.json`
+  - `docs/superpowers/reports/ql-01-query-label-review.md`
+- **Commands run:**
+  - `python -m compileall eval/scripts`
+  - `python -m unittest discover -s eval/tests`
+  - `python -m eval.scripts.ql_query_label_review --run 2026-05-19-1846-nogit`
+  - `python -c` schema check on `q05_q07_q10_review.json`
+  - `git diff --name-only -- src/`
+  - `git add` / `git add -f` / `git commit`
+- **Validation results:**
+  - `python -m compileall eval/scripts` passed.
+  - `python -m unittest discover -s eval/tests` passed: 183 tests OK
+    (171 prior + 12 QL-01).
+  - QL-01 CLI passed and wrote `q05_q07_q10_review.json`; schema check
+    passed (`schema_version=ql-01-query-label-review.v1`, qids q05/q07/q10,
+    `label_provenance_note` present, all leans within the allowed set).
+  - `git diff --name-only -- src/` empty; no `*_labels.jsonl` or
+    `eval/queries/*` modified.
+- **Final classification (QL-01 report):**
+  - q05 -> `reranker_blend_issue_later_eval` (genuine pipeline defect;
+    query/label/expansion all sound).
+  - q07 -> `silver_label_issue` (LLM pregrade crowned the wrong film;
+    What We Do in the Shadows 2014 is the real answer, mislabelled grade 2).
+  - q10 -> `reranker_blend_issue_later_eval` (cleanest genuine pipeline
+    defect; label correct, target retrieved, hybrid still demotes it).
+- **Commit hash:** `34f9972` (evidence commit); report + ledger commit
+  follows.
+- **Failures/blockers:** No validation failures. Scope note: the script
+  sources `deterministic_arms` / `consolidated_fix_category` from
+  `localization.json` (canonical, and the pattern of the reference script
+  `hy_fix_mixed_q05_q10.py`) rather than the derived q07/mixed hy_fix
+  artifacts; equivalent data, fewer inputs. For q07 the final report
+  classification (`silver_label_issue`) intentionally differs from the
+  script's mechanical R1 lean (`reranker_blend_issue_later_eval`) — the
+  two-layer design assigns that judgment to the report.
+- **Assumptions:** The QL-01 plan and the existing run artifacts under
+  `2026-05-19-1846-nogit` are authoritative; the five-way classification is
+  analyst judgment recorded in the report.
+- **Next action:** Do not enter Phase 5 yet. Open Track A (RG-style human
+  regrade of q07) and Track B (decomposition-enriched eval for q05/q10) as
+  two new external-review-gated tickets; they can run in parallel.
+- **External review:** Optional non-blocking for QL-01 itself; required for
+  any follow-up ticket that changes a label or query (Track A) before merge
+  outside this branch.
