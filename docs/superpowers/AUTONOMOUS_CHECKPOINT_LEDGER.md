@@ -762,3 +762,106 @@ Every ticket/checkpoint appended below must include:
   only by bounded q05/q10 evidence, the next ticket must be a separate full
   gold/silver-set rerank regression-eval plan before any implementation or
   Phase 5 unblock is considered.
+
+### 2026-05-23T (overnight) - RERANK-02-REVIEW
+
+- **Branch:** `automation/cinematch-accuracy-audit-full`
+- **Phase/ticket id:** `RERANK-02-REVIEW` (Claude gate review of the RERANK-02
+  `model_capability_confirmed` decision, per the RERANK-02 plan Section 2.17)
+- **Status:** PASS — RERANK-02 decision valid; Phase 5 gate evaluated
+- **Files changed:**
+  - `docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md` (this entry)
+- **Artifacts written:** None (review-only checkpoint).
+- **Commands run:**
+  - `git status --short`, `git branch --show-current`, `git log --oneline -15`
+  - `git show --stat --name-only f516d15`; `git show --name-only f516d15 -- src/`
+  - `./venv/Scripts/python.exe -m compileall eval/scripts`
+  - `./venv/Scripts/python.exe -m unittest discover -s eval/tests`
+  - JSON extraction of `decision` / `phase_a` / `phase_b` from
+    `eval/runs/2026-05-19-1846-nogit/analysis/rerank_failure/q05_q10_model_comparison.json`
+- **Review verdict:** **PASS.** Verified against the artifact, the report, the
+  commit, and a re-run test suite — not the reported summary.
+  - Artifact schema `rerank-02-model-comparison.v1`; `decision.value =
+    model_capability_confirmed`; `decision.model =
+    Alibaba-NLP/gte-multilingual-reranker-base`; `decision.qid = q10`,
+    `arm = no_llm`, `rank_zero_based = 1`; `decision.phase5_unblocked = false`.
+  - `phase_b.status = complete`; 2/2 alternative models `status = success`,
+    0 failed; `elapsed_seconds = 30.32`; `device = cuda`;
+    `cuda_total_memory_gb = 7.9956`; both models' peak VRAM well under the
+    8.0 GB budget. Expected vs actual cost/time recorded.
+  - Report ↔ artifact consistent: `rerank-02-model-comparison.md` Phase B
+    table (Alibaba q10/no_llm 7→1, q05/no_llm 5→7; MiniLM q10/no_llm 7→3,
+    q05/no_llm 5→5) matches the artifact.
+  - Decision soundness: `model_capability_confirmed` holds because the q10
+    no_llm gold target is lifted into the top-5 by **both** alternative
+    cross-encoders (Alibaba rank 1, MiniLM rank 3, zero-based) while
+    `bge-reranker-v2-m3` ranks it 7.
+  - No `src/*` change: commit `f516d15` touched only the ledger, the report,
+    `rerank_model_comparison.py`, and `test_rerank_model_comparison.py`;
+    `git show --name-only f516d15 -- src/` empty.
+  - Tests: 223 OK, independently re-run; `compileall` OK.
+- **Material nuance (must carry into the regression-eval plan):** the model
+  swap is a **partial** fix. **q05's gold target is NOT rescued by either
+  alternative model** — Alibaba ranks q05/no_llm at 7 (worse than the
+  `bge-reranker-v2-m3` baseline rank 5) and MiniLM ranks it 5 (not top-5).
+  A reranker swap would address q10 only; q05 stays unresolved and would need
+  a separate (likely upstream / query-expansion) investigation.
+- **Phase 5 gate status:** **BLOCKED.** A `model_capability_confirmed` outcome
+  does not unblock Phase 5. A reranker-model swap is an architecture change
+  that must first pass a full gold/silver-set rerank regression eval proving
+  it does not regress the other 18 queries.
+- **Failures/blockers:** None blocking.
+- **Confirmation:** No `src/*` changes; Phase 5 not started; no Phase 5 work
+  performed; `graphify-out/` and `codex-rerank02-last.txt` not staged; the
+  gitignored model-comparison artifact not force-added.
+- **Assumptions:** The RERANK-01A snapshot and RERANK-01B / DECOMP-01
+  artifacts remain the authoritative pool/score inputs for RERANK-02.
+- **Next action:** Author the full gold/silver-set rerank regression-eval plan
+  (the explicit Phase 5 gate). Its execution is a model-backed pipeline replay
+  gating a product decision — deferred to `MANUAL_REVIEW_QUEUE.md`.
+- **External review:** Optional non-blocking for this review; Human review is
+  required before any reranker-model swap or Phase 5 unblock.
+
+### 2026-05-23T (overnight) - OVERNIGHT-SAFE-AUTONOMY
+
+- **Branch:** `automation/cinematch-accuracy-audit-full`
+- **Phase/ticket id:** `OVERNIGHT-SAFE-AUTONOMY` (overnight safe-autonomy run:
+  plan authoring + manual-review-queue setup + checkpoint)
+- **Status:** COMPLETE / SELF-REVIEWED — safe work exhausted
+- **Files changed:**
+  - `docs/superpowers/MANUAL_REVIEW_QUEUE.md` (new)
+  - `docs/superpowers/plans/2026-05-23-rerank-regression-eval-plan.md` (new)
+  - `docs/superpowers/reports/overnight-safe-autonomy-summary.md` (new)
+  - `docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md` (this + RERANK-02-REVIEW)
+- **Artifacts written:** None under `eval/runs/` (planning + docs only).
+- **Commands run:**
+  - `git status --short`, `git branch --show-current`, `git log --oneline -15`
+  - `./venv/Scripts/python.exe -m compileall eval/scripts`
+  - `./venv/Scripts/python.exe -m unittest discover -s eval/tests`
+  - `git show --stat --name-only f516d15`
+  - run-directory + `src/` inspection to ground the plan
+- **Validation results:**
+  - `compileall eval/scripts` passed.
+  - `unittest discover -s eval/tests` passed: **223 tests OK** (unchanged
+    baseline — this run added no code).
+  - The new plan is Codex-ready: it carries all nine `CLAUDE.md` handoff
+    fields, a hermetic-where-possible two-stage design, mechanical gate
+    criteria, and a cost/time budget.
+  - No `src/*`, `eval/scripts/*`, `eval/tests/*`, `eval/queries/*`, or
+    `*_labels.jsonl` modified — this run is docs-only.
+- **Commit hash:** recorded by the checkpoint commit carrying this entry
+  (see `git log`).
+- **Failures/blockers:** None. One item **deferred** (not a blocker): the
+  execution of the regression eval — model-backed pipeline replay whose
+  verdict gates a product-level reranker-swap decision — is logged in
+  `docs/superpowers/MANUAL_REVIEW_QUEUE.md` pending Human authorization.
+- **Assumptions:** RERANK-02's `model_capability_confirmed` decision (gate-
+  reviewed PASS above) and the `2026-05-19-1846-nogit` artifacts remain
+  authoritative inputs for the regression-eval plan.
+- **Next action (Human):** Authorize the regression-eval GPU run from
+  `docs/superpowers/plans/2026-05-23-rerank-regression-eval-plan.md`; an
+  authorized session executes it; Claude gate-reviews the `gate_verdict`;
+  only a `gate_pass` makes a Phase 5 plan eligible to be authored. Phase 5
+  remains BLOCKED.
+- **External review:** Optional non-blocking for the plan; Human authorization
+  is required before the regression eval executes.
