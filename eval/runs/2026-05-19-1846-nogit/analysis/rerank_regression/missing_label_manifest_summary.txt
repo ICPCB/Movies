@@ -1,0 +1,7 @@
+manifest=eval/runs/2026-05-19-1846-nogit/analysis/rerank_regression/missing_label_manifest.json
+records_total=1209
+unique_label_keys_total=455
+counts_by_model={"alt": 646, "baseline": 563}
+counts_by_mode={"advanced": 423, "basic": 362, "hybrid": 424}
+counts_by_affects_min_k={"@10": 470, "@15": 525, "@5": 214}
+counts_by_qid={"q01": 52, "q02": 61, "q03": 60, "q04": 60, "q05": 58, "q06": 52, "q07": 50, "q08": 60, "q09": 60, "q10": 58, "q11": 66, "q12": 62, "q13": 48, "q14": 64, "q15": 70, "q16": 74, "q17": 70, "q18": 66, "q19": 66, "q20": 52}
