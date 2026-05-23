@@ -921,3 +921,101 @@ Every ticket/checkpoint appended below must include:
   from the revised plan. Phase 5 remains BLOCKED.
 - **External review of this checkpoint:** Not required; this entry records an
   advisory review and self-reviewed doc revisions only.
+
+### 2026-05-23T (Human-authorized execution) - RERANK-REGRESSION-EVAL
+
+- **Branch:** `automation/cinematch-accuracy-audit-full`
+- **Phase/ticket id:** `RERANK-REGRESSION-EVAL` (full 20-query reranker-swap
+  regression eval — the Phase 5 gate)
+- **Status:** COMPLETE / SELF-REVIEWED — `gate_verdict = gate_inconclusive`
+- **Authorization:** Human grant per the reviewed plan
+  `docs/superpowers/plans/2026-05-23-rerank-regression-eval-plan.md`
+  (budget §6.9: ≤ 60 min, $0.00, cached models only).
+- **Files changed:**
+  - `eval/scripts/rerank_regression_eval.py` (new)
+  - `eval/tests/test_rerank_regression_eval.py` (new)
+  - `docs/superpowers/reports/rerank-regression-eval.md` (new)
+  - `docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md` (this entry)
+- **Artifacts written (gitignored under `eval/runs/`, NOT staged):**
+  - `eval/runs/2026-05-19-1846-nogit/analysis/rerank_regression/full_set_pool_snapshot.json`
+  - `eval/runs/2026-05-19-1846-nogit/analysis/rerank_regression/regression_comparison.json`
+- **Commands run:**
+  - `./venv/Scripts/python.exe -m py_compile eval/scripts/rerank_regression_eval.py eval/tests/test_rerank_regression_eval.py`
+  - `./venv/Scripts/python.exe -m compileall eval/scripts`
+  - `./venv/Scripts/python.exe -m unittest discover -s eval/tests`
+  - `./venv/Scripts/python.exe -m eval.scripts.rerank_regression_eval --run 2026-05-19-1846-nogit --stage capture`
+  - `./venv/Scripts/python.exe -m eval.scripts.rerank_regression_eval --run 2026-05-19-1846-nogit --stage score`
+  - `git diff --name-only -- src/`
+- **Validation results:**
+  - `compileall eval/scripts` passed.
+  - `unittest discover -s eval/tests` passed: **240 tests OK** (223 baseline
+    + 17 new `test_rerank_regression_eval`).
+  - Stage 1 captured all 20 queries × 3 modes (basic top-15, advanced/hybrid
+    pools at depth 50/50).
+  - Stage 2 scored 2000 (query, document) pairs per model on CUDA in ~45 s.
+  - `git diff --name-only -- src/` empty; no `src/*` edits.
+- **Mechanical checks:**
+  - baseline self-check (q05/q10 top-5 reproduced by re-scored baseline):
+    **PASS** for all 4 (qid, mode) comparisons.
+  - basic-mode invariant (rank-list families hit / strict_hit / mrr /
+    strict_mrr at @5/@10/@15): **PASS** — identical across baseline/alt.
+  - per-query `strict_hit_at_5` flips (hit→miss across all (qid, mode)
+    defined cells): **0**.
+  - The four reviewed plan fixes are present in the harness and verified by
+    unit tests (top-15 depth retention, null-metric → gate_inconclusive,
+    q10-fix mode = `hybrid`, monkey-patch on `src.pipelines.{advanced,hybrid}
+    .rerank` + basic-mode invariant).
+- **Aggregate metrics (baseline → alt):**
+  - basic: strict_hit@5 0.5000 → 0.5000; mrr@5 0.7792 → 0.7792 (identical
+    by invariant).
+  - advanced: strict_hit@5 0.9000 → **1.0000**; mrr@5 0.9487 → **1.0000**.
+  - hybrid: strict_hit@5 0.9000 → **1.0000**; mrr@5 0.9487 → **1.0000**.
+  - `queries_excluded_null = 20` in **every** mode for **both** runs — this
+    is the inconclusive trigger.
+- **q05 result:** baseline basic strict_hit@5 = 1.0, alt basic = 1.0 (basic
+  invariant); advanced and hybrid per-query values are `None` in both runs
+  (label gap). **q05 is not resolved by this swap.**
+- **q10 hybrid result:** baseline per-query strict_hit@5 = `None` (label gap
+  in baseline top-5); alt per-query strict_hit@5 = **1.0** (alt's hybrid
+  top-5 is fully labeled AND contains a grade-3). The fix lands in the
+  aggregate (hybrid sh@5 0.9 → 1.0) and in the per-query reading for q10
+  specifically.
+- **Gate decision:** **`gate_inconclusive`** — the eval mechanically ran
+  cleanly (self-check + invariant + zero flips), but
+  `queries_excluded_null = 20` per mode in both runs means @10/@15
+  aggregates are masked (`_mean_or_zero` drops `None` rows). Per the
+  reviewed plan §5 fix #2, a null-excluded headline metric → inconclusive,
+  never a silent pass/fail. The @5 signals strongly suggest the alt model
+  does **not** regress and improves advanced/hybrid; they are necessary but
+  not sufficient evidence for a `gate_pass`.
+- **Phase 5 gate status:** **BLOCKED.** `phase5_unblocked = False` in the
+  artifact. A reranker swap is **not** authorized by this evidence.
+- **Failures/blockers:** None blocking. Two harness bugs caught and fixed
+  during the run: (a) Stage 1 originally captured `tmdb_id = 0` because
+  `semantic_search` returns movies with key `id` not `tmdb_id` — fixed by
+  mirroring `run_pipelines._candidate_tmdb_id`'s fallback chain (`tmdb_id`
+  → `id` → `movie_id`); after the fix, Stage 1 was re-run and `tmdb_id`
+  values match `gold_labels.jsonl` keys. (b) The basic-mode invariant
+  originally flagged `ndcg_at_5` as a violation, which was a
+  `compute_metrics` artifact (per-query ideal DCG is computed over the full
+  union, so alt's better advanced/hybrid candidates raise basic's ndcg
+  denominator); the invariant now compares rank-list families only.
+- **Plan fidelity:** All four external-review fixes applied exactly: top-15
+  retention (plan §4 step 2), null-metric → inconclusive (§5; widened to
+  also trigger on `queries_excluded_null > 0` in either run after observing
+  the label-coverage gap — strictly stronger than the §5 wording, no looser),
+  q10 fix pinned to `hybrid` mode (§5 gate_pass item 3), monkey-patch on the
+  pipeline-bound `rerank` names (§4 Stage 1) with the basic-mode invariant.
+- **Assumptions:** The 20-query `eval/queries/v1.jsonl` set and
+  `gold_labels.jsonl` (merged gold-over-silver) are the authoritative inputs.
+  The deterministic arm = LLM stubs to identity; consistent with the plan's
+  intent ("removes LLM variance so the only variable between baseline and
+  alt is the reranker model").
+- **Next action (Human):** decide between (a) extending labels (a new silver
+  pregrade over the alt-promoted candidate union) so the eval can be re-run
+  to a definitive verdict, or (b) accepting the @5-level evidence as
+  necessary-but-insufficient and authorizing additional eval depth. **Do not
+  author a Phase 5 plan from this report alone** — the verdict is
+  `gate_inconclusive`, not `gate_pass`.
+- **External review:** Optional non-blocking for the mechanics; Human
+  judgment is required for the next-action choice. Phase 5 remains BLOCKED.
