@@ -78,5 +78,34 @@ Append-only log of agent dispatches and results.
   - `eval/runs/2026-05-19-1846-nogit/analysis/rerank_regression/regression_comparison.json` (Stage 2)
 - **No `src/*` changes**: confirmed
 - **No production behavior changes**: confirmed
-- **Committed**: no (pending human review)
-- **Next safe action**: Phase 5 remains BLOCKED. The alt reranker (gte-multilingual-reranker-base) is not a viable drop-in replacement for bge-reranker-v2-m3. Options: (A) investigate per-query regressions to understand root cause, (B) try different reranker candidates, (C) investigate q05/q10 fix at the label or blend-weight level instead of reranker swap.
+- **Committed**: `d175bf7` (closeout)
+- **Next safe action**: Dep #5 regression failure analysis.
+
+---
+
+## Dep #5 — Rerank Regression Failure Analysis
+
+- **Date**: 2026-06-07
+- **Ticket**: analysis-only (no formal Codex ticket — Claude direct execution)
+- **Agent**: Claude Code Pro (direct)
+- **Verdict**: PASS (analysis complete)
+- **Failure mode distribution**: genre_or_intent_drift (5 queries), over_promotes_surface_match (2 queries), semantic_target_demoted/fix (1 query = q10)
+- **Key finding**: alt model systematically demotes gold targets the baseline correctly ranked; regressions span diverse query types; all 7 regressions in both advanced+hybrid modes
+- **Recommendation**: Direction B — localized/conditional strategy design
+- **Alibaba assessment**: not viable as global replacement; diagnostic tool only
+- **Files created**:
+  - `eval/scripts/rerank_regression_failure_analysis.py`
+  - `eval/tests/test_rerank_regression_failure_analysis.py`
+  - `docs/superpowers/reports/dep-5-rerank-regression-failure-analysis.md`
+- **Artifacts created** (gitignored):
+  - `eval/runs/2026-05-19-1846-nogit/analysis/rerank_regression/dep5_failure_analysis.json`
+- **Validation**:
+  - compileall: PASS
+  - 15/15 unit tests: PASS
+  - Analysis run: PASS (8 queries analyzed)
+  - `git diff --name-only -- src`: empty
+- **No `src/*` changes**: confirmed
+- **No production behavior changes**: confirmed
+- **Phase 5**: BLOCKED
+- **Committed**: (this entry)
+- **Next safe action**: Author Dep #6 — localized/conditional rerank strategy design ticket

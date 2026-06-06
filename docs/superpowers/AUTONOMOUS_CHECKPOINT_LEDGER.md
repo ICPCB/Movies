@@ -1093,3 +1093,52 @@ Every ticket/checkpoint appended below must include:
   alt reranker fixed q10 but regressed 7 other queries.
 - **External review:** Optional non-blocking for mechanics; Human review
   required before any reranker swap or Phase 5 unblock.
+
+### 2026-06-07T00:30+07:00 - DEP-5-FAILURE-ANALYSIS
+
+- **Branch:** `automation/cinematch-accuracy-audit-full`
+- **Phase/ticket id:** `DEP-5` (Dep #5 — Rerank Regression Failure Analysis)
+- **Status:** COMPLETE / SELF-REVIEWED
+- **Context:** Analyzes why the alt reranker (Dep #4, `gate_fail`) fixed q10
+  but regressed 7 other queries. Analysis-only — no model inference, no new
+  labels, no `src/*` changes.
+- **Agent:** Claude Code Pro (direct execution)
+- **Files changed:**
+  - `eval/scripts/rerank_regression_failure_analysis.py` (new)
+  - `eval/tests/test_rerank_regression_failure_analysis.py` (new)
+  - `docs/superpowers/reports/dep-5-rerank-regression-failure-analysis.md` (new)
+  - `.agents/ledger.md` (updated)
+  - `.agents/state.json` (updated)
+  - `docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md` (this entry)
+- **Artifacts written (gitignored, NOT staged):**
+  - `eval/runs/2026-05-19-1846-nogit/analysis/rerank_regression/dep5_failure_analysis.json`
+- **Commands run:**
+  - `venv/Scripts/python.exe -m compileall eval/scripts/...`
+  - `venv/Scripts/python.exe -m unittest eval.tests.test_rerank_regression_failure_analysis -v`
+  - `venv/Scripts/python.exe -m eval.scripts.rerank_regression_failure_analysis --run 2026-05-19-1846-nogit`
+  - `git diff --name-only -- src`
+- **Validation results:**
+  - `compileall`: PASS
+  - Unit tests: 15/15 PASS
+  - Analysis run: PASS (8 queries analyzed, artifact written)
+  - `git diff --name-only -- src`: empty
+- **Findings:**
+  - Failure mode distribution: `genre_or_intent_drift` (5: q03, q04, q11,
+    q15, q18), `over_promotes_surface_match` (2: q01, q12),
+    `semantic_target_demoted`/fix (1: q10)
+  - All 7 regressions in both advanced+hybrid modes (100%)
+  - Root cause: alt model produces more uniform rerank scores, collapsing the
+    baseline's well-separated scoring that correctly distinguishes semantic
+    from surface matches
+  - Regressions span diverse query types; not concentrated in one genre
+- **Recommendation:** **Direction B — localized/conditional strategy design.**
+  Alt model not viable as global replacement (7/20 queries regressed). Could
+  be used selectively for q10-type queries. A conditional strategy should
+  preserve the baseline for the 13 queries where it succeeds.
+- **Alibaba assessment:** diagnostic tool only; not viable as global or
+  conditional replacement
+- **Phase 5 gate status:** BLOCKED. No new regression gate was attempted.
+- **Committed:** This checkpoint entry + analysis artifacts.
+- **Next action:** Author Dep #6 — localized/conditional rerank strategy
+  design ticket. Phase 5 remains BLOCKED.
+- **External review:** Optional non-blocking for mechanics.
