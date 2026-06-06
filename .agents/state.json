@@ -2,7 +2,7 @@
   "schema_version": 1,
   "orchestrator": "claude-code-pro",
   "branch": "automation/cinematch-accuracy-audit-full",
-  "head": "pending_commit",
+  "head": "cd2f328",
   "phase5_status": "BLOCKED",
   "next_safe_ticket": "dep-4",
   "active_lock": null,
