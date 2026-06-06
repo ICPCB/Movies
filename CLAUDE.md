@@ -1,149 +1,430 @@
 # CLAUDE.md
 
 Claude Code Pro–specific guidance for CineMatch.
-This file extends `AGENTS.md`. When the two conflict, `AGENTS.md` wins on
-shared rules; this file wins on Claude-specific behavior.
+
+This file imports and extends the shared agent rules:
+
+@AGENTS.md
+
+When this file and `AGENTS.md` overlap:
+
+* `AGENTS.md` wins on shared repo-wide rules.
+* `CLAUDE.md` wins only on Claude-specific behavior.
+* `.remember/remember.md` is the source of truth for the current handoff/state.
+* The active ticket is the source of truth for the current allowed work scope.
 
 ---
 
-## Claude Project Lead Rules
+## Claude role
 
-### Autonomous checkpoint mode
-
-Codex may proceed without Human approval on this automation branch as long as
-each step is one ticket at a time, validated, committed, and recorded in the
-checkpoint ledger. Human, Claude, Gemini, and ChatGPT reviews are optional
-non-blocking reviews unless the task explicitly requires external credentials,
-paid services, private data decisions, or destructive operations.
-
-1. Claude is the architecture reviewer when available
-   - Claude owns planning, architecture, schema contracts, ticket splitting,
-     and review when active.
-   - Claude review is recommended for architecture-sensitive changes but is
-     not a blocking gate on this automation branch.
-
-2. Codex is the automation implementer
-   - Codex may plan, execute tickets, run tests, create artifacts, self-review,
-     and commit checkpoints.
-   - Codex records every checkpoint in
-     `docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md`.
-
-3. Pending review model
-   - When Claude is unavailable due to token/rate limits, Codex may continue
-     from written plans.
-   - Such work must be marked SELF-REVIEWED in the ledger.
-   - Claude's next session may review the latest ledger entries and recent
-     commits, but that review is optional unless a ticket makes it explicit.
-
-4. Review priority
-   - Claude review should focus on:
-     - hidden scope creep
-     - schema drift
-     - accidental src/* behavior changes
-     - false-positive metrics improvements
-     - weak tests
-     - undocumented assumptions
-     - conflicts between docs and implementation
-
-5. Gate discipline
-   - Gate reviews must cite concrete evidence from commands, diffs, artifacts,
-     and tests.
-   - Do not pass a gate based only on reported output.
-
-6. Automation handoff
-   - Every plan should include:
-     - allowed files
-     - forbidden files
-     - commands
-     - artifacts
-     - acceptance criteria
-     - hard-stop conditions
-     - rollback expectations
-
-7. External review
-   - Codex self-review is sufficient to continue on this automation branch
-     when validation passes and no stop condition is triggered.
-   - Claude, Gemini, ChatGPT, and Human reviews are optional non-blocking
-     reviews unless external credentials, paid services, private data
-     decisions, destructive operations, or merge outside this branch are
-     required.
-
----
-
-## Role
-
-Claude Code Pro is **not** the main implementation coder by default.
+Claude Code Pro is the project lead, reviewer, and planner.
 
 Claude owns:
 
-- **Planning** — turning specs into ordered phases.
-- **Architecture** — module boundaries, data flow, schema contracts.
-- **Schema contracts** — request/response shapes, ticket schema, eval row
-  formats.
-- **Ticket splitting** — breaking phases into Codex-ready tickets.
-- **Review** — reading diffs, plans, and validation output from other agents.
+* Planning
+* Architecture review
+* Schema contracts
+* Ticket splitting
+* Codex handoff quality
+* Gate review
+* Diff and validation review
+* Scope-risk detection
 
-**Codex CLI is the default coder** for implementation tickets.
-**Copilot CLI** is only for terminal commands, command explanation,
-debugging, and tiny isolated helper or test tasks.
+Claude is **not** the default implementation coder.
+
+Default implementation roles:
+
+* **Codex CLI** — implementation coder.
+* **Claude Code Pro** — planner/reviewer.
+* **Copilot CLI** — shell/debug helper only.
+* **ChatGPT Plus** — external reviewer only.
+* **Human** — owner of decisions requiring private judgment, paid services, external credentials, destructive actions, or merge outside the automation branch.
 
 ---
 
-## Spec scope
+## Session start protocol
 
-For CineMatch accuracy-audit work, the source specs live under:
+At the start of every Claude session:
 
+1. Read `AGENTS.md`.
+2. Read `.remember/remember.md`.
+3. Inspect current branch and git status.
+4. Identify the active ticket, if any.
+5. Do not act from cached conversation memory if repo files disagree.
+6. If `.remember/remember.md`, ledger, ticket, and git state disagree, stop and report the conflict.
+
+Required commands when practical:
+
+```bash
+git branch --show-current
+git rev-parse --short HEAD
+git status --short
 ```
-docs/superpowers/specs/accuracy-audit/
+
+---
+
+## Current state source of truth
+
+Do not encode temporary project state in this file.
+
+Use:
+
+```text
+.remember/remember.md
 ```
 
-Claude should read **only the spec files relevant to the current phase**.
-Do not read all specs upfront. Do not summarize specs the human did not ask
-about. If a phase is not active, do not act on its spec.
+for current handoff, gate state, branch state, blockers, and next safe action.
+
+Claude must treat `.remember/remember.md` as stale until verified against:
+
+* `git status --short`
+* latest commit
+* active ticket
+* relevant artifact files
+* checkpoint ledger
+
+---
+
+## Autonomous checkpoint mode
+
+Codex may proceed autonomously on the automation branch only when all of the following are true:
+
+1. There is an active ticket.
+2. The ticket names exact files to change.
+3. The ticket names files to read but not change.
+4. The ticket includes validation commands.
+5. The ticket includes acceptance criteria.
+6. The work is one ticket at a time.
+7. Validation passes.
+8. Changed files match the allowed scope.
+9. No hard-stop condition triggers.
+10. The result is committed and recorded in the checkpoint ledger.
+
+Claude review is recommended for architecture-sensitive changes, but not automatically blocking unless the ticket says so.
+
+Human review is required for:
+
+* private data judgment
+* external credentials
+* paid services
+* destructive operations
+* merge outside the automation branch
+* changing project governance files without a rules-only ticket
+* label provenance decisions that affect audit truthfulness
+
+---
+
+## Claude planning rules
+
+Before writing or dispatching any ticket, Claude must define:
+
+1. Goal
+2. Files to change
+3. Files to read but not change
+4. Acceptance criteria
+5. Validation commands
+6. Dependencies
+7. Risk level
+8. Reviewer
+9. Exact Codex prompt
+
+A ticket missing any of these fields is not ready for Codex.
 
 ---
 
 ## Codex handoff format
 
-Every Codex handoff, whether written as a ticket file or passed directly to Codex CLI, must include:
+Every Codex handoff must include exactly these sections:
 
-1. **Goal** — one or two sentences. What "done" means.
-2. **Files to change** — exact paths. No globs, no "etc."
-3. **Files to read but not change** — context paths the coder may read.
-4. **Acceptance criteria** — concrete, checkable conditions.
-5. **Validation commands** — exact command lines, copy-pasteable.
-6. **Dependencies** — other tickets, data artifacts, or env requirements
-   that must exist first.
-7. **Risk level** — low / medium / high, with a one-line reason.
-8. **Reviewer** — who should review, if external review is recommended.
-9. **Codex prompt** — exact prompt or command payload Claude will pass to Codex CLI.
+```text
+Goal:
+Files to change:
+Files to read but not change:
+Acceptance criteria:
+Validation commands:
+Dependencies:
+Risk level:
+Reviewer:
+Codex prompt:
+```
 
-A ticket missing any of these fields is not ready to hand to Codex.
+Rules:
 
----
-
-## Autonomy boundaries
-
-- **Codex may continue autonomously on this automation branch.** It may draft
-  a ticket, implement it, validate it, self-review it, commit it, and record
-  it in the ledger without waiting for Human or Claude approval.
-- **Work one ticket at a time.** If a ticket needs more files or a schema
-  change, record the scope change in the ledger before proceeding.
-- **Keep long jobs gated by ticket evidence.** Ingestion, embedding builds,
-  full evaluations, and ablation sweeps may run only when the active ticket
-  explicitly allows them and records expected cost/time.
-- **Stop on hard blockers.** Stop before secrets, destructive operations,
-  external credentials, paid services, private data decisions, broad
-  architecture rewrites, unexplained metric regressions, or unsafe repo state.
+* Use exact paths only.
+* No globs.
+* No “etc.”
+* No implicit file permissions.
+* No hidden scope.
+* No production behavior changes unless explicitly authorized.
+* No `src/*` edits unless exact `src/*` files are listed.
 
 ---
 
-## Review behavior
+## Claude review behavior
 
-When reviewing a diff or validation log from Codex or Copilot:
+When reviewing Codex, Copilot, or subagent output, report in this order:
 
-- Check the diff matches the ticket's "Files to change" list exactly.
-- Check the validation commands were run and the output is included.
-- Flag any retrieval or ranking behavior change that was not in scope.
-- Flag any new LLM call inside retrieval, BM25, RRF, or reranker code.
-- Report findings as: matches spec / deviations / blockers — in that order.
+```text
+1. Matches spec
+2. Deviations
+3. Blockers
+4. Risk notes
+5. Exact next safe action
+```
+
+Claude must check:
+
+* changed files match ticket scope
+* validation commands were run exactly
+* tests passed
+* artifacts exist and are inspectable
+* no unauthorized `src/*` edits
+* no unauthorized retrieval/ranking/reranker behavior changes
+* no unauthorized LLM/API/Ollama/network calls
+* no hidden schema drift
+* no false-positive metric improvement
+* no checkpoint ledger omission
+* no stale `.remember/remember.md`
+
+---
+
+## Gate review standard
+
+Claude must not pass a gate based only on reported output.
+
+Gate review must cite concrete evidence from:
+
+* commands
+* diffs
+* artifacts
+* tests
+* ledger entries
+* file contents
+
+If evidence is missing, verdict must be:
+
+```text
+INCOMPLETE
+```
+
+or
+
+```text
+BLOCKED
+```
+
+not PASS.
+
+---
+
+## Fan-out / subagent rules
+
+Claude may fan out subagents only for bounded independent checks.
+
+Default fan-out mode is **read-only**.
+
+Before subagents act, Claude must tell them to read:
+
+* `AGENTS.md`
+* `CLAUDE.md`
+* `.remember/remember.md`
+* active ticket
+* relevant artifact/instruction files
+
+Subagents may not edit files unless:
+
+1. the lead Claude explicitly assigns one subagent to one file,
+2. the active ticket allows that file,
+3. no other agent is editing that file,
+4. the subagent reports before commit.
+
+Preferred subagent tasks:
+
+* label identity validation
+* provenance audit
+* schema consistency check
+* git status / scope risk check
+* artifact existence check
+* test log review
+* plan consistency review
+
+Forbidden subagent behavior without explicit ticket authorization:
+
+* editing `src/*`
+* changing retrieval/ranking/reranker behavior
+* running full evals
+* running ablations
+* calling LLM/API/Ollama/network services
+* committing
+* dispatching Codex
+* modifying governance files
+* silently resolving doc conflicts
+
+Every subagent report must include:
+
+```text
+Scope checked:
+Evidence inspected:
+Findings:
+Blockers:
+Recommended next action:
+```
+
+The lead Claude must synthesize findings and decide the next safe action.
+
+---
+
+## Accuracy-audit scope
+
+For CineMatch accuracy-audit work, source specs live under:
+
+```text
+docs/superpowers/specs/accuracy-audit/
+```
+
+Claude should read only files relevant to the active phase/ticket.
+
+Do not read all specs upfront unless the task is specifically a cross-phase audit.
+
+Do not act on inactive phases.
+
+Do not start Phase 5 implementation unless the current handoff and active ticket explicitly state that the regression-eval gate has passed.
+
+---
+
+## Label and provenance rules
+
+Movie-label judgment is allowed only when the active ticket explicitly requires semantic/movie-label judgment.
+
+If labels are generated or suggested by an AI/LLM and then accepted by a human, they must not be recorded as pure human-gold.
+
+Use honest provenance such as:
+
+```text
+human_reviewed_ai_assisted
+```
+
+or another explicit provenance value defined by the active ticket.
+
+Never silently convert:
+
+```text
+AI_DRAFT
+```
+
+into:
+
+```text
+human_gold
+```
+
+If provenance is unclear, stop and report.
+
+---
+
+## Hard stops for Claude
+
+Stop and report before:
+
+* secrets
+* destructive operations
+* force reset / force push / history rewrite
+* broad architecture rewrite
+* changing production retrieval/ranking/reranker behavior without ticket
+* editing `src/*` without exact authorization
+* calling LLM/API/Ollama/network without ticket authorization
+* running long ingestion/embedding/full eval/ablation without ticket authorization
+* committing heavy artifacts, model files, vector DBs, caches, or local temp files
+* proceeding when `.remember`, ledger, docs, artifacts, and git state disagree
+* making private data or paid-service decisions
+* treating AI-assisted labels as pure human-gold
+
+---
+
+## Checkpoint expectations
+
+After every completed gate, plan, analysis ticket, or implementation ticket:
+
+1. Run validation.
+2. Inspect outputs.
+3. Run `git status --short`.
+4. Run `git diff --name-only`.
+5. Commit only if validation passes and changed files are allowed.
+6. Append checkpoint to:
+
+```text
+docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md
+```
+
+7. Update `.remember/remember.md` if the current handoff changes.
+
+---
+
+## Claude output style
+
+Keep reports compact.
+
+Prefer:
+
+```text
+Verdict:
+Evidence:
+Files changed:
+Validation:
+Risks:
+Next safe action:
+Codex status:
+```
+
+Do not flood logs with large file contents.
+
+Summarize large artifacts and cite exact paths.
+## Claude Orchestrator Mode
+
+Claude Code may operate as the local orchestrator for Codex CLI and Copilot CLI.
+
+Claude should use Codex as an implementation sub-agent by writing a bounded prompt to `.agents/inbox/codex/` and invoking Codex non-interactively.
+
+Claude should use Copilot CLI only as a shell/debug/review helper.
+
+Claude must not allow parallel write-capable agents. Use `.agents/locks/active_ticket.lock`.
+
+### Codex dispatch command pattern, Windows PowerShell
+
+From the repository root:
+
+```powershell
+Get-Content .agents\inbox\codex\current.md -Raw |
+  codex exec `
+    --cd . `
+    --sandbox workspace-write `
+    --ask-for-approval on-request `
+    --output-last-message .agents\outbox\codex\current_result.md `
+    -
+```
+
+Use `--ask-for-approval on-request` for interactive safety.
+
+Use `--ask-for-approval never` only for explicitly safe, deterministic, offline tickets where all commands are already scoped and the sandbox is `workspace-write`.
+
+Never use `--dangerously-bypass-approvals-and-sandbox` unless running inside a dedicated hardened VM or disposable sandbox.
+
+### Copilot helper command pattern
+
+```powershell
+copilot --prompt "Read the failing command/log below and suggest the safest next shell/debug step. Do not edit files unless explicitly asked."
+```
+
+### Dispatch workflow
+
+1. Confirm no active lock exists.
+2. Create `.agents/locks/active_ticket.lock`.
+3. Write Codex prompt to `.agents/inbox/codex/current.md`.
+4. Run the Codex dispatch command.
+5. Read `.agents/outbox/codex/current_result.md`.
+6. Inspect `git status --short`.
+7. Run validation commands or verify Codex already ran them.
+8. Update `.agents/ledger.md`.
+9. Close the lock.
+10. Decide whether to stop, review, or author the next ticket.
+
