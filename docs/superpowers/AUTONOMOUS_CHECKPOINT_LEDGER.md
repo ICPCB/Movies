@@ -1142,3 +1142,29 @@ Every ticket/checkpoint appended below must include:
 - **Next action:** Author Dep #6 — localized/conditional rerank strategy
   design ticket. Phase 5 remains BLOCKED.
 - **External review:** Optional non-blocking for mechanics.
+
+### 2026-06-07T01:00+07:00 - DEP-6-STRATEGY-DESIGN
+
+- **Branch:** `automation/cinematch-accuracy-audit-full`
+- **Phase/ticket id:** `DEP-6` (Dep #6 — Localized Rerank Strategy Design)
+- **Status:** COMPLETE / SELF-REVIEWED
+- **Context:** Design/analysis ticket evaluating 5 strategies for fixing q10
+  without a global reranker swap, based on Dep #4 and Dep #5 evidence.
+- **Agent:** Claude Code Pro (direct execution — design only)
+- **Files changed:**
+  - `docs/superpowers/reports/dep-6-localized-rerank-strategy-design.md` (new)
+  - `.agents/inbox/codex/dep-6-localized-rerank-strategy-design.md` (new)
+  - `.agents/ledger.md` (updated)
+  - `.agents/state.json` (updated)
+  - `docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md` (this entry)
+- **Artifacts written:** None (design report only).
+- **Key finding:** `[REC]` (q10 grade-3 target) has a baseline rerank_score
+  of 0.067, higher than ranks 3 (0.034), 5 (0.022), and 6 (0.017). It falls
+  to rank 7 because the final_score blend formula adds upstream priors
+  (up to 0.30 bonus) that favor candidates with stronger upstream evidence.
+- **Recommendation:** Strategy 4 — blend-weight adjustment in `src/config.py`.
+  Validate with a simulation (Dep #7) before any `src/*` change.
+- **Phase 5 gate status:** BLOCKED.
+- **Committed:** This checkpoint entry + design report.
+- **Next action:** Dep #7 — blend-weight simulation (eval-only).
+- **External review:** Optional non-blocking; Human decision required for Dep #7.

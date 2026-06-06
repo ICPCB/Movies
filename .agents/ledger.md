@@ -109,3 +109,28 @@ Append-only log of agent dispatches and results.
 - **Phase 5**: BLOCKED
 - **Committed**: (this entry)
 - **Next safe action**: Author Dep #6 — localized/conditional rerank strategy design ticket
+
+---
+
+## Dep #6 — Localized Rerank Strategy Design
+
+- **Date**: 2026-06-07
+- **Ticket**: `.agents/inbox/codex/dep-6-localized-rerank-strategy-design.md`
+- **Agent**: Claude Code Pro (direct — design/analysis only)
+- **Verdict**: PASS (design complete)
+- **Key finding**: q10 failure is a blend formula issue, not a reranker model issue. `[REC]`'s rerank_score (0.067) > ranks 3/5/6's scores, but upstream priors push it to rank 7.
+- **Recommended strategy**: Strategy 4 — blend-weight adjustment in `src/config.py`
+- **Strategies evaluated**: 5 (query routing, conditional fallback, ensemble, blend-weight, single-query override)
+- **Next step**: Dep #7 — blend-weight simulation (eval-only, no `src/*` changes)
+- **Files created**:
+  - `docs/superpowers/reports/dep-6-localized-rerank-strategy-design.md`
+  - `.agents/inbox/codex/dep-6-localized-rerank-strategy-design.md` (ticket)
+- **Validation**:
+  - `git diff --name-only -- src`: empty
+  - Design report covers all 5 strategies
+  - Report recommends Strategy 4 with regression gate design
+  - Phase 5 ticket outline included (not created)
+- **No `src/*` changes**: confirmed
+- **Phase 5**: BLOCKED
+- **Committed**: (this entry)
+- **Next safe action**: Author and execute Dep #7 — blend-weight simulation
