@@ -2,17 +2,17 @@
   "schema_version": 1,
   "orchestrator": "claude-code-pro",
   "branch": "automation/cinematch-accuracy-audit-full",
-  "head": "05ee060",
+  "head": "pending_commit",
   "phase5_status": "BLOCKED",
-  "next_safe_ticket": "dep-3b",
+  "next_safe_ticket": "dep-4",
   "active_lock": null,
-  "last_dispatch": null,
+  "last_dispatch": "dep-3b",
   "last_updated": "2026-06-06",
   "agents": {
     "codex": {
       "status": "idle",
-      "last_ticket": null,
-      "last_result": null
+      "last_ticket": "dep-3b",
+      "last_result": "STOPPED"
     },
     "copilot": {
       "status": "idle",
@@ -21,8 +21,8 @@
     }
   },
   "gates": {
-    "dep_3b_label_merge": "pending",
-    "dep_4_regression_eval": "blocked_by_dep_3b",
+    "dep_3b_label_merge": "passed",
+    "dep_4_regression_eval": "pending",
     "phase_5_unblock": "blocked_by_dep_4"
   }
 }

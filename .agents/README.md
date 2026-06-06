@@ -65,29 +65,26 @@ Rules:
 
 ## Codex dispatch — Windows PowerShell
 
-```powershell
-Get-Content .agents\inbox\codex\current.md -Raw |
-  codex exec `
-    --cd . `
-    --sandbox workspace-write `
-    --ask-for-approval on-request `
-    --output-last-message .agents\outbox\codex\current_result.md `
-    -
-```
-
-For safe offline-only tickets:
+For safe offline tickets (deterministic, no network, scoped files):
 
 ```powershell
 Get-Content .agents\inbox\codex\current.md -Raw |
   codex exec `
     --cd . `
     --sandbox workspace-write `
-    --ask-for-approval never `
     --output-last-message .agents\outbox\codex\current_result.md `
     -
 ```
 
-Never use `--dangerously-bypass-approvals-and-sandbox`.
+`--sandbox workspace-write` gives Codex write access to the workspace only, not full machine access.
+
+Never use `--dangerously-bypass-approvals-and-sandbox` unless the repo is inside a dedicated hardened VM or disposable sandbox and the ticket explicitly authorizes it.
+
+If Codex fails due to Windows/sandbox shell issues:
+
+1. STOP and record `STOPPED` in the ledger with the error details.
+2. Do not escalate to dangerous full access automatically.
+3. Claude may patch the command/profile for `workspace-write` mode, or implement directly — but only if the ledger records Codex STOPPED and Claude implemented after failure.
 
 ## Copilot helper — Windows PowerShell
 

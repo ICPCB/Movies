@@ -398,16 +398,25 @@ Get-Content .agents\inbox\codex\current.md -Raw |
   codex exec `
     --cd . `
     --sandbox workspace-write `
-    --ask-for-approval on-request `
     --output-last-message .agents\outbox\codex\current_result.md `
     -
 ```
 
-Use `--ask-for-approval on-request` for interactive safety.
+For safe offline tickets (deterministic, no network, scoped files), use:
 
-Use `--ask-for-approval never` only for explicitly safe, deterministic, offline tickets where all commands are already scoped and the sandbox is `workspace-write`.
+```powershell
+--sandbox workspace-write
+```
 
-Never use `--dangerously-bypass-approvals-and-sandbox` unless running inside a dedicated hardened VM or disposable sandbox.
+This gives Codex write access to the workspace only, not full machine access.
+
+Never use `--dangerously-bypass-approvals-and-sandbox` unless running inside a dedicated hardened VM or disposable sandbox and the ticket explicitly authorizes it.
+
+If Codex fails due to Windows/sandbox shell issues, Claude must:
+
+1. STOP and record `STOPPED` in the ledger with the error details.
+2. Not escalate to `--dangerously-bypass-approvals-and-sandbox` automatically.
+3. Either patch the command/profile for `workspace-write` mode, or implement directly — but only if the ledger records Codex STOPPED and Claude implemented after failure.
 
 ### Copilot helper command pattern
 
