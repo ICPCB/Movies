@@ -2,11 +2,11 @@
   "schema_version": 1,
   "orchestrator": "claude-code-pro",
   "branch": "automation/cinematch-accuracy-audit-full",
-  "head": "f214c4f",
+  "head": "8f9489c",
   "phase5_status": "BLOCKED",
-  "next_safe_ticket": "dep-7-blend-weight-simulation",
+  "next_safe_ticket": "phase-5-blend-weight-change",
   "active_lock": null,
-  "last_dispatch": "dep-6",
+  "last_dispatch": "dep-7",
   "last_updated": "2026-06-07",
   "agents": {
     "codex": {
@@ -25,6 +25,7 @@
     "dep_4_regression_eval": "failed",
     "dep_5_failure_analysis": "complete",
     "dep_6_strategy_design": "complete",
-    "phase_5_unblock": "blocked_by_dep_4"
+    "dep_7_blend_weight_sim": "gate_candidate_pass",
+    "phase_5_unblock": "blocked_pending_human_approval"
   }
 }

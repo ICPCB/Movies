@@ -134,3 +134,29 @@ Append-only log of agent dispatches and results.
 - **Phase 5**: BLOCKED
 - **Committed**: (this entry)
 - **Next safe action**: Author and execute Dep #7 — blend-weight simulation
+
+---
+
+## Dep #7 — Blend-Weight Simulation
+
+- **Date**: 2026-06-07
+- **Agent**: Claude Code Pro (direct — eval-only)
+- **Verdict**: `gate_candidate_pass`
+- **Key finding**: 12/40 weight sets fix q10 strict_hit@5 (grade==3) in both advanced+hybrid with zero regressions. Critical: `RERANK_UPSTREAM_WEIGHT` ≤ 0.12 (current 0.20).
+- **Recommended weight change**: `RERANK_UPSTREAM_WEIGHT`: 0.20 → 0.12 (only change needed)
+- **Bug fixes during dev**: (1) strict_hit threshold corrected to grade==3; (2) normalization scope corrected to full pool
+- **Files created**:
+  - `eval/scripts/rerank_blend_weight_simulation.py`
+  - `eval/tests/test_rerank_blend_weight_simulation.py`
+  - `docs/superpowers/reports/dep-7-blend-weight-simulation.md`
+- **Artifacts** (gitignored):
+  - `eval/runs/2026-05-19-1846-nogit/analysis/rerank_regression/blend_weight_simulation.json`
+- **Validation**:
+  - compileall: PASS
+  - 15/15 unit tests: PASS
+  - Simulation run: PASS (40 combinations, 12 viable)
+  - `git diff --name-only -- src`: empty
+- **No `src/*` changes**: confirmed
+- **Phase 5**: BLOCKED
+- **Committed**: (this entry)
+- **Next safe action**: Human decision — approve Phase 5 ticket for `RERANK_UPSTREAM_WEIGHT` 0.20 → 0.12 in `src/config.py`, then run full production regression eval to validate

@@ -1168,3 +1168,48 @@ Every ticket/checkpoint appended below must include:
 - **Committed:** This checkpoint entry + design report.
 - **Next action:** Dep #7 — blend-weight simulation (eval-only).
 - **External review:** Optional non-blocking; Human decision required for Dep #7.
+
+### 2026-06-07T02:00+07:00 - DEP-7-BLEND-WEIGHT-SIMULATION
+
+- **Branch:** `automation/cinematch-accuracy-audit-full`
+- **Phase/ticket id:** `DEP-7` (Dep #7 — Blend-Weight Simulation)
+- **Status:** COMPLETE / `gate_candidate_pass`
+- **Agent:** Claude Code Pro (direct execution — eval-only)
+- **Files changed:**
+  - `eval/scripts/rerank_blend_weight_simulation.py` (new)
+  - `eval/tests/test_rerank_blend_weight_simulation.py` (new)
+  - `docs/superpowers/reports/dep-7-blend-weight-simulation.md` (new)
+  - `.agents/ledger.md` (updated)
+  - `.agents/state.json` (updated)
+  - `docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md` (this entry)
+- **Artifacts written (gitignored, NOT staged):**
+  - `eval/runs/2026-05-19-1846-nogit/analysis/rerank_regression/blend_weight_simulation.json`
+- **Commands run:**
+  - `venv/Scripts/python.exe -m compileall eval/scripts/...`
+  - `venv/Scripts/python.exe -m unittest eval.tests.test_rerank_blend_weight_simulation -v`
+  - `venv/Scripts/python.exe -m eval.scripts.rerank_blend_weight_simulation --run 2026-05-19-1846-nogit`
+  - `git diff --name-only -- src`
+- **Validation results:**
+  - `compileall`: PASS
+  - Unit tests: 15/15 PASS
+  - Simulation: 40 weight combinations tested, 12 viable, 0 regressions
+  - `git diff --name-only -- src`: empty
+- **Verdict:** `gate_candidate_pass` — 12 weight sets fix q10 strict_hit@5
+  (grade==3) in both advanced+hybrid with zero regressions on any query.
+- **Critical finding:** `RERANK_UPSTREAM_WEIGHT` ≤ 0.12 (from current 0.20)
+  is the sole critical threshold. `RERANK_SOURCE_AGREEMENT_BONUS` and
+  `RERANK_VOTE_COUNT_WEIGHT` can remain unchanged.
+- **Recommended change:** `RERANK_UPSTREAM_WEIGHT`: 0.20 → 0.12 (conservative,
+  smallest change from current).
+- **Bug fixes during dev:** (1) strict_hit threshold corrected from grade≥2
+  to grade==3 (matching `compute_metrics.py` line 242); (2) normalization
+  scope corrected from baseline_top (15 entries) to full pool (50 entries,
+  matching production `src/retrieval/reranker.py`).
+- **Phase 5 gate status:** BLOCKED. `gate_candidate_pass` authorizes authoring
+  a Phase 5 ticket for Human review. It does NOT unblock Phase 5.
+- **Committed:** This checkpoint entry + script/tests/report.
+- **Next action (Human):** Approve Phase 5 ticket for `RERANK_UPSTREAM_WEIGHT`
+  0.20 → 0.12 in `src/config.py`. Then run full production regression eval
+  (`rerank_regression_eval.py --stage all`) to validate. Phase 5 remains
+  BLOCKED until the production eval passes.
+- **External review:** Human decision required for Phase 5 approval.
