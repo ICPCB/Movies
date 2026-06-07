@@ -761,7 +761,7 @@ def _gate_verdict(
     }
 
 
-def stage_score(run_id: str, snapshot: Mapping[str, Any]) -> Dict[str, Any]:
+def stage_score(run_id: str, snapshot: Mapping[str, Any], *, queries_path: Optional[Path] = None) -> Dict[str, Any]:
     """Re-score captured pools with baseline + alt, recompute metrics, gate."""
     started = time.time()
 
@@ -862,13 +862,13 @@ def stage_score(run_id: str, snapshot: Mapping[str, Any]) -> Dict[str, Any]:
     # Load labels (merged gold+silver) and queries:
     run_dir = _run_io.run_dir(run_id)
     gold_path = run_dir / "gold_labels.jsonl"
-    queries_path = _run_io.EVAL_DIR / "queries" / "v1.jsonl"
+    q_path = queries_path or (_run_io.EVAL_DIR / "queries" / "v1.jsonl")
     labels_raw = _read_jsonl(gold_path)
     label_map = {
         (str(r["qid"]), int(r["tmdb_id"])): r.get("grade")
         for r in labels_raw
     }
-    query_records = cm._load_queries(queries_path)
+    query_records = cm._load_queries(q_path)
 
     # Recompute metrics via the imported compute_metrics module:
     metrics_baseline = cm.compute_metrics(
@@ -981,7 +981,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             with snapshot_path.open("r", encoding="utf-8") as f:
                 snapshot = json.load(f)
         print("[score] starting", flush=True)
-        comparison = stage_score(args.run, snapshot)
+        comparison = stage_score(args.run, snapshot, queries_path=queries_path)
         _atomic_write_json(comparison_path, comparison)
         print(f"[score] wrote {comparison_path}", flush=True)
         print(f"[score] gate_verdict = {comparison['gate_verdict']['value']}", flush=True)

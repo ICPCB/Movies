@@ -71,7 +71,10 @@ def _load_silver_labels(path: Path) -> list[Dict[str, Any]]:
 def _load_queries(path: Path) -> Dict[str, Dict[str, Any]]:
     queries: Dict[str, Dict[str, Any]] = {}
     for record in _read_jsonl(path):
-        query = _schemas.validate_query_record(record)
+        try:
+            query = _schemas.validate_query_record(record)
+        except ValueError:
+            query = _schemas.validate_query_record_v2(record)
         queries[str(query["qid"])] = query
     return queries
 
@@ -246,6 +249,7 @@ def _write_jsonl(path: Path, rows: Iterable[Mapping[str, Any]]) -> None:
 def run(
     *,
     run_id: Optional[str] = None,
+    queries_path: Optional[Path] = None,
     qids: Optional[Sequence[str]] = None,
     include_rules: bool = False,
 ) -> tuple[str, Path, Path, Dict[str, Any]]:
@@ -256,7 +260,7 @@ def run(
 
     candidates = _load_candidates(run_path / "candidates.jsonl")
     silver_labels = _load_silver_labels(run_path / "silver_labels.jsonl")
-    queries = _load_queries(_run_io.EVAL_DIR / "queries" / "v1.jsonl")
+    queries = _load_queries(queries_path or (_run_io.EVAL_DIR / "queries" / "v1.jsonl"))
     top_5_modes = _top_5_modes(per_query_path)
     rows, summary = build_review_sheet(
         run_id=actual_run_id,
@@ -282,6 +286,7 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
         description="Write a targeted CineMatch silver-label audit sheet."
     )
     parser.add_argument("--run", default=None)
+    parser.add_argument("--queries", default=None, type=Path)
     parser.add_argument("--qids", default=["q12", "q13"], type=_parse_qids)
     parser.add_argument("--include-rules", action="store_true")
     return parser.parse_args(argv)
@@ -292,6 +297,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         run_id, review_path, summary_path, _summary = run(
             run_id=args.run,
+            queries_path=args.queries,
             qids=args.qids,
             include_rules=args.include_rules,
         )

@@ -195,7 +195,10 @@ def _read_jsonl(path: Path) -> Iterable[Dict[str, Any]]:
 def _load_queries(path: Path) -> Dict[str, str]:
     queries: Dict[str, str] = {}
     for record in _read_jsonl(path):
-        query_record = _schemas.validate_query_record(record)
+        try:
+            query_record = _schemas.validate_query_record(record)
+        except ValueError:
+            query_record = _schemas.validate_query_record_v2(record)
         queries[query_record["qid"]] = query_record["query"]
     return queries
 
@@ -360,6 +363,7 @@ def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
         description="LLM pre-grade CineMatch candidates into silver labels."
     )
     parser.add_argument("--run", default=None)
+    parser.add_argument("--queries", default=None, type=Path)
     parser.add_argument("--limit", default=None, type=int)
     parser.add_argument("--seed", default=42, type=int)
     return parser.parse_args(argv)
@@ -376,6 +380,7 @@ def main(
         limit=args.limit,
         seed=args.seed,
         llm_caller=llm_caller,
+        queries_path=args.queries,
     )
     parse_rate = "n/a" if result.parse_rate is None else f"{result.parse_rate:.3f}"
     print(f"run_id={result.run_id}")

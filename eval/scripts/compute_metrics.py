@@ -74,7 +74,10 @@ def _load_silver_labels(path: Path) -> List[Dict[str, Any]]:
 def _load_queries(path: Path) -> Dict[str, Dict[str, Any]]:
     queries: Dict[str, Dict[str, Any]] = {}
     for record in _read_jsonl(path):
-        query = _schemas.validate_query_record(record)
+        try:
+            query = _schemas.validate_query_record(record)
+        except ValueError:
+            query = _schemas.validate_query_record_v2(record)
         queries[query["qid"]] = query
     return queries
 
@@ -487,6 +490,7 @@ def compute_metrics(
 def run(
     *,
     run_id: Optional[str] = None,
+    queries_path: Optional[Path] = None,
     bootstrap_b: int = 1000,
     seed: int = 42,
 ) -> tuple[str, Path, Dict[str, Any]]:
@@ -495,7 +499,7 @@ def run(
     _load_manifest(actual_run_id)
     candidates = _load_candidates(run_path / "candidates.jsonl")
     silver_labels = _load_silver_labels(run_path / "silver_labels.jsonl")
-    queries = _load_queries(_run_io.EVAL_DIR / "queries" / "v1.jsonl")
+    queries = _load_queries(queries_path or (_run_io.EVAL_DIR / "queries" / "v1.jsonl"))
 
     metrics = compute_metrics(
         run_id=actual_run_id,
@@ -517,6 +521,7 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
         description="Compute CineMatch Phase 1 provisional metrics."
     )
     parser.add_argument("--run", default=None)
+    parser.add_argument("--queries", default=None, type=Path)
     parser.add_argument("--bootstrap-b", default=1000, type=int)
     parser.add_argument("--seed", default=42, type=int)
     return parser.parse_args(argv)
@@ -526,6 +531,7 @@ def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv)
     run_id, metrics_path, metrics = run(
         run_id=args.run,
+        queries_path=args.queries,
         bootstrap_b=args.bootstrap_b,
         seed=args.seed,
     )

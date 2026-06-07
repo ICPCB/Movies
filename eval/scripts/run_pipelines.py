@@ -256,7 +256,11 @@ def _load_queries(path: Path, limit: int | None) -> List[Dict[str, Any]]:
                 record = json.loads(stripped)
             except json.JSONDecodeError as exc:
                 raise ValueError(f"{path}:{line_number}: invalid JSON") from exc
-            queries.append(_schemas.validate_query_record(record))
+            try:
+                _schemas.validate_query_record(record)
+            except ValueError:
+                _schemas.validate_query_record_v2(record)
+            queries.append(record)
             if limit is not None and len(queries) >= limit:
                 break
     return queries
