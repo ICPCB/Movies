@@ -160,3 +160,28 @@ Append-only log of agent dispatches and results.
 - **Phase 5**: BLOCKED
 - **Committed**: (this entry)
 - **Next safe action**: Human decision — approve Phase 5 ticket for `RERANK_UPSTREAM_WEIGHT` 0.20 → 0.12 in `src/config.py`, then run full production regression eval to validate
+
+---
+
+## Phase 5 — Reduce RERANK_UPSTREAM_WEIGHT to fix q10 strict_hit@5
+
+- **Date**: 2026-06-07
+- **Ticket**: `.agents/inbox/codex/phase-5-rerank-upstream-weight-fix.md`
+- **Agent**: Claude Code Pro (direct execution — Human-authorized)
+- **Verdict**: PASS (weight change validated, q10 fixed, 0 regressions)
+- **Change**: `src/config.py` `RERANK_UPSTREAM_WEIGHT`: 0.20 → 0.12
+- **Regression eval**: `rerank_regression_eval.py --stage all` with venv Python
+  - Gate harness verdict: `gate_inconclusive` (alt-reranker label gaps; irrelevant to weight-only change)
+  - Baseline self-check: PASS
+  - Basic invariant: PASS (0.50/0.50)
+  - Baseline (production reranker + new weight) metrics:
+    - basic sh@5: 0.50 (unchanged)
+    - advanced sh@5: 0.55 (+0.05 from 0.50)
+    - hybrid sh@5: 0.55 (+0.05 from 0.50)
+  - Per-query strict_hit@5: q10 fixed (0→1 in advanced+hybrid); 0 hit→miss flips
+- **Deviation**: `HF_HUB_OFFLINE=1` unset for Stage 2 (same as Dep #4 — `resolve_and_download_model` requires metadata API)
+- **Files changed**: `src/config.py` (line 50-53 comment + line 65 constant)
+- **No other `src/*` changes**: confirmed (`git diff --cached --name-only -- src/` = `src/config.py` only)
+- **Committed**: `5a7da48`
+- **Phase 5**: COMPLETE
+- **Next safe action**: Update checkpoint ledger. Phase 5 is done.
