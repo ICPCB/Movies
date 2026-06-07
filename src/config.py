@@ -52,18 +52,21 @@ EXPLAIN_TOP_K = 3
 #   rerank_score to be overridden for candidates with high upstream scores
 #   but moderate rerank scores (e.g., q10's [REC] target, Dep #7).
 #
-# - RERANK_SOURCE_AGREEMENT_BONUS: Increased from 0.05 → 0.10. When both
-#   semantic and BM25 agree (movie appears in both retrieval results), it's
-#   strong evidence of relevance. Boosting this helps complex queries where
-#   both dense and sparse signals validate the match.
+# - RERANK_SOURCE_AGREEMENT_BONUS: Reduced from 0.10 → 0.00. The previous
+#   value over-rewarded source agreement for queries where the gold target
+#   is found only by semantic retrieval (source_agreement=0.0). Movies found
+#   by both retrieval methods received a +0.10 lift that pushed genuinely
+#   relevant targets (e.g. q05/Thanatomorphose) from rank 2 to rank 14+.
+#   Live eval confirmed 0.00 produces zero regressions and fixes q05 in
+#   advanced+hybrid modes. Agreement=0.02 was insufficient (rank 5, miss).
 #
 # Net effect: Cross-encoder score remains primary. Popularity is deemphasized.
-# Upstream evidence is trusted. Movies that pass both retrieval stages get
-# a meaningful boost. This fixes queries where semantic/BM25 consensus shows
-# subtle intent that vote counts would otherwise drown out.
+# Upstream evidence is lightly trusted. Source agreement bonus is zeroed
+# because the +0.10 penalty on single-retrieval targets outweighed its
+# benefit for dual-retrieval consensus.
 RERANK_VOTE_COUNT_WEIGHT = 0.08
 RERANK_UPSTREAM_WEIGHT = 0.12
-RERANK_SOURCE_AGREEMENT_BONUS = 0.10
+RERANK_SOURCE_AGREEMENT_BONUS = 0.00
 
 # Kept for backward compatibility with older imports / wrappers.
 INITIAL_TOP_K = CANDIDATE_POOL
