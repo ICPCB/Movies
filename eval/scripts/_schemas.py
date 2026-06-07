@@ -5,7 +5,9 @@ from datetime import datetime
 from typing import Any, Dict
 
 
-QUERY_IDS = {f"q{i:02d}" for i in range(1, 21)}
+QUERY_IDS_V1 = {f"q{i:02d}" for i in range(1, 21)}
+QUERY_IDS_V2 = {f"q{i:02d}" for i in range(1, 61)}
+QUERY_IDS = QUERY_IDS_V1
 MODES = {"basic", "advanced", "hybrid"}
 
 ERA_VALUES = {"pre-1980", "1980-2000", "2000-2015", "2015+"}
@@ -27,6 +29,23 @@ SPECIFICITY_VALUES = {"low", "medium", "high"}
 AMBIGUITY_VALUES = {"low", "medium", "high"}
 CONFIDENCE_VALUES = {"high", "medium", "low"}
 GRADE_VALUES = {0, 1, 2, 3, None}
+
+MOOD_CURRENT_EMOTION_VALUES = {
+    "sad", "lonely", "stressed", "tired", "anxious", "bored", "heartbroken",
+}
+MOOD_DESIRED_DIRECTION_VALUES = {
+    "cheer_me_up", "calm_me_down", "comfort_me", "motivate_me",
+    "make_me_laugh", "help_me_cry", "give_me_hope",
+}
+MOOD_ENERGY_LEVEL_VALUES = {
+    "light_cozy", "funny_energetic", "slow_gentle", "emotional_but_safe",
+}
+MOOD_INTENSITY_VALUES = {
+    "very_light", "medium_emotional", "heavy_but_requested",
+}
+MOOD_SAFETY_VALUES = {
+    "safe_hopeful", "neutral", "dark_intended",
+}
 
 _TS_RE = re.compile(
     r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$"
@@ -137,6 +156,105 @@ def validate_query_record(d: Dict[str, Any]) -> Dict[str, Any]:
         if not isinstance(genre, str):
             raise ValueError(f"tags.genre[{index}] must be a string")
         _require_enum(genre, f"tags.genre[{index}]", GENRE_VALUES)
+
+    return record
+
+
+def _validate_mood_tags(mood: Dict[str, Any]) -> None:
+    """Validate the mood sub-object within query tags."""
+    mood_keys = {
+        "current_emotion",
+        "desired_direction",
+        "energy_level",
+        "intensity",
+        "safety_sensitivity",
+    }
+    _reject_unknown(mood, mood_keys, "tags.mood")
+    _require_enum(
+        _require(mood, "current_emotion", "tags.mood"),
+        "tags.mood.current_emotion",
+        MOOD_CURRENT_EMOTION_VALUES,
+    )
+    _require_enum(
+        _require(mood, "desired_direction", "tags.mood"),
+        "tags.mood.desired_direction",
+        MOOD_DESIRED_DIRECTION_VALUES,
+    )
+    _require_enum(
+        _require(mood, "energy_level", "tags.mood"),
+        "tags.mood.energy_level",
+        MOOD_ENERGY_LEVEL_VALUES,
+    )
+    _require_enum(
+        _require(mood, "intensity", "tags.mood"),
+        "tags.mood.intensity",
+        MOOD_INTENSITY_VALUES,
+    )
+    _require_enum(
+        _require(mood, "safety_sensitivity", "tags.mood"),
+        "tags.mood.safety_sensitivity",
+        MOOD_SAFETY_VALUES,
+    )
+
+
+def validate_query_record_v2(d: Dict[str, Any]) -> Dict[str, Any]:
+    """Validate one eval/queries/v2.jsonl record (supports mood tags and q01-q60)."""
+    record = _require_object(d, "query record")
+    required = {"qid", "query", "tags", "notes"}
+    _reject_unknown(record, required, "query record")
+
+    qid = _require_str(_require(record, "qid"), "qid")
+    _require_enum(qid, "qid", QUERY_IDS_V2)
+    _require_str(_require(record, "query"), "query")
+
+    notes = _require_str(_require(record, "notes"), "notes")
+    if len(notes) > 200:
+        raise ValueError("notes must be <= 200 characters")
+
+    tags = _require_object(_require(record, "tags"), "tags")
+    tag_keys = {
+        "era",
+        "genre",
+        "vocab_distance",
+        "length",
+        "specificity",
+        "ambiguity",
+        "mood",
+    }
+    _reject_unknown(tags, tag_keys, "tags")
+
+    era = _require(tags, "era", "tags")
+    if era is not None:
+        _require_enum(era, "tags.era", ERA_VALUES)
+
+    _require_enum(
+        _require(tags, "vocab_distance", "tags"),
+        "tags.vocab_distance",
+        VOCAB_DISTANCE_VALUES,
+    )
+    _require_enum(_require(tags, "length", "tags"), "tags.length", LENGTH_VALUES)
+    _require_enum(
+        _require(tags, "specificity", "tags"),
+        "tags.specificity",
+        SPECIFICITY_VALUES,
+    )
+    _require_enum(
+        _require(tags, "ambiguity", "tags"),
+        "tags.ambiguity",
+        AMBIGUITY_VALUES,
+    )
+
+    genres = _require(tags, "genre", "tags")
+    if not isinstance(genres, list) or not genres:
+        raise ValueError("tags.genre must be a non-empty list")
+    for index, genre in enumerate(genres):
+        if not isinstance(genre, str):
+            raise ValueError(f"tags.genre[{index}] must be a string")
+        _require_enum(genre, f"tags.genre[{index}]", GENRE_VALUES)
+
+    mood = tags.get("mood")
+    if mood is not None:
+        _validate_mood_tags(_require_object(mood, "tags.mood"))
 
     return record
 
