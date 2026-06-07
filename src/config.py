@@ -47,11 +47,10 @@ EXPLAIN_TOP_K = 3
 #   but should rank on relevance-to-query, not just popularity. Lighter weight
 #   preserves quality tier while letting cross-encoder score decide.
 #
-# - RERANK_UPSTREAM_WEIGHT: Increased from 0.12 → 0.20. Semantic and BM25
-#   signals are already filtered through RRF fusion. Trust them more — if a
-#   movie made it to the rerank pool, its upstream scores (rrf_score) matter.
-#   Higher weight lets the cross-encoder see which candidates had consensus
-#   across both retrievers.
+# - RERANK_UPSTREAM_WEIGHT: Reduced from 0.20 → 0.12. The previous value
+#   over-weighted upstream RRF evidence, causing the cross-encoder's
+#   rerank_score to be overridden for candidates with high upstream scores
+#   but moderate rerank scores (e.g., q10's [REC] target, Dep #7).
 #
 # - RERANK_SOURCE_AGREEMENT_BONUS: Increased from 0.05 → 0.10. When both
 #   semantic and BM25 agree (movie appears in both retrieval results), it's
@@ -63,7 +62,7 @@ EXPLAIN_TOP_K = 3
 # a meaningful boost. This fixes queries where semantic/BM25 consensus shows
 # subtle intent that vote counts would otherwise drown out.
 RERANK_VOTE_COUNT_WEIGHT = 0.08
-RERANK_UPSTREAM_WEIGHT = 0.20
+RERANK_UPSTREAM_WEIGHT = 0.12
 RERANK_SOURCE_AGREEMENT_BONUS = 0.10
 
 # Kept for backward compatibility with older imports / wrappers.
