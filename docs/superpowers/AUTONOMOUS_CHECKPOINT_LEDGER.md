@@ -1304,3 +1304,90 @@ Every ticket/checkpoint appended below must include:
   - `RERANK_UPSTREAM_WEIGHT`: 0.20 → 0.12 (Phase 5-A, commit `5a7da48`)
   - `RERANK_SOURCE_AGREEMENT_BONUS`: 0.10 → 0.00 (Phase 5-B, commit `dcedad1`)
 - **Next action:** Phase 5 closed. Author Phase 6 eval-expansion ticket if useful.
+
+---
+
+### PHASE-6-A.1-ALT-LABEL-GAP-AUDIT
+
+- **Timestamp:** 2026-06-07
+- **Branch:** `main`
+- **Commit:** `54b4d1c`
+- **Ticket/Gate:** Phase 6-A.1 — Alt-reranker label gap audit script
+- **Verdict:** PASS
+- **Files changed:**
+  - `eval/scripts/alt_reranker_label_gap_audit.py` (created)
+  - `eval/tests/test_alt_reranker_label_gap_audit.py` (created)
+- **Commands run:**
+  - `python -m py_compile eval/scripts/alt_reranker_label_gap_audit.py` → PASS
+  - `python -m pytest eval/tests/test_alt_reranker_label_gap_audit.py -v` → 10/10 PASS
+  - `git diff --name-only -- src/` → empty (no src changes)
+- **Artifact:** `eval/runs/2026-05-19-1846-nogit/analysis/rerank_regression/alt_label_gap_audit.json`
+- **Finding:** 0 unlabeled candidates in score_stage_top15 (all top-15 already labeled).
+  gate_inconclusive root cause is @10/@15 pipeline positions, not reranked top-15.
+- **Deviation:** Codex STOPPED (stale AGENTS.md hard gates + empty .remember). Claude implemented directly.
+- **Next action:** Phase 6-B schema extension + query authoring.
+
+---
+
+### PHASE-6-B-SCHEMA-AND-QUERIES
+
+- **Timestamp:** 2026-06-07
+- **Branch:** `main`
+- **Commit:** `a5c6fed`
+- **Ticket/Gate:** Phase 6-B — V2 schema extension + q21-q60 query authoring
+- **Verdict:** PASS
+- **Files changed:**
+  - `eval/scripts/_schemas.py` (extended: QUERY_IDS_V2, mood tag constants, validate_query_record_v2)
+  - `eval/scripts/generate_queries_v2.py` (created: 40 query drafts with mood-intent)
+  - `eval/tests/test_generate_queries_v2.py` (created: 24 tests)
+  - `eval/queries/v2.candidate.jsonl` (generated: 40 records)
+- **Commands run:**
+  - `python -m py_compile eval/scripts/generate_queries_v2.py` → PASS
+  - `python -m pytest eval/tests/ -q` → 336/336 PASS (312 existing + 24 new)
+  - `git diff --name-only -- src/` → empty (no src changes)
+- **Taxonomy distribution (40 new queries):**
+  - era: pre-1980=8, 1980-2000=10, 2000-2015=9, 2015+=11, null=2
+  - vocab_distance: high=18, medium=12, low=10
+  - length: short=6, medium=15, long=19
+  - ambiguity: low=12, medium=12, high=16
+  - mood queries: 10 (covering all 7 required emotions + 2 dark-intended)
+  - genre: documentary=4, romance=7, other=2 (filling v1 gaps)
+- **Smoke test:** Mandatory "today I am sad..." regression query included.
+- **Next action:** Human review of v2.candidate.jsonl → promote to v2.jsonl. Then Phase 6-C (pipelines + labels, requires GPU + LLM auth).
+
+---
+
+### Phase 6-C + 6-D: Pipeline, silver labels, 60-query metrics
+
+- **Timestamp:** 2026-06-07T12:00Z
+- **Branch:** main
+- **Commit:** `825004e`
+- **Verdict:** PASS
+- **Work completed:**
+  1. Patched 5 eval scripts for v2 query support (try/except fallback pattern)
+  2. Added `--queries` CLI arg to `llm_pregrade.py`, `compute_metrics.py`, `audit_silver_labels.py`
+  3. Threaded `queries_path` through `rerank_regression_eval.stage_score`
+  4. Promoted `eval/queries/v2.jsonl` (40 queries q21-q60)
+  5. Created `eval/queries/all.jsonl` (60 combined queries)
+  6. v2 pipeline run `2026-06-07-1201-nogit`: 424 candidates across 40 queries
+  7. LLM pre-grading: 424 silver labels, 423/424 successful parses (parse_rate=0.998)
+  8. Combined run `2026-06-07-combined-nogit`: 644 candidates, 644 silver labels, 675 gold labels
+  9. 60-query metrics computed (silver-only, provisional)
+- **Files changed:**
+  - `eval/scripts/run_pipelines.py` (v2 query fallback)
+  - `eval/scripts/llm_pregrade.py` (v2 query fallback + --queries arg)
+  - `eval/scripts/compute_metrics.py` (v2 query fallback + --queries arg)
+  - `eval/scripts/audit_silver_labels.py` (v2 query fallback + --queries arg)
+  - `eval/scripts/rerank_regression_eval.py` (queries_path threading)
+  - `eval/queries/v2.jsonl` (promoted from v2.candidate.jsonl)
+  - `eval/queries/all.jsonl` (created: 60 queries)
+- **Metrics (60 queries, silver-only):**
+  - basic: hit@5=0.933, sh@5=0.617, mrr@5=0.808, ndcg@5=0.801
+  - advanced: hit@5=0.933, sh@5=0.627, mrr@5=0.851, ndcg@5=0.805
+  - hybrid: hit@5=0.900, sh@5=0.525, mrr@5=0.782, ndcg@5=0.766
+  - queries_excluded_null: basic=0, advanced=1, hybrid=1 (q55/228150 LLM parse error)
+- **Validation:**
+  - 336/336 tests pass
+  - `git diff --name-only -- src/` → empty
+  - q05/q10 fixes preserved (same v1 candidates.jsonl)
+- **Next action:** Human review of 60-query metrics. Consider gold labeling for v2 queries. Phase 7 planning if mood queries expose retrieval gaps.
