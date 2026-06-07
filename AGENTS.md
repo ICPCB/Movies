@@ -621,8 +621,7 @@ Codex must return:
 
 ### CineMatch current hard gates
 
-* Phase 5 remains BLOCKED.
+* Phase 5 COMPLETE (5-A: q10 fixed commit `5a7da48`, 5-B: q05 fixed commit `dcedad1`).
 * Dep #3 grading is accepted as `human_reviewed_ai_assisted`, not `human_gold`.
-* Next safe ticket is Dep #3b only: merge accepted labels with honest provenance.
-* Regression eval may continue only after Dep #3b succeeds.
-* Phase 5 may continue only after regression eval gate passes.
+* Phase 6 IN_PROGRESS: eval expansion (no `src/*` changes).
+* No `src/*` edits unless an active ticket explicitly authorizes it.
