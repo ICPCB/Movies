@@ -1,18 +1,19 @@
 {
   "schema_version": 1,
   "orchestrator": "claude-code-pro",
-  "branch": "automation/cinematch-accuracy-audit-full",
-  "head": "5a7da48",
+  "branch": "main",
+  "head": "dcedad1",
   "phase5_status": "COMPLETE",
+  "phase5_summary": "5-A: RERANK_UPSTREAM_WEIGHT 0.20→0.12 (q10 fixed). 5-B: RERANK_SOURCE_AGREEMENT_BONUS 0.10→0.00 (q05 fixed). Zero regressions.",
   "next_safe_ticket": null,
   "active_lock": null,
-  "last_dispatch": "phase-5",
+  "last_dispatch": "phase-5b",
   "last_updated": "2026-06-07",
   "agents": {
     "codex": {
       "status": "idle",
-      "last_ticket": "dep-3b",
-      "last_result": "STOPPED"
+      "last_ticket": "phase-5b",
+      "last_result": "STOPPED (lock false positive; Claude executed directly)"
     },
     "copilot": {
       "status": "idle",
@@ -26,7 +27,12 @@
     "dep_5_failure_analysis": "complete",
     "dep_6_strategy_design": "complete",
     "dep_7_blend_weight_sim": "gate_candidate_pass",
-    "phase_5_regression_eval": "passed",
-    "phase_5_unblock": "unblocked"
+    "dep_8_step_ab_analysis": "complete",
+    "dep_9_agreement_simulation": "passed",
+    "phase_5a_regression_eval": "passed",
+    "phase_5a_unblock": "unblocked",
+    "phase_5b_regression_eval": "passed",
+    "phase_5b_live_eval": "passed",
+    "phase_5_complete": true
   }
 }

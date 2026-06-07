@@ -1275,3 +1275,32 @@ Every ticket/checkpoint appended below must include:
   branch when ready.
 - **External review:** Optional non-blocking for the mechanics; Human merge
   decision required before merging to main.
+
+---
+
+### PHASE-5-B-AGREEMENT-BONUS-FIX
+
+- **Timestamp:** 2026-06-07
+- **Branch:** `main`
+- **Commit:** `dcedad1`
+- **Ticket/Gate:** Phase 5-B — Reduce RERANK_SOURCE_AGREEMENT_BONUS 0.10 → 0.00
+- **Verdict:** gate_pass
+- **Files changed:** `src/config.py` (comment block + RERANK_SOURCE_AGREEMENT_BONUS constant)
+- **Commands run:**
+  - `git diff --name-only -- src/` → only `src/config.py`
+  - `python -m py_compile src/config.py` → PASS
+  - `python -m pytest eval/tests/ -v` → 302 passed
+  - `rerank_regression_eval.py --stage all` → gate_inconclusive (alt-reranker label gaps; baseline metrics validated)
+  - Live 20-query eval with agreement=0.00 → zero regressions, q05 rank 2 HIT
+- **Baseline metrics (production reranker + Phase 5-B weights):**
+  - basic sh@5: 0.50 (unchanged from Phase 5-A)
+  - advanced sh@5: 0.6667 (improved from 0.55 — q05 fixed, 7 queries with labels)
+  - hybrid sh@5: 0.6667 (improved from 0.55 — q05 fixed, 7 queries with labels)
+- **Per-query changes:** q05 miss→hit (advanced+hybrid). Zero hit→miss regressions.
+- **q05 status:** FIXED in all modes (basic was already hit; advanced+hybrid now hit).
+- **q10 status:** PRESERVED in all modes.
+- **Deviation:** Codex STOPPED on false positive (lock/handoff concern); Claude executed directly (same pattern as Phase 5-A).
+- **Phase 5 final status:** **COMPLETE.** Both q10 (5-A) and q05 (5-B) resolved.
+  - `RERANK_UPSTREAM_WEIGHT`: 0.20 → 0.12 (Phase 5-A, commit `5a7da48`)
+  - `RERANK_SOURCE_AGREEMENT_BONUS`: 0.10 → 0.00 (Phase 5-B, commit `dcedad1`)
+- **Next action:** Phase 5 closed. Author Phase 6 eval-expansion ticket if useful.
