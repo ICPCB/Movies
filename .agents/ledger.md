@@ -606,5 +606,5 @@ Append-only log of agent dispatches and results.
   - q49 behavior remains unchanged.
   - No pipeline files changed.
 - **Failures**: none for scoped ticket; Phase 8 still NEEDS_REVIEW pending q49/q53 or post-fix eval decision.
-- **Commit**: pending
+- **Commit**: `43d9c29`
 - **Next safe action**: commit 8-L, then open separate q49/q53 ticket or request authorization for gated post-fix eval.

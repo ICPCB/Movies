@@ -1783,5 +1783,5 @@ Every ticket/checkpoint appended below must include:
   - `C:\Users\Minh Nguyen\.claude\plans\you-are-claude-code-serialized-chipmunk.md`
 - **Failures:** none for scoped ticket; no full eval was run.
 - **Assumptions:** 8-L authorizes deterministic q59 retrieval-input fix only; q49/q53 remain separate.
-- **Commit:** pending
+- **Commit:** `43d9c29`
 - **Next safe action:** commit 8-L, then open separate q49/q53 ticket or request authorization for gated post-fix eval.

@@ -53,7 +53,7 @@ Assumptions:
 - The pre-existing dirty eval CSV remains unrelated and untouched.
 
 Commit:
-- Pending.
+- `43d9c29`
 
 Next safe action:
 - Commit 8-L, then decide whether to open a separate q49/q53 ticket or request authorization for a gated post-fix eval.
