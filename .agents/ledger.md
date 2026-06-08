@@ -4,6 +4,40 @@ Append-only log of agent dispatches and results.
 
 ---
 
+## Phase 7 Completion and Phase 8-G Regression Gate
+
+- **Date**: 2026-06-08
+- **Agent**: Codex CLI
+- **Verdict**: Phase 7 COMPLETE; Phase 8 NEEDS_REVIEW / STOPPED
+- **Phase 7 evidence**:
+  - `eval/runs/2026-06-07-combined-nogit/metrics.json`
+  - `eval/runs/2026-06-07-combined-nogit/analysis/error_report/summary.gold.json`
+  - `docs/superpowers/reports/phase7-mood-analysis.md`
+  - `docs/superpowers/plans/phase8-mood-retrieval-fixes.md`
+- **Phase 8 implementation**:
+  - 8-A through 8-F implemented and validated
+  - source tests: 13/13 PASS
+  - targeted Phase 7/8 eval tests: 57/57 PASS
+  - full eval suite: 345/346 PASS; one environment-shaped temp-path assertion fails because the sandbox only permits a basetemp inside the repo
+- **Phase 8-G run**:
+  - run id: `2026-06-08-phase8-mood-nogit`
+  - candidates: 722
+  - silver labels: 722; 721 successful parses
+  - non-mood hit@5:
+    - basic 0.940 -> 0.940
+    - advanced 0.960 -> 0.940
+    - hybrid 0.940 -> 0.900
+- **Blocking evidence**:
+  - 8-E no-mood identity requirement violated by hit-to-miss flips
+  - q49 and q59 regress in hybrid
+- **Artifacts**:
+  - `docs/superpowers/reports/phase8-regression-investigation-request.md`
+  - `.agents/outbox/codex/8-G_result.md`
+- **Commit**: none; regression unresolved
+- **Next safe action**: Claude investigation/review, then a bounded Codex implementation ticket
+
+---
+
 ## Dep #3b — Merge Accepted Labels into gold_labels.jsonl
 
 - **Date**: 2026-06-06
@@ -248,3 +282,28 @@ Append-only log of agent dispatches and results.
 - **Phase 5-B**: COMPLETE
 - **Phase 5**: COMPLETE (5-A: q10 fixed, 5-B: q05 fixed)
 - **Next safe action**: Update checkpoint ledger and close out Phase 5
+
+---
+
+## Phase 6-A.1 — Alt-Reranker Label Gap Audit Script
+
+- **Date**: 2026-06-07
+- **Ticket**: `.agents/inbox/codex/6a1-alt-label-gap-audit.md`
+- **Agent**: Codex CLI attempted → STOPPED (stale AGENTS.md hard gates + empty .remember/remember.md). Claude Code Pro executed directly.
+- **Verdict**: PASS
+- **Key finding**: 0 unlabeled candidates in `score_stage_top15.json` top-15 (both alt and baseline). `gate_inconclusive` root cause is label gaps at @10/@15 positions in the pipeline's per-mode ranking, not in the reranked top-15.
+- **Files created**:
+  - `eval/scripts/alt_reranker_label_gap_audit.py`
+  - `eval/tests/test_alt_reranker_label_gap_audit.py`
+- **Files updated**:
+  - `AGENTS.md` (hard gates section updated to reflect Phase 5 COMPLETE)
+- **Artifacts** (gitignored):
+  - `eval/runs/2026-05-19-1846-nogit/analysis/rerank_regression/alt_label_gap_audit.json`
+- **Validation**:
+  - py_compile: PASS
+  - 10/10 unit tests: PASS
+  - Real audit run: PASS (0 gaps)
+  - `git diff --name-only -- src/`: empty
+- **No `src/*` changes**: confirmed
+- **Committed**: `54b4d1c`
+- **Next safe action**: Phase 6-B — schema extension and query authoring

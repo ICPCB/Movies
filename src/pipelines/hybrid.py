@@ -25,6 +25,8 @@ from src.retrieval.semantic import semantic_search
 from src.retrieval.bm25 import bm25_search
 from src.retrieval.fusion import rrf_fusion
 from src.retrieval.reranker import rerank
+from src.retrieval.mood_preprocessor import extract_mood_intent
+from src.retrieval.safety_filter import apply_safety_filter
 from src.utils.dedup import deduplicate_movies
 from src.utils.debug import timed
 from src.llm.langchain_ollama import (
@@ -49,8 +51,12 @@ def run(
     if not query or not query.strip():
         return []
 
+    with timed("extract_mood_intent", "hybrid"):
+        mood = extract_mood_intent(query)
+    retrieval_input = mood.cleaned_query if mood.current_emotion else query
+
     with timed("normalize_query", "hybrid"):
-        processed = normalize_query(query)
+        processed = normalize_query(retrieval_input)
 
     if not processed:
         return []
@@ -97,6 +103,10 @@ def run(
         key=lambda x: _score(x, "final_score", "rerank_score"),
         reverse=True,
     )
+
+    with timed("safety_filter", "hybrid"):
+        final = apply_safety_filter(final, mood)
+
     final = final[:top_k]
 
     _attach_explanations(query, final, with_explanation)

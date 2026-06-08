@@ -398,6 +398,124 @@ class ComputeMetricsFormulaTest(unittest.TestCase):
         self.assertIn("hit_at_15", entry)
         self.assertIn("n", entry)
 
+    def test_bucket_qids_mood_null_goes_to_none(self):
+        records = {"q01": {"tags": {"mood": None}}}
+
+        buckets = compute_metrics._bucket_qids(["q01"], records, "mood_emotion")
+
+        self.assertEqual(buckets, {"none": ["q01"]})
+
+    def test_bucket_qids_mood_full_dict_correct_bucket(self):
+        records = {
+            "q01": {
+                "tags": {
+                    "mood": {
+                        "current_emotion": "sad",
+                        "desired_direction": "comfort_me",
+                        "safety_sensitivity": "safe_hopeful",
+                    }
+                }
+            }
+        }
+
+        self.assertEqual(
+            compute_metrics._bucket_qids(["q01"], records, "mood_emotion"),
+            {"sad": ["q01"]},
+        )
+        self.assertEqual(
+            compute_metrics._bucket_qids(["q01"], records, "mood_direction"),
+            {"comfort_me": ["q01"]},
+        )
+        self.assertEqual(
+            compute_metrics._bucket_qids(["q01"], records, "mood_safety"),
+            {"safe_hopeful": ["q01"]},
+        )
+
+    def test_bucket_qids_mood_missing_current_emotion(self):
+        records = {
+            "q01": {
+                "tags": {
+                    "mood": {
+                        "desired_direction": "comfort_me",
+                        "safety_sensitivity": "safe_hopeful",
+                    }
+                }
+            }
+        }
+
+        buckets = compute_metrics._bucket_qids(["q01"], records, "mood_emotion")
+
+        self.assertEqual(buckets, {"unknown": ["q01"]})
+
+    def test_bucket_qids_mood_missing_desired_direction(self):
+        records = {
+            "q01": {
+                "tags": {
+                    "mood": {
+                        "current_emotion": "sad",
+                        "safety_sensitivity": "safe_hopeful",
+                    }
+                }
+            }
+        }
+
+        buckets = compute_metrics._bucket_qids(["q01"], records, "mood_direction")
+
+        self.assertEqual(buckets, {"unknown": ["q01"]})
+
+    def test_bucket_qids_mood_missing_safety_sensitivity(self):
+        records = {
+            "q01": {
+                "tags": {
+                    "mood": {
+                        "current_emotion": "sad",
+                        "desired_direction": "comfort_me",
+                    }
+                }
+            }
+        }
+
+        buckets = compute_metrics._bucket_qids(["q01"], records, "mood_safety")
+
+        self.assertEqual(buckets, {"unknown": ["q01"]})
+
+    def test_bucket_qids_mood_non_dict(self):
+        records = {"q01": {"tags": {"mood": "sad"}}}
+
+        buckets = compute_metrics._bucket_qids(["q01"], records, "mood_emotion")
+
+        self.assertEqual(buckets, {"unknown": ["q01"]})
+
+    def test_bucket_qids_mood_key_absent_from_tags(self):
+        records = {"q01": {"tags": {}}}
+
+        buckets = compute_metrics._bucket_qids(["q01"], records, "mood_emotion")
+
+        self.assertEqual(buckets, {"none": ["q01"]})
+
+    def test_bucket_qids_genre_multi_bucket_unchanged(self):
+        records = {
+            "q01": {"tags": {"genre": ["drama", "thriller"]}},
+            "q02": {"tags": {"genre": ["drama"]}},
+        }
+
+        buckets = compute_metrics._bucket_qids(["q02", "q01"], records, "genre")
+
+        self.assertEqual(
+            buckets,
+            {"drama": ["q01", "q02"], "thriller": ["q01"]},
+        )
+
+    def test_bucket_qids_non_mood_axes_unchanged(self):
+        records = {
+            "q01": {"tags": {"length": "short"}},
+            "q02": {"tags": {"length": "long"}},
+        }
+
+        buckets = compute_metrics._bucket_qids(["q02", "q01"], records, "length")
+
+        self.assertEqual(buckets, {"short": ["q01"], "long": ["q02"]})
+
     def test_provisional_flag_and_no_metrics_json(self):
         candidates, labels, queries = _e2e_fixture()
         with _temporary_run(candidates, labels, queries) as (run_id, run_dir):

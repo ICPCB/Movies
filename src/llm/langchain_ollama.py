@@ -109,6 +109,30 @@ SYNONYM_GROUPS: dict[str, set[str]] = {
     "heist": {"heist", "thief", "steal", "stolen", "espionage", "robbery"},
     "space": {"space", "mars", "astronaut", "planet", "cosmos", "galaxy"},
     "survival": {"survive", "survival", "stranded", "trapped", "marooned"},
+    "cozy": {
+        "cozy", "warm", "gentle", "tender", "comforting", "soothing",
+        "calm", "peaceful",
+    },
+    "uplifting": {
+        "uplifting", "hopeful", "inspiring", "heartwarming", "feel-good",
+        "encouraging", "optimistic",
+    },
+    "funny": {
+        "funny", "comedy", "hilarious", "absurd", "witty", "playful",
+        "lighthearted",
+    },
+    "dark": {
+        "dark", "disturbing", "intense", "gritty", "devastating", "raw",
+        "unflinching", "bleak",
+    },
+    "emotional": {
+        "emotional", "moving", "touching", "tender", "vulnerable",
+        "heartbreaking", "bittersweet",
+    },
+    "thrilling": {
+        "thrilling", "exciting", "adventurous", "daring", "gripping",
+        "suspenseful", "edge-of-seat",
+    },
 }
 
 _PLURAL_SUFFIXES = ("ies", "es", "s")

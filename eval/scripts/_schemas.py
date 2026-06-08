@@ -6,7 +6,7 @@ from typing import Any, Dict
 
 
 QUERY_IDS_V1 = {f"q{i:02d}" for i in range(1, 21)}
-QUERY_IDS_V2 = {f"q{i:02d}" for i in range(1, 61)}
+QUERY_IDS_V2 = {f"q{i:02d}" for i in range(1, 66)}
 QUERY_IDS = QUERY_IDS_V1
 MODES = {"basic", "advanced", "hybrid"}
 

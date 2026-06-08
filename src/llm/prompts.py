@@ -40,6 +40,10 @@ HYDE_SYSTEM = (
     "or award. Do NOT cite years.\n"
     "- Do NOT explain that this is synthetic — just write the overview.\n"
     "- Do NOT add bullets, labels, JSON, or quotes around the output.\n"
+    "- If the request describes the user's emotional state, write a "
+    "TMDB overview for the kind of movie they want, not a movie about "
+    "their emotional state. A tired user wanting 'something cozy' gets "
+    "an overview of a warm gentle film, not a film about fatigue.\n"
     "Output ONLY the prose. No preamble."
 )
 HYDE_HUMAN = (
@@ -65,6 +69,13 @@ EXPAND_SYSTEM = (
     "- Do NOT add actor names, directors, awards, reviews, popularity, "
     "ratings, or any fact not implied by the request.\n"
     "- Output ONE compact query (no bullets, no labels, no explanations).\n"
+    "- If the query contains the user's emotional state (e.g. 'I'm sad', "
+    "'feeling stressed', 'exhausted'), treat this as context for TONE "
+    "only, not as plot keywords. Extract what KIND of movie they want. "
+    "Example: 'I'm exhausted and want something cozy' => expand 'cozy "
+    "gentle warm lighthearted', NOT 'exhaustion fatigue'.\n"
+    "- If the user explicitly requests dark/disturbing/intense content, "
+    "preserve that intent fully. Do NOT soften intentional requests.\n"
     "Return ONLY a JSON object of the form: {\"query\": \"...\"}"
 )
 EXPAND_HUMAN = (

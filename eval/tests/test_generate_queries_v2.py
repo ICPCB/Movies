@@ -170,8 +170,8 @@ class TestSchemaV2:
         rec = self._base_record(qid="q60")
         validate_query_record_v2(rec)
 
-    def test_qid_q61_rejected(self):
-        rec = self._base_record(qid="q61")
+    def test_qid_q66_rejected(self):
+        rec = self._base_record(qid="q66")
         with pytest.raises(ValueError):
             validate_query_record_v2(rec)
 

@@ -143,6 +143,8 @@ class MergeLabelsTests(unittest.TestCase):
         silver_rows=None,
         candidates=None,
         regrade_rows=None,
+        query_rows=None,
+        v1_query_rows=None,
         complete=True,
         stale_check=False,
     ):
@@ -160,13 +162,15 @@ class MergeLabelsTests(unittest.TestCase):
             ]
         if regrade_rows is None:
             regrade_rows = [_regrade_row("q01", 101, 1, 3)]
+        if query_rows is None:
+            query_rows = [_query_row("q01"), _query_row("q02"), _query_row("q03")]
+        if v1_query_rows is None:
+            v1_query_rows = query_rows
 
         _write_jsonl(self.run_dir / "silver_labels.jsonl", silver_rows)
         _write_jsonl(self.run_dir / "candidates.jsonl", candidates)
-        _write_jsonl(
-            self.eval_dir / "queries" / "v1.jsonl",
-            [_query_row("q01"), _query_row("q02"), _query_row("q03")],
-        )
+        _write_jsonl(self.eval_dir / "queries" / "v1.jsonl", v1_query_rows)
+        _write_jsonl(self.eval_dir / "queries" / "all.jsonl", query_rows)
         _write_jsonl(self.sheet_path, regrade_rows)
         _write_json(
             self.manifest_path,
@@ -272,7 +276,7 @@ class MergeLabelsTests(unittest.TestCase):
         self._write_fixture()
         silver_rows = compute_metrics._load_silver_labels(self.run_dir / "silver_labels.jsonl")
         candidates = compute_metrics._load_candidates(self.run_dir / "candidates.jsonl")
-        queries = compute_metrics._load_queries(self.eval_dir / "queries" / "v1.jsonl")
+        queries = compute_metrics._load_queries(self.eval_dir / "queries" / "all.jsonl")
         silver_only = compute_metrics.compute_metrics(
             run_id=self.run_id,
             candidates=candidates,
@@ -291,6 +295,31 @@ class MergeLabelsTests(unittest.TestCase):
             silver_only["by_mode"]["basic"]["hit_at_5"],
             merged["by_mode"]["basic"]["hit_at_5"],
         )
+
+    def test_default_queries_supports_60_query_merge(self):
+        qids = [f"q{index:02d}" for index in range(1, 61)]
+        tmdb_by_qid = {qid: 1000 + index for index, qid in enumerate(qids, start=1)}
+        self._write_fixture(
+            silver_rows=[
+                _silver_row(qid, tmdb_id, 1)
+                for qid, tmdb_id in tmdb_by_qid.items()
+            ],
+            candidates=[
+                _candidate_row(qid, tmdb_id, rank=0)
+                for qid, tmdb_id in tmdb_by_qid.items()
+            ],
+            regrade_rows=[
+                _regrade_row("q60", tmdb_by_qid["q60"], 1, 3, "sixty query gold")
+            ],
+            query_rows=[_query_row(qid) for qid in qids],
+            v1_query_rows=[_query_row(qid) for qid in qids[:20]],
+        )
+
+        self._run_merge()
+
+        metrics = json.loads(self.metrics_path.read_text(encoding="utf-8"))
+        self.assertEqual(metrics["queries_total"], 60)
+        self.assertEqual(metrics["label_provenance"]["regraded_queries"], ["q60"])
 
     def test_refuses_when_regrade_incomplete(self):
         self._write_fixture(complete=False)

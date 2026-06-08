@@ -232,6 +232,7 @@ def _label_provenance(
 def merge_labels(
     *,
     run_id: str | None = None,
+    queries_path: Path | None = None,
     bootstrap_b: int = 1000,
     seed: int = 42,
 ) -> tuple[str, Path, Path, dict[str, Any]]:
@@ -270,7 +271,8 @@ def merge_labels(
     }
     _ensure_no_top5_nulls(candidates=candidates, labels=label_by_key)
 
-    queries = compute_metrics._load_queries(_run_io.EVAL_DIR / "queries" / "v1.jsonl")
+    queries_file = queries_path or (_run_io.EVAL_DIR / "queries" / "all.jsonl")
+    queries = compute_metrics._load_queries(queries_file)
     metrics = compute_metrics.compute_metrics(
         run_id=actual_run_id,
         candidates=candidates,
@@ -306,13 +308,22 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
         default=None,
         help="Eval run id. Defaults to eval.scripts._run_io.latest_run().",
     )
+    parser.add_argument(
+        "--queries",
+        default=None,
+        type=Path,
+        help="Path to queries JSONL. Default: eval/queries/all.jsonl",
+    )
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv)
     try:
-        run_id, gold_path, metrics_path, provenance = merge_labels(run_id=args.run)
+        run_id, gold_path, metrics_path, provenance = merge_labels(
+            run_id=args.run,
+            queries_path=args.queries,
+        )
     except (
         MergeLabelsError,
         FileNotFoundError,

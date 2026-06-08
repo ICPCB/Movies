@@ -23,6 +23,8 @@ from src.retrieval.semantic import semantic_search
 from src.retrieval.bm25 import bm25_search
 from src.retrieval.fusion import rrf_fusion
 from src.retrieval.reranker import rerank
+from src.retrieval.mood_preprocessor import extract_mood_intent
+from src.retrieval.safety_filter import apply_safety_filter
 from src.utils.dedup import deduplicate_movies, get_movie_key
 from src.utils.debug import timed
 from src.llm.langchain_ollama import (
@@ -78,8 +80,12 @@ def _rrf_two_semantic(list_a: list[dict], list_b: list[dict]) -> list[dict]:
 
 
 def run(query: str, top_k: int = FINAL_TOP_K, with_explanation: bool = True) -> list[dict]:
+    with timed("extract_mood_intent", "advanced"):
+        mood = extract_mood_intent(query)
+    retrieval_input = mood.cleaned_query if mood.current_emotion else query
+
     with timed("normalize_query", "advanced"):
-        processed = normalize_query(query)
+        processed = normalize_query(retrieval_input)
     deterministic_query = expand_retrieval_query(processed)
     if runtime_config.LLM_RETRIEVAL_ENABLED:
         with timed("expand_query", "advanced"):
@@ -128,6 +134,10 @@ def run(query: str, top_k: int = FINAL_TOP_K, with_explanation: bool = True) -> 
         final = rerank(rerank_query, candidates, top_k=top_k, rerank_pool=RERANK_TOP_K)
     final = deduplicate_movies(final, prefer_score="final_score")
     final.sort(key=lambda x: x.get("final_score", x.get("rerank_score", 0.0)), reverse=True)
+
+    with timed("safety_filter", "advanced"):
+        final = apply_safety_filter(final, mood)
+
     final = final[:top_k]
 
     _attach_explanations(query, final, with_explanation)

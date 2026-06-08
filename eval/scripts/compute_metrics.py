@@ -27,7 +27,16 @@ from eval.scripts import _run_io, _schemas
 
 
 MODE_ORDER = ("basic", "advanced", "hybrid")
-AXES = ("era", "genre", "vocab_distance", "length", "ambiguity")
+AXES = (
+    "era",
+    "genre",
+    "vocab_distance",
+    "length",
+    "ambiguity",
+    "mood_emotion",
+    "mood_direction",
+    "mood_safety",
+)
 TOP_KS = (5, 10, 15)
 PRIMARY_K = 5
 RELEVANCE = {3: 1.0, 2: 0.7, 1: 0.3, 0: 0.0}
@@ -383,11 +392,30 @@ def _bucket_qids(
     buckets: Dict[str, List[str]] = defaultdict(list)
     for qid in sorted(qids):
         tags = query_records[qid]["tags"]
-        value = tags[axis]
-        if axis == "genre":
+        if axis.startswith("mood_"):
+            mood = tags.get("mood")
+            if mood is None:
+                buckets["none"].append(qid)
+            elif not isinstance(mood, dict):
+                buckets["unknown"].append(qid)
+            else:
+                field_map = {
+                    "mood_emotion": "current_emotion",
+                    "mood_direction": "desired_direction",
+                    "mood_safety": "safety_sensitivity",
+                }
+                sub_key = field_map.get(axis)
+                if sub_key is None:
+                    buckets["unknown"].append(qid)
+                else:
+                    value = mood.get(sub_key, "unknown")
+                    buckets[str(value)].append(qid)
+        elif axis == "genre":
+            value = tags[axis]
             for genre in value:
                 buckets[str(genre)].append(qid)
         else:
+            value = tags[axis]
             buckets[str(value)].append(qid)
     return dict(buckets)
 

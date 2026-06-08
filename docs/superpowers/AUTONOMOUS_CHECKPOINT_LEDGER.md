@@ -1278,6 +1278,39 @@ Every ticket/checkpoint appended below must include:
 
 ---
 
+### 2026-06-08 - PHASE-7-COMPLETE-PHASE-8G-NEEDS-REVIEW
+
+- **Branch:** `main`
+- **Ticket/Gate:** Phase 7 completion audit and Phase 8-G 65-query regression
+- **Agent:** Codex CLI
+- **Verdict:** Phase 7 COMPLETE; Phase 8 NEEDS_REVIEW / STOPPED
+- **Files changed:** Phase 7/8 working-tree changes remain uncommitted; governance handoff and regression report updated.
+- **Commands run:**
+  - full 65-query `run_pipelines.py` with run id `2026-06-08-phase8-mood-nogit`
+  - `llm_pregrade.py` for 722 candidates
+  - `compute_metrics.py --queries eval/queries/all.jsonl`
+  - `error_report.py --labels silver`
+  - source tests and targeted/full eval tests
+- **Test results:**
+  - source tests: 13/13 PASS
+  - targeted Phase 7/8 eval tests: 57/57 PASS
+  - full eval suite: 345/346 PASS
+  - remaining test failure is sandbox temp-path shape, not a changed-code assertion
+- **Artifacts:**
+  - `eval/runs/2026-06-08-phase8-mood-nogit/`
+  - `docs/superpowers/reports/phase8-regression-investigation-request.md`
+- **Accuracy results:**
+  - non-mood aggregate gate passes: basic +0.000, advanced -0.020, hybrid -0.040
+  - no-mood hit-to-miss flips: q02 basic; q58 advanced; q02/q26/q58 hybrid
+  - mood hybrid regressions: q49 and q59
+  - mood improvements: q21 hybrid, q53 advanced, q60 hybrid
+- **Failures:** 8-E no-mood identity requirement is not satisfied; Phase 8 cannot close.
+- **Assumptions:** Silver-label drift may contribute to some flips; root cause is not yet proven.
+- **Commit:** none
+- **Next safe action:** Claude investigates q02/q26/q49/q58/q59 and writes a bounded follow-up ticket; Codex implements it.
+
+---
+
 ### PHASE-5-B-AGREEMENT-BONUS-FIX
 
 - **Timestamp:** 2026-06-07
