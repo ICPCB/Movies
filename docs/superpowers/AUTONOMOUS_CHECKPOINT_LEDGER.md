@@ -1712,3 +1712,35 @@ Every ticket/checkpoint appended below must include:
 - **Assumptions:** the ticket's q29 overlap is a spec inconsistency, so both literal and mood-excluded non-mood checks are reported.
 - **Commit:** `707cab5`
 - **Next safe action:** open a scoped follow-up ticket for q59, then q49/q53 and q61/q65 triage, before Phase 8 completion.
+
+---
+
+### 2026-06-09T01:46:00+07:00 - PHASE-8-K-MOOD-REGRESSION-INVESTIGATION
+
+- **Branch:** `main`
+- **Ticket/Gate:** Phase 8-K - mood regression investigation
+- **Agent:** Codex CLI
+- **Planner:** Claude Opus 4.6
+- **Verdict:** PASS / NEEDS_REVIEW
+- **Files changed:**
+  - `.agents/inbox/codex/8-K-mood-regression-investigation.md`
+  - `.agents/outbox/codex/8-K_result.md`
+  - `eval/runs/2026-06-08-phase8j-gated-nogit/analysis/mood_regression/phase8-k-mood-regression-investigation.md`
+  - required checkpoint files
+- **Commands run:**
+  - `claude --model claude-opus-4-6 -p --permission-mode plan --output-format text ...`
+  - deterministic artifact parsing with repo venv Python
+  - report required phrase validation
+  - `git diff --name-only`
+  - `git status --short`
+- **Test results:**
+  - report existence and required phrase check PASS
+  - no `src/*`, `eval/scripts/*`, baseline run, or unrelated dirty file edits
+- **Artifacts:**
+  - `C:\Users\Minh Nguyen\.claude\plans\you-are-claude-code-breezy-sphinx.md`
+  - `C:\Users\Minh Nguyen\.claude\plans\create-only-a-compact-reactive-hammock.md`
+  - `eval/runs/2026-06-08-phase8j-gated-nogit/analysis/mood_regression/phase8-k-mood-regression-investigation.md`
+- **Failures:** none for investigation. Phase 8 remains NEEDS_REVIEW.
+- **Assumptions:** runtime mood objects are reconstructed from query tags and deterministic current extractor output because run artifacts do not persist mood objects.
+- **Commit:** pending
+- **Next safe action:** open q59-only fix-design ticket before any production change.

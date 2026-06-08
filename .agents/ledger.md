@@ -551,3 +551,29 @@ Append-only log of agent dispatches and results.
 - **Failures**: none for non-mood safety gate; Phase 8 completion should wait for follow-up mood regression ticket.
 - **Commit**: `707cab5`
 - **Next safe action**: create a scoped follow-up investigation ticket for q59 first, then q49/q53 and q61/q65 triage.
+
+---
+
+## Phase 8-K - Mood Regression Investigation
+
+- **Date**: 2026-06-09
+- **Ticket**: `.agents/inbox/codex/8-K-mood-regression-investigation.md`
+- **Agent**: Codex CLI
+- **Planner**: Claude Opus 4.6
+- **Verdict**: PASS / NEEDS_REVIEW
+- **Files changed / created**:
+  - `.agents/inbox/codex/8-K-mood-regression-investigation.md`
+  - `.agents/outbox/codex/8-K_result.md`
+  - `eval/runs/2026-06-08-phase8j-gated-nogit/analysis/mood_regression/phase8-k-mood-regression-investigation.md`
+- **Validation**:
+  - report required phrase check: PASS
+  - `git diff --name-only`: only pre-existing unrelated dirty review queue remains tracked dirty before staging
+  - `git status --short`: expected 8-K files plus pre-existing unrelated dirty/untracked files
+- **Findings**:
+  - q59 advanced/hybrid: reliable target `Someone, Somewhere` disappeared from fresh candidates; `Disconnect` is not reliable after human-reviewed gold grade 1.
+  - q49 advanced: `Office Space` remains positive and appears in fresh basic but not fresh advanced.
+  - q53 hybrid: mixed retrieval and silver pregrade issue; `Pee-wee's Big Adventure` stayed in top 5 but fresh silver changed grade 2 -> 1, while `Absolutely Anything` disappeared.
+  - q65 remains inherited 8-F data/ticket issue; q29 overlap remains preserved.
+- **Failures**: no implementation failure; Phase 8 still NEEDS_REVIEW and no fix was implemented.
+- **Commit**: pending
+- **Next safe action**: open q59-only fix-design ticket before any production change.
