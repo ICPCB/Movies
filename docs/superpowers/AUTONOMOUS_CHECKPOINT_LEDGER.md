@@ -1644,5 +1644,5 @@ Every ticket/checkpoint appended below must include:
   - refreshed Phase 8-I review queue
 - **Failures:** none after 7-U/7-V validator repairs
 - **Assumptions:** human approval covered all rows in the printed q49 and Phase 7 review tables; q55:228150 remains `null_parse_error_fixed`.
-- **Commit:** pending scoped checkpoint commit
+- **Commit:** `982cb14`
 - **Next safe action:** 8-J q49 mood-detection ticket can proceed if no newer blocker appears.

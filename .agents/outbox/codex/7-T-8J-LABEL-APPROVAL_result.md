@@ -40,7 +40,7 @@ Assumptions:
 - q55:228150 remains `null_parse_error_fixed`, not `human_reviewed_ai_assisted`.
 
 Commit:
-- Pending scoped checkpoint commit.
+- `982cb14`
 
 Next safe action:
 - 8-J q49 mood-detection ticket can now proceed if no newer blocker appears.

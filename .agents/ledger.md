@@ -491,5 +491,5 @@ Append-only log of agent dispatches and results.
   - Phase 7 provenance counts: `human_reviewed_ai_assisted=13`, `null_parse_error_fixed=1`, `silver_llm_pregrade=630`
   - q49 approved review rows: 7
   - `human_gold`: absent
-- **Commit**: pending scoped checkpoint commit
+- **Commit**: `982cb14`
 - **Next safe action**: 8-J q49 mood-detection ticket can proceed if no newer blocker appears.
