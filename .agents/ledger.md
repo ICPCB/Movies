@@ -468,3 +468,28 @@ Append-only log of agent dispatches and results.
   - direct script check: PASS, `complete=true`
 - **Commit**: `7f8c77a`
 - **Next safe action**: resume 7-T-8J label approval validation.
+
+---
+
+## Phase 7-T / 8-J Label Approval Application
+
+- **Date**: 2026-06-08
+- **Ticket**: `.agents/inbox/codex/7T8Jhumanlabelapproval.md`
+- **Agent**: Codex CLI
+- **Human decision**: approved displayed grades with `human_reviewed_ai_assisted`
+- **Verdict**: PASS / HUMAN_APPROVED
+- **Files changed**:
+  - `eval/runs/2026-06-07-combined-nogit/analysis/regrade/regrade_sheet.jsonl`
+  - `eval/runs/2026-06-07-combined-nogit/analysis/regrade/regrade_check.json`
+  - `eval/runs/2026-06-07-combined-nogit/gold_labels.jsonl`
+  - `eval/runs/2026-06-07-combined-nogit/metrics.json`
+  - `eval/runs/2026-06-08-phase8-mood-nogit/analysis/regression_attribution/review_queue.jsonl`
+  - `.agents/outbox/codex/7-T-8J-LABEL-APPROVAL_result.md`
+- **Validation**:
+  - regrade check: PASS, `complete=true`
+  - merge labels: PASS
+  - Phase 7 provenance counts: `human_reviewed_ai_assisted=13`, `null_parse_error_fixed=1`, `silver_llm_pregrade=630`
+  - q49 approved review rows: 7
+  - `human_gold`: absent
+- **Commit**: pending scoped checkpoint commit
+- **Next safe action**: 8-J q49 mood-detection ticket can proceed if no newer blocker appears.

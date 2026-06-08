@@ -1613,3 +1613,36 @@ Every ticket/checkpoint appended below must include:
 - **Assumptions:** bootstrap mirrors `merge_labels.py`
 - **Commit:** `7f8c77a`
 - **Next safe action:** resume 7-T-8J label approval validation.
+
+---
+
+### 2026-06-08T23:10:00+07:00 - PHASE-7-T-8J-LABEL-APPROVAL-APPLICATION
+
+- **Branch:** `main`
+- **Ticket/Gate:** Phase 7-T / 8-J label approval application
+- **Agent:** Codex CLI
+- **Human decision:** approved displayed grades with `human_reviewed_ai_assisted`
+- **Verdict:** PASS / HUMAN_APPROVED
+- **Files changed:**
+  - `eval/runs/2026-06-07-combined-nogit/analysis/regrade/regrade_sheet.jsonl`
+  - `eval/runs/2026-06-07-combined-nogit/analysis/regrade/regrade_check.json`
+  - `eval/runs/2026-06-07-combined-nogit/gold_labels.jsonl`
+  - `eval/runs/2026-06-07-combined-nogit/metrics.json`
+  - `eval/runs/2026-06-08-phase8-mood-nogit/analysis/regression_attribution/review_queue.jsonl`
+  - required ticket/report/checkpoint files
+- **Commands run:**
+  - `.\venv\Scripts\python.exe eval/scripts/check_regrade_sheet.py --run 2026-06-07-combined-nogit`
+  - `.\venv\Scripts\python.exe eval/scripts/merge_labels.py --run 2026-06-07-combined-nogit --queries eval/queries/all.jsonl`
+  - Phase 7 provenance assertion
+  - q49 review queue assertion
+- **Test results:**
+  - regrade check PASS, `complete=true`
+  - merge PASS
+  - provenance assertions PASS
+- **Artifacts:**
+  - refreshed Phase 7 regrade check, gold labels, metrics
+  - refreshed Phase 8-I review queue
+- **Failures:** none after 7-U/7-V validator repairs
+- **Assumptions:** human approval covered all rows in the printed q49 and Phase 7 review tables; q55:228150 remains `null_parse_error_fixed`.
+- **Commit:** pending scoped checkpoint commit
+- **Next safe action:** 8-J q49 mood-detection ticket can proceed if no newer blocker appears.

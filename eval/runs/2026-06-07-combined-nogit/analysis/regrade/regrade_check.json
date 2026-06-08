@@ -1,0 +1,112 @@
+{
+  "run_id": "2026-06-07-combined-nogit",
+  "complete": true,
+  "rows_total": 14,
+  "rows_filled": 14,
+  "pending_by_batch": {
+    "4": 0
+  },
+  "agreement": {
+    "exact": 0.21428571428571427,
+    "within_1": 0.7857142857142857,
+    "disagree_ge1_count": 11,
+    "disagree_ge2_count": 3
+  },
+  "threshold_crossings": [
+    {
+      "qid": "q21",
+      "tmdb_id": 5497,
+      "silver_grade": 2,
+      "gold_grade": 3,
+      "crossing": "silver<3->gold==3"
+    },
+    {
+      "qid": "q21",
+      "tmdb_id": 18422,
+      "silver_grade": 2,
+      "gold_grade": 0,
+      "crossing": "silver>=2->gold<2"
+    },
+    {
+      "qid": "q21",
+      "tmdb_id": 881209,
+      "silver_grade": 1,
+      "gold_grade": 3,
+      "crossing": "silver<2->gold>=2; silver<3->gold==3"
+    },
+    {
+      "qid": "q49",
+      "tmdb_id": 1542,
+      "silver_grade": 2,
+      "gold_grade": 3,
+      "crossing": "silver<3->gold==3"
+    },
+    {
+      "qid": "q49",
+      "tmdb_id": 254375,
+      "silver_grade": 2,
+      "gold_grade": 1,
+      "crossing": "silver>=2->gold<2"
+    },
+    {
+      "qid": "q55",
+      "tmdb_id": 10142,
+      "silver_grade": 2,
+      "gold_grade": 3,
+      "crossing": "silver<3->gold==3"
+    },
+    {
+      "qid": "q55",
+      "tmdb_id": 10652,
+      "silver_grade": 2,
+      "gold_grade": 3,
+      "crossing": "silver<3->gold==3"
+    },
+    {
+      "qid": "q55",
+      "tmdb_id": 228150,
+      "silver_grade": null,
+      "gold_grade": 2,
+      "crossing": "silver<2->gold>=2"
+    },
+    {
+      "qid": "q55",
+      "tmdb_id": 567566,
+      "silver_grade": 2,
+      "gold_grade": 1,
+      "crossing": "silver>=2->gold<2"
+    },
+    {
+      "qid": "q59",
+      "tmdb_id": 127517,
+      "silver_grade": 2,
+      "gold_grade": 1,
+      "crossing": "silver>=2->gold<2"
+    },
+    {
+      "qid": "q59",
+      "tmdb_id": 474994,
+      "silver_grade": 2,
+      "gold_grade": 3,
+      "crossing": "silver<3->gold==3"
+    }
+  ],
+  "by_qid": {
+    "q21": {
+      "filled": 4,
+      "changed": 3
+    },
+    "q49": {
+      "filled": 2,
+      "changed": 2
+    },
+    "q55": {
+      "filled": 5,
+      "changed": 4
+    },
+    "q59": {
+      "filled": 3,
+      "changed": 2
+    }
+  }
+}
