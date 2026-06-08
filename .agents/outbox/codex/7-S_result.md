@@ -37,7 +37,7 @@ Assumptions:
 - The pre-existing modified rerank review CSV is unrelated and untouched.
 
 Commit:
-- Pending scoped checkpoint commit.
+- `b2ac050`
 
 Next safe action:
 - Human chooses the q65 annotation representation.

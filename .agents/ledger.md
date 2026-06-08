@@ -417,5 +417,5 @@ Append-only log of agent dispatches and results.
   - post-fix suite: 356 passed
   - exact fixture schema/provenance assertion: PASS
 - **Production behavior**: unchanged
-- **Commit**: pending scoped checkpoint commit
+- **Commit**: `b2ac050`
 - **Next safe action**: human q65 decision and pending Phase 7/q49 label review.
