@@ -1424,3 +1424,66 @@ Every ticket/checkpoint appended below must include:
   - `git diff --name-only -- src/` → empty
   - q05/q10 fixes preserved (same v1 candidates.jsonl)
 - **Next action:** Human review of 60-query metrics. Consider gold labeling for v2 queries. Phase 7 planning if mood queries expose retrieval gaps.
+
+---
+
+### Phase 8-I: Regression Attribution Evidence
+
+- **Timestamp:** 2026-06-08T20:13:22+07:00
+- **Branch:** main
+- **Commit:** none, ticket did not explicitly authorize commit
+- **Ticket/Gate:** Phase 8-I - deterministic attribution for q02/q26/q49/q58/q59
+- **Verdict:** PASS / NEEDS_REVIEW
+- **Files changed:**
+  - `eval/scripts/phase8_regression_attribution.py` (created)
+  - `eval/tests/test_phase8_regression_attribution.py` (created)
+  - `eval/runs/2026-06-08-phase8-mood-nogit/analysis/regression_attribution/attribution.json` (created)
+  - `eval/runs/2026-06-08-phase8-mood-nogit/analysis/regression_attribution/attribution.md` (created)
+  - `eval/runs/2026-06-08-phase8-mood-nogit/analysis/regression_attribution/review_queue.jsonl` (created)
+  - `.agents/outbox/codex/8-I_result.md` (created)
+  - `.agents/ledger.md` (updated)
+  - `docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md` (updated)
+- **Commands run:**
+  - `.\venv\Scripts\python.exe -m pytest eval/tests/test_phase8_regression_attribution.py -q --basetemp="$env:TEMP\cinematch-8i"` -> PASS, 6 passed
+  - `.\venv\Scripts\python.exe eval/scripts/phase8_regression_attribution.py --baseline-run 2026-06-07-combined-nogit --candidate-run 2026-06-08-phase8-mood-nogit --queries eval/queries/all.jsonl --qids q02,q26,q49,q58,q59 --output-dir eval/runs/2026-06-08-phase8-mood-nogit/analysis/regression_attribution` -> PASS
+  - q02/basic classification assertion -> PASS, `label_only`
+- **Test results:** focused tests passed; real attribution artifacts generated.
+- **Artifacts:**
+  - `eval/runs/2026-06-08-phase8-mood-nogit/analysis/regression_attribution/attribution.json`
+  - `eval/runs/2026-06-08-phase8-mood-nogit/analysis/regression_attribution/attribution.md`
+  - `eval/runs/2026-06-08-phase8-mood-nogit/analysis/regression_attribution/review_queue.jsonl`
+- **Failures:** none in validation. Advanced/hybrid cases are mostly `insufficient_labels`, which blocks accuracy decisions until human review.
+- **Assumptions:** frozen baseline labels mean baseline gold labels when non-null, else baseline silver labels.
+- **Next safe action:** Claude review 8-I artifacts; do not start 8-H, 8-J, or new 8-G until review decision.
+
+---
+
+### Phase 8-H: Mood Prompt Isolation and Safety Contract Repair
+
+- **Timestamp:** 2026-06-08T20:31:59+07:00
+- **Branch:** main
+- **Commit:** pending final staging decision
+- **Ticket/Gate:** Phase 8-H - contract/isolation repair
+- **Verdict:** PASS / SELF-REVIEWED
+- **Files changed:**
+  - `src/llm/prompts.py`
+  - `src/llm/langchain_ollama.py`
+  - `src/retrieval/safety_filter.py`
+  - `src/pipelines/advanced.py`
+  - `src/pipelines/hybrid.py`
+  - `src/tests/test_safety_filter.py`
+  - `src/tests/test_mood_pipeline_integration.py`
+  - `.agents/outbox/codex/8-H_result.md`
+  - `.agents/ledger.md`
+  - `docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md`
+  - `.remember/remember.md`
+- **Commands run:**
+  - `.\venv\Scripts\python.exe -m pytest src/tests/test_safety_filter.py src/tests/test_mood_pipeline_integration.py -q` -> PASS, 16 passed
+  - `.\venv\Scripts\python.exe -m pytest src/tests -q --basetemp="$env:TEMP\cinematch-8h-src"` -> PASS, 23 passed
+  - `.\venv\Scripts\python.exe -m pytest eval/tests -q --basetemp="$env:TEMP\cinematch-8h-eval"` -> PASS, 352 passed
+  - `.\venv\Scripts\python.exe -c "import src.pipelines.advanced as advanced; import src.pipelines.hybrid as hybrid; print('pipeline imports PASS')"` -> PASS
+- **Test results:** all required tests passed.
+- **Artifacts:** `.agents/outbox/codex/8-H_result.md`
+- **Failures:** one mistyped local rerun used `--basetmp`; rerun with required `--basetemp` passed.
+- **Assumptions:** 8-H is a spec-restoring repair, not an accuracy fix.
+- **Next safe action:** commit scoped 8-I/8-H work if staged set is clean; keep 8-J blocked pending recorded human approval.

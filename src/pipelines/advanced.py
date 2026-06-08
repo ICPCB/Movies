@@ -79,24 +79,45 @@ def _rrf_two_semantic(list_a: list[dict], list_b: list[dict]) -> list[dict]:
     return fused
 
 
+def _expand_query(query: str, *, mood_aware: bool) -> str:
+    try:
+        return expand_query(query, mood_aware=mood_aware)
+    except TypeError as exc:
+        if "mood_aware" not in str(exc):
+            raise
+        return expand_query(query)
+
+
+def _hyde_generate(query: str, *, mood_aware: bool) -> str:
+    try:
+        return hyde_generate(query, mood_aware=mood_aware)
+    except TypeError as exc:
+        if "mood_aware" not in str(exc):
+            raise
+        return hyde_generate(query)
+
+
 def run(query: str, top_k: int = FINAL_TOP_K, with_explanation: bool = True) -> list[dict]:
     with timed("extract_mood_intent", "advanced"):
         mood = extract_mood_intent(query)
-    retrieval_input = mood.cleaned_query if mood.current_emotion else query
+    mood_detected = mood.current_emotion is not None
+    retrieval_input = mood.cleaned_query if mood_detected else query
 
     with timed("normalize_query", "advanced"):
         processed = normalize_query(retrieval_input)
     deterministic_query = expand_retrieval_query(processed)
     if runtime_config.LLM_RETRIEVAL_ENABLED:
         with timed("expand_query", "advanced"):
-            expanded = expand_retrieval_query(expand_query(processed) or processed)
+            expanded = expand_retrieval_query(
+                _expand_query(processed, mood_aware=mood_detected) or processed
+            )
     else:
         expanded = deterministic_query
     rerank_query = deterministic_query
 
     if runtime_config.USE_HYDE_IN_ADVANCED and runtime_config.LLM_RETRIEVAL_ENABLED:
         with timed("hyde_generate", "advanced"):
-            hyde = hyde_generate(processed)
+            hyde = _hyde_generate(processed, mood_aware=mood_detected)
     else:
         hyde = ""
 

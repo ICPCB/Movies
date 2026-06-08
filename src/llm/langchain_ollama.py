@@ -21,8 +21,8 @@ import re
 import concurrent.futures
 from src.config import LLM_MODEL, LLM_TIMEOUT_SECONDS
 from src.llm.prompts import (
-    EXPAND_SYSTEM, EXPAND_HUMAN,
-    HYDE_SYSTEM, HYDE_HUMAN,
+    EXPAND_SYSTEM_BASE, EXPAND_SYSTEM_MOOD, EXPAND_HUMAN,
+    HYDE_SYSTEM_BASE, HYDE_SYSTEM_MOOD, HYDE_HUMAN,
     EXPLAIN_SYSTEM, EXPLAIN_HUMAN,
     EXPLAIN_BATCH_SYSTEM, EXPLAIN_BATCH_HUMAN,
 )
@@ -269,11 +269,12 @@ def _fallback_explanation(query: str, movie: dict) -> str:
 
 # ---------- LLM-facing public API ----------
 
-def expand_query(query: str) -> str:
+def expand_query(query: str, *, mood_aware: bool = False) -> str:
     """Return LLM-expanded query, or original query on any failure."""
+    system_prompt = EXPAND_SYSTEM_MOOD if mood_aware else EXPAND_SYSTEM_BASE
     try:
         resp = _invoke_with_timeout([
-            SystemMessage(content=EXPAND_SYSTEM),
+            SystemMessage(content=system_prompt),
             HumanMessage(content=EXPAND_HUMAN.format(query=query)),
         ])
     except concurrent.futures.TimeoutError:
@@ -288,7 +289,7 @@ def expand_query(query: str) -> str:
     return query
 
 
-def hyde_generate(query: str) -> str:
+def hyde_generate(query: str, *, mood_aware: bool = False) -> str:
     """Generate a HyDE-style synthetic TMDB-flavoured overview for `query`.
 
     Returns "" on timeout, outage, or unparseable reply. Callers should
@@ -297,9 +298,10 @@ def hyde_generate(query: str) -> str:
     if the model returned an empty string, a single token, or something
     suspiciously long (>800 chars) we reject and let the caller fall back.
     """
+    system_prompt = HYDE_SYSTEM_MOOD if mood_aware else HYDE_SYSTEM_BASE
     try:
         resp = _invoke_with_timeout([
-            SystemMessage(content=HYDE_SYSTEM),
+            SystemMessage(content=system_prompt),
             HumanMessage(content=HYDE_HUMAN.format(query=query)),
         ])
     except concurrent.futures.TimeoutError:

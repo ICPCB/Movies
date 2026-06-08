@@ -15,8 +15,21 @@ def _mood(safety: str = "neutral") -> MoodIntent:
     )
 
 
-def _movie(title: str, genres: str = "Drama", score: float = 1.0) -> dict:
-    return {"title": title, "genres": genres, "final_score": score, "overview": ""}
+def _movie(
+    title: str,
+    genres: str = "Drama",
+    score: float = 1.0,
+    *,
+    overview: str = "",
+    keywords: str = "",
+) -> dict:
+    return {
+        "title": title,
+        "genres": genres,
+        "final_score": score,
+        "overview": overview,
+        "keywords": keywords,
+    }
 
 
 def test_safe_hopeful_demotes_horror():
@@ -52,9 +65,8 @@ def test_safe_hopeful_mixed_list_moves_only_dark_candidates_down():
     movies = [
         _movie("A Quiet Place", "Horror, Thriller", 0.9),
         _movie("Paddington", "Comedy, Family", 0.8),
-        _movie("Brutal Night", "Drama", 0.7),
+        _movie("Brutal Night", "Drama", 0.7, keywords="violent brutal terror"),
     ]
-    movies[2]["keywords"] = "violent brutal terror"
 
     result = apply_safety_filter(movies, _mood("safe_hopeful"))
 
@@ -68,3 +80,63 @@ def test_safe_hopeful_mixed_list_moves_only_dark_candidates_down():
 
 def test_empty_candidate_list_no_crash():
     assert apply_safety_filter([], _mood("safe_hopeful")) == []
+
+
+def test_dark_term_in_title_only_not_demoted():
+    movies = [
+        _movie("Terror at Sunrise", "Drama", 0.9),
+        _movie("Gentle Comedy", "Comedy", 0.8),
+    ]
+
+    result = apply_safety_filter(movies, _mood("safe_hopeful"))
+
+    assert [m["title"] for m in result] == ["Terror at Sunrise", "Gentle Comedy"]
+
+
+def test_dark_term_in_overview_only_not_demoted():
+    movies = [
+        _movie(
+            "Quiet Drama",
+            "Drama",
+            0.9,
+            overview="A survivor remembers a terrifying night.",
+        ),
+        _movie("Gentle Comedy", "Comedy", 0.8),
+    ]
+
+    result = apply_safety_filter(movies, _mood("safe_hopeful"))
+
+    assert [m["title"] for m in result] == ["Quiet Drama", "Gentle Comedy"]
+
+
+def test_exact_genre_match_demoted():
+    movies = [
+        _movie("Dark Film", "Psychological Thriller", 0.9),
+        _movie("Gentle Comedy", "Comedy", 0.8),
+    ]
+
+    result = apply_safety_filter(movies, _mood("safe_hopeful"))
+
+    assert [m["title"] for m in result] == ["Gentle Comedy", "Dark Film"]
+
+
+def test_exact_keyword_phrase_match_demoted():
+    movies = [
+        _movie("Crime Film", "Drama", 0.9, keywords="serial killer, detective"),
+        _movie("Gentle Comedy", "Comedy", 0.8),
+    ]
+
+    result = apply_safety_filter(movies, _mood("safe_hopeful"))
+
+    assert [m["title"] for m in result] == ["Gentle Comedy", "Crime Film"]
+
+
+def test_dark_substring_false_positive_not_demoted():
+    movies = [
+        _movie("City Documentary", "Drama", 0.9, keywords="terrorism studies"),
+        _movie("Gentle Comedy", "Comedy", 0.8),
+    ]
+
+    result = apply_safety_filter(movies, _mood("safe_hopeful"))
+
+    assert [m["title"] for m in result] == ["City Documentary", "Gentle Comedy"]

@@ -23,6 +23,9 @@ status: PROPOSED_AFTER_CLAUDE_REVIEW
    - Claude review classified this as a new behavior, not a pure 8-H contract
      repair.
    - 8-J may proceed only after 8-I attribution and human approval.
+   - Human approval must be recorded in `.agents/ledger.md` and
+     `.remember/remember.md`, including confirmation that the q49 labels needed
+     to justify this fix have been reviewed.
 
 3. Files to read
 
@@ -111,6 +114,8 @@ status: PROPOSED_AFTER_CLAUDE_REVIEW
 9. Stop conditions
 
    - 8-I attribution is missing or not human-approved.
+   - Human approval of `review_queue.jsonl` and q49 label justification is not
+     recorded in `.agents/ledger.md` and `.remember/remember.md`.
    - Any forbidden file must change.
    - A no-mood control changes.
    - A model/retrieval/full-eval call is needed.

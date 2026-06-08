@@ -307,3 +307,64 @@ Append-only log of agent dispatches and results.
 - **No `src/*` changes**: confirmed
 - **Committed**: `54b4d1c`
 - **Next safe action**: Phase 6-B — schema extension and query authoring
+
+---
+
+## Phase 8-I - Regression Attribution Evidence
+
+- **Date**: 2026-06-08
+- **Ticket**: `.agents/inbox/codex/8Iregressionattribution.md`
+- **Agent**: Codex CLI
+- **Verdict**: PASS / NEEDS_REVIEW
+- **Files created**:
+  - `eval/scripts/phase8_regression_attribution.py`
+  - `eval/tests/test_phase8_regression_attribution.py`
+  - `eval/runs/2026-06-08-phase8-mood-nogit/analysis/regression_attribution/attribution.json`
+  - `eval/runs/2026-06-08-phase8-mood-nogit/analysis/regression_attribution/attribution.md`
+  - `eval/runs/2026-06-08-phase8-mood-nogit/analysis/regression_attribution/review_queue.jsonl`
+  - `.agents/outbox/codex/8-I_result.md`
+- **Classifications**:
+  - q02: basic=`label_only`, advanced=`insufficient_labels`, hybrid=`insufficient_labels`
+  - q26: basic=`candidate_only`, advanced=`insufficient_labels`, hybrid=`insufficient_labels`
+  - q49: basic=`candidate_only`, advanced=`insufficient_labels`, hybrid=`insufficient_labels`
+  - q58: basic=`candidate_only`, advanced=`insufficient_labels`, hybrid=`insufficient_labels`
+  - q59: basic=`candidate_only`, advanced=`insufficient_labels`, hybrid=`insufficient_labels`
+- **Review queue**: 86 rows, `label_provenance=ai_draft`, `review_status=pending_human`
+- **Validation**:
+  - `pytest eval/tests/test_phase8_regression_attribution.py -q`: PASS, 6 passed
+  - real attribution script: PASS
+  - q02/basic validation assertion: PASS, `label_only`
+- **No production changes**: confirmed, no `src/*` edits
+- **Committed**: no, ticket did not explicitly authorize commit
+- **Next safe action**: Claude review of 8-I artifacts before 8-H, 8-J, or any new 8-G.
+
+---
+
+## Phase 8-H - Mood Prompt Isolation and Safety Contract Repair
+
+- **Date**: 2026-06-08
+- **Ticket**: `.agents/inbox/codex/8Hphase8isolationrepair.md`
+- **Agent**: Codex CLI
+- **Verdict**: PASS / SELF-REVIEWED
+- **Files changed**:
+  - `src/llm/prompts.py`
+  - `src/llm/langchain_ollama.py`
+  - `src/retrieval/safety_filter.py`
+  - `src/pipelines/advanced.py`
+  - `src/pipelines/hybrid.py`
+  - `src/tests/test_safety_filter.py`
+  - `src/tests/test_mood_pipeline_integration.py`
+  - `.agents/outbox/codex/8-H_result.md`
+- **Confirmed defects repaired**:
+  - no-mood advanced/hybrid paths use base prompts and original query path
+  - mood paths use mood prompts only when `current_emotion is not None`
+  - safety demotion is limited to genres/keywords with token/phrase boundaries
+  - old one-argument LLM retrieval callables remain compatible
+- **Validation**:
+  - focused tests: PASS, 16 passed
+  - source tests: PASS, 23 passed
+  - eval tests: PASS, 352 passed
+  - pipeline imports: PASS
+- **Accuracy claims**: none. This is a behavior-affecting contract repair; ranking impact measurement is deferred to a separate gated eval ticket.
+- **Committed**: pending final staging decision
+- **Next safe action**: commit scoped 8-I/8-H work if staged set is clean; keep 8-J blocked pending recorded human approval.

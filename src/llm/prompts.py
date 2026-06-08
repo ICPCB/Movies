@@ -25,7 +25,24 @@ much harder to slip past the user.
 #   user did not give and would corrupt the retrieval.
 # - 2–3 sentences keeps the embedding vector specific without diluting it.
 
-HYDE_SYSTEM = (
+HYDE_SYSTEM_BASE = (
+    "You write short SYNTHETIC plot summaries that read exactly like a "
+    "TMDB movie overview. Given a user's English movie request, you "
+    "imagine what the real movie's plot summary would look like and "
+    "write it.\n"
+    "Rules:\n"
+    "- 2 to 3 sentences, English, plain prose. Present tense, like a "
+    "TMDB overview.\n"
+    "- Describe the premise, the main character(s), the central conflict, "
+    "and the setting. Use concrete nouns and metadata-style wording "
+    "(e.g. 'subconscious', 'corporate espionage', 'survival').\n"
+    "- Do NOT name any real movie, franchise, actor, director, studio, "
+    "or award. Do NOT cite years.\n"
+    "- Do NOT explain that this is synthetic — just write the overview.\n"
+    "- Do NOT add bullets, labels, JSON, or quotes around the output.\n"
+    "Output ONLY the prose. No preamble."
+)
+HYDE_SYSTEM_MOOD = (
     "You write short SYNTHETIC plot summaries that read exactly like a "
     "TMDB movie overview. Given a user's English movie request, you "
     "imagine what the real movie's plot summary would look like and "
@@ -46,6 +63,7 @@ HYDE_SYSTEM = (
     "an overview of a warm gentle film, not a film about fatigue.\n"
     "Output ONLY the prose. No preamble."
 )
+HYDE_SYSTEM = HYDE_SYSTEM_BASE
 HYDE_HUMAN = (
     "User request: \"{query}\"\n"
     "Synthetic overview:"
@@ -54,7 +72,24 @@ HYDE_HUMAN = (
 
 # ---------- query expansion ----------
 
-EXPAND_SYSTEM = (
+EXPAND_SYSTEM_BASE = (
+    "You rewrite a user's plain-English movie request into a compact "
+    "retrieval query that matches the wording of English TMDB movie "
+    "metadata (title / overview / keywords / tagline / genres).\n"
+    "Rules:\n"
+    "- Input is English. Output is English.\n"
+    "- Preserve plot intent, genre, mood, setting, character roles, "
+    "key objects, and distinctive story concepts from the request.\n"
+    "- Add useful metadata-style synonyms when they help retrieval "
+    "(e.g. 'dream heist' -> 'infiltrate subconscious, plant idea, "
+    "corporate espionage').\n"
+    "- Do NOT add movie titles unless the user explicitly named a movie.\n"
+    "- Do NOT add actor names, directors, awards, reviews, popularity, "
+    "ratings, or any fact not implied by the request.\n"
+    "- Output ONE compact query (no bullets, no labels, no explanations).\n"
+    "Return ONLY a JSON object of the form: {\"query\": \"...\"}"
+)
+EXPAND_SYSTEM_MOOD = (
     "You rewrite a user's plain-English movie request into a compact "
     "retrieval query that matches the wording of English TMDB movie "
     "metadata (title / overview / keywords / tagline / genres).\n"
@@ -78,6 +113,7 @@ EXPAND_SYSTEM = (
     "preserve that intent fully. Do NOT soften intentional requests.\n"
     "Return ONLY a JSON object of the form: {\"query\": \"...\"}"
 )
+EXPAND_SYSTEM = EXPAND_SYSTEM_BASE
 EXPAND_HUMAN = (
     "User request: \"{query}\"\n"
     "Return JSON now:"

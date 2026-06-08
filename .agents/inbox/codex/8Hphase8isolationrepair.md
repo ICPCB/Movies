@@ -29,6 +29,10 @@ status: REVISED_AFTER_CLAUDE_REVIEW
      8-D genres-or-keywords contract.
    - `eval/tests/test_generate_queries_v2.py` was changed by 8-F but was not
      listed in the original 8-F allowed files.
+   - Claude accepted 8-I as deterministic attribution evidence and approved
+     this ticket as a contract/isolation repair only. This ticket may change
+     production ranking outputs for no-mood and dark-candidate queries, but
+     ranking impact measurement is deferred to a separate gated eval ticket.
 
 3. Files to read
 
@@ -126,6 +130,9 @@ status: REVISED_AFTER_CLAUDE_REVIEW
    - Safety matching obeys the exact 8-D contract.
    - Existing callers remain compatible.
    - No ranking or model configuration changes.
+   - This ticket may change production ranking outputs only as a
+     spec-restoring contract repair; ranking impact measurement is deferred to
+     a separate gated eval ticket.
    - All source and eval tests pass.
 
 8. Validation commands
@@ -134,7 +141,7 @@ status: REVISED_AFTER_CLAUDE_REVIEW
    .\venv\Scripts\python.exe -m pytest src/tests/test_safety_filter.py src/tests/test_mood_pipeline_integration.py -q
    .\venv\Scripts\python.exe -m pytest src/tests -q --basetemp="$env:TEMP\cinematch-8h-src"
    .\venv\Scripts\python.exe -m pytest eval/tests -q --basetemp="$env:TEMP\cinematch-8h-eval"
-   .\venv\Scripts\python.exe -c "from src.pipelines.advanced import run; from src.pipelines.hybrid import run; print('pipeline imports PASS')"
+   .\venv\Scripts\python.exe -c "import src.pipelines.advanced as advanced; import src.pipelines.hybrid as hybrid; print('pipeline imports PASS')"
    git diff --name-only
    git status --short
    ```
@@ -159,5 +166,6 @@ status: REVISED_AFTER_CLAUDE_REVIEW
     Validation:
     Risks:
     Accuracy claims not made:
+    Ranking impact measurement:
     Commit:
     Next safe action:

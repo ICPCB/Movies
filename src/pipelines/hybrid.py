@@ -43,6 +43,15 @@ def _score(m: dict, key: str, fallback: str = "final_score") -> float:
         return 0.0
 
 
+def _expand_query(query: str, *, mood_aware: bool) -> str:
+    try:
+        return expand_query(query, mood_aware=mood_aware)
+    except TypeError as exc:
+        if "mood_aware" not in str(exc):
+            raise
+        return expand_query(query)
+
+
 def run(
     query: str,
     top_k: int = FINAL_TOP_K,
@@ -53,7 +62,8 @@ def run(
 
     with timed("extract_mood_intent", "hybrid"):
         mood = extract_mood_intent(query)
-    retrieval_input = mood.cleaned_query if mood.current_emotion else query
+    mood_detected = mood.current_emotion is not None
+    retrieval_input = mood.cleaned_query if mood_detected else query
 
     with timed("normalize_query", "hybrid"):
         processed = normalize_query(retrieval_input)
@@ -64,7 +74,9 @@ def run(
     deterministic_query = expand_retrieval_query(processed)
     if runtime_config.HYBRID_USE_LLM_EXPANSION and runtime_config.LLM_RETRIEVAL_ENABLED:
         with timed("expand_query", "hybrid"):
-            retrieval_query = expand_retrieval_query(expand_query(processed) or processed)
+            retrieval_query = expand_retrieval_query(
+                _expand_query(processed, mood_aware=mood_detected) or processed
+            )
     else:
         retrieval_query = deterministic_query
     rerank_query = deterministic_query
