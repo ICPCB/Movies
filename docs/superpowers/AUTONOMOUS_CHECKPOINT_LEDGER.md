@@ -1611,5 +1611,5 @@ Every ticket/checkpoint appended below must include:
 - **Artifacts:** refreshed `eval/runs/2026-06-07-combined-nogit/analysis/regrade/regrade_check.json`
 - **Failures:** none after bootstrap
 - **Assumptions:** bootstrap mirrors `merge_labels.py`
-- **Commit:** pending scoped checkpoint commit
+- **Commit:** `7f8c77a`
 - **Next safe action:** resume 7-T-8J label approval validation.

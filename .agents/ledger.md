@@ -466,5 +466,5 @@ Append-only log of agent dispatches and results.
   - `.agents/outbox/codex/7-V_result.md`
 - **Validation**:
   - direct script check: PASS, `complete=true`
-- **Commit**: pending scoped checkpoint commit
+- **Commit**: `7f8c77a`
 - **Next safe action**: resume 7-T-8J label approval validation.

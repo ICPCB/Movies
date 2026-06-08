@@ -21,7 +21,7 @@ Assumptions:
 - Bootstrap mirrors the already-used pattern in `merge_labels.py`.
 
 Commit:
-- Pending scoped checkpoint commit.
+- `7f8c77a`
 
 Next safe action:
 - Resume 7-T-8J label approval validation.
