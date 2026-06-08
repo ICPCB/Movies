@@ -55,7 +55,7 @@ Human decision still required:
 - Review 8-I `review_queue.jsonl` before authorizing 8-J.
 
 Commit:
-- Pending final staging decision after checkpoint; validation passed.
+- `bad023d`
 
 Next safe action:
 - Commit scoped 7-R tracked changes if staged set excludes unrelated dirty files.

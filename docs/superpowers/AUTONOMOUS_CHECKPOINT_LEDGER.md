@@ -1494,7 +1494,7 @@ Every ticket/checkpoint appended below must include:
 
 - **Timestamp:** 2026-06-08T20:43:07+07:00
 - **Branch:** main
-- **Commit:** pending final staging decision
+- **Commit:** `bad023d`
 - **Ticket/Gate:** Phase 7-R - provenance and Phase 8 plan repair
 - **Verdict:** PASS / NEEDS_HUMAN_REVIEW
 - **Files changed:**

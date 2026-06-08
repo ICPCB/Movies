@@ -395,5 +395,5 @@ Append-only log of agent dispatches and results.
   - real merge command: PASS
   - provenance assertion: PASS
 - **Human decision still required**: 13 `ai_draft` regrades are not human-reviewed; 8-J remains blocked pending human q49 evidence review.
-- **Committed**: pending final staging decision
+- **Committed**: `bad023d`
 - **Next safe action**: commit scoped 7-R tracked changes if staged set is clean.
