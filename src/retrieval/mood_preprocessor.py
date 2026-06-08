@@ -289,6 +289,16 @@ def _cleaned_query(original_query: str, desired_start: int | None) -> str:
     return original_query[desired_start:].strip(" ,.;:-")
 
 
+def _preserve_retrieval_mood_context(
+    cleaned_query: str, current_emotion: str | None, desired_direction: str | None
+) -> str:
+    if current_emotion != "lonely" or desired_direction != "comfort_me":
+        return cleaned_query
+    if _word_pattern(current_emotion).search(_ascii(cleaned_query).lower()):
+        return cleaned_query
+    return f"{current_emotion} - {cleaned_query}"
+
+
 def extract_mood_intent(query: str) -> MoodIntent:
     """Extract user mood and requested movie tone without side effects."""
     normalized = _normalize_query(query)
@@ -296,6 +306,7 @@ def extract_mood_intent(query: str) -> MoodIntent:
     desired_start = _desired_start(lower_query)
     current_emotion = _extract_current_emotion(lower_query, desired_start)
     desired_movie_tone = _extract_tones(lower_query, desired_start)
+    desired_direction = _extract_direction(lower_query, desired_movie_tone)
     has_dark_intent = bool(set(desired_movie_tone) & _DARK_INTENT_TONES)
 
     if current_emotion in _SAFE_HOPEFUL_USER_EMOTIONS and has_dark_intent:
@@ -314,10 +325,14 @@ def extract_mood_intent(query: str) -> MoodIntent:
     return MoodIntent(
         current_emotion=current_emotion,
         emotion_source="free_text" if current_emotion is not None else "none",
-        desired_direction=_extract_direction(lower_query, desired_movie_tone),
+        desired_direction=desired_direction,
         desired_movie_tone=desired_movie_tone,
         energy_level=_extract_energy_level(lower_query, desired_movie_tone),
         safety_sensitivity=safety_sensitivity,
         allow_dark_content=allow_dark_content,
-        cleaned_query=_cleaned_query(normalized, desired_start),
+        cleaned_query=_preserve_retrieval_mood_context(
+            _cleaned_query(normalized, desired_start),
+            current_emotion,
+            desired_direction,
+        ),
     )

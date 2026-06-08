@@ -84,6 +84,21 @@ def test_q49_adjective_led_user_state_detected():
     assert "zone out" in intent.cleaned_query.lower()
 
 
+def test_q59_lonely_comfort_query_preserves_retrieval_context():
+    intent = extract_mood_intent(
+        "I feel lonely tonight and want a movie that wraps around me like a warm "
+        "blanket and reminds me that human connection is still possible even when "
+        "everything feels empty"
+    )
+
+    assert intent.current_emotion == "lonely"
+    assert intent.desired_direction == "comfort_me"
+    assert intent.cleaned_query.startswith("lonely - ")
+    assert "warm blanket" in intent.cleaned_query
+    assert "human connection" in intent.cleaned_query
+    assert "empty" in intent.cleaned_query
+
+
 def test_adjective_led_user_state_variants_require_later_movie_intent():
     tired = extract_mood_intent("really tired today and want something gentle")
     lonely = extract_mood_intent("very lonely tonight looking for a warm comedy")

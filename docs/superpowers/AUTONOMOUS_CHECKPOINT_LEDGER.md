@@ -1744,3 +1744,44 @@ Every ticket/checkpoint appended below must include:
 - **Assumptions:** runtime mood objects are reconstructed from query tags and deterministic current extractor output because run artifacts do not persist mood objects.
 - **Commit:** `f6551c2`
 - **Next safe action:** open q59-only fix-design ticket before any production change.
+
+---
+
+### 2026-06-09T02:05:00+07:00 - PHASE-8-L-Q59-MOOD-RETRIEVAL-FIX
+
+- **Branch:** `main`
+- **Ticket/Gate:** Phase 8-L - q59 mood retrieval fix
+- **Agent:** Codex CLI
+- **Planner/Reviewer:** Claude Opus 4.6
+- **Verdict:** PASS / NEEDS_REVIEW
+- **Files changed:**
+  - `src/retrieval/mood_preprocessor.py`
+  - `src/tests/test_mood_preprocessor.py`
+  - `.agents/inbox/codex/8-L-q59-mood-retrieval-fix.md`
+  - `.agents/outbox/codex/8-L_result.md`
+  - required checkpoint files
+- **Commands run:**
+  - `.\venv\Scripts\python.exe -m pytest src/tests/test_mood_preprocessor.py -q`
+  - `.\venv\Scripts\python.exe -m pytest src/tests/test_mood_pipeline_integration.py -q`
+  - `.\venv\Scripts\python.exe -m pytest src/tests/test_safety_filter.py -q`
+  - q59 direct cleaned-query assertion
+  - q49 direct unchanged cleaned-query assertion
+  - no-mood/no-emotion direct control assertion
+  - `.\venv\Scripts\python.exe -m pytest src/tests -q --basetemp="$env:TEMP\cinematch-8l-src"`
+  - `git diff --name-only`
+  - `git status --short`
+  - `claude --model claude-opus-4-6 -p --permission-mode plan --output-format text ...`
+- **Test results:**
+  - mood preprocessor tests PASS, 11 passed
+  - mood pipeline integration tests PASS, 5 passed
+  - safety filter tests PASS, 11 passed
+  - source tests PASS, 27 passed
+  - q59/q49/no-mood assertions PASS
+  - Claude review PASS
+- **Artifacts:**
+  - `.agents/outbox/codex/8-L_result.md`
+  - `C:\Users\Minh Nguyen\.claude\plans\you-are-claude-code-serialized-chipmunk.md`
+- **Failures:** none for scoped ticket; no full eval was run.
+- **Assumptions:** 8-L authorizes deterministic q59 retrieval-input fix only; q49/q53 remain separate.
+- **Commit:** pending
+- **Next safe action:** commit 8-L, then open separate q49/q53 ticket or request authorization for gated post-fix eval.

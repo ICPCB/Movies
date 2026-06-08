@@ -577,3 +577,34 @@ Append-only log of agent dispatches and results.
 - **Failures**: no implementation failure; Phase 8 still NEEDS_REVIEW and no fix was implemented.
 - **Commit**: `f6551c2`
 - **Next safe action**: open q59-only fix-design ticket before any production change.
+
+---
+
+## Phase 8-L - q59 Mood Retrieval Fix
+
+- **Date**: 2026-06-09
+- **Ticket**: `.agents/inbox/codex/8-L-q59-mood-retrieval-fix.md`
+- **Agent**: Codex CLI
+- **Planner/Reviewer**: Claude Opus 4.6
+- **Verdict**: PASS / NEEDS_REVIEW
+- **Files changed / created**:
+  - `src/retrieval/mood_preprocessor.py`
+  - `src/tests/test_mood_preprocessor.py`
+  - `.agents/inbox/codex/8-L-q59-mood-retrieval-fix.md`
+  - `.agents/outbox/codex/8-L_result.md`
+- **Validation**:
+  - mood preprocessor tests: PASS, 11 passed
+  - mood pipeline integration tests: PASS, 5 passed
+  - safety filter tests: PASS, 11 passed
+  - source tests: PASS, 27 passed
+  - q59 direct assertion: PASS, cleaned query starts `lonely -`
+  - q49 direct assertion: PASS, cleaned query unchanged
+  - no-mood/no-emotion controls: PASS
+  - Claude review: PASS
+- **Findings**:
+  - q59 lonely/comfort retrieval input now preserves canonical `lonely` context.
+  - q49 behavior remains unchanged.
+  - No pipeline files changed.
+- **Failures**: none for scoped ticket; Phase 8 still NEEDS_REVIEW pending q49/q53 or post-fix eval decision.
+- **Commit**: pending
+- **Next safe action**: commit 8-L, then open separate q49/q53 ticket or request authorization for gated post-fix eval.
