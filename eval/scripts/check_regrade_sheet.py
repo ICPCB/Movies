@@ -14,6 +14,11 @@ from eval.scripts import _run_io, build_regrade_sheet
 
 GOLD_KEYS = {"gold_grade", "gold_notes"}
 GRADE_VALUES = {0, 1, 2, 3}
+PROVENANCE_VALUES = {
+    "ai_draft",
+    "human_reviewed_ai_assisted",
+    "null_parse_error_fixed",
+}
 PREFERRED_QID_ORDER = ("q12", "q13", "q03", "q08", "q07")
 
 
@@ -55,10 +60,19 @@ def _row_key(row: dict[str, Any], index: int) -> str:
     return f"{qid}:{tmdb_id}"
 
 
-def _expected_rows(run_dir: Path, manifest: dict[str, Any]) -> list[dict[str, Any]]:
+def _is_phase7_mood_triage_manifest(manifest: dict[str, Any]) -> bool:
+    built_from = manifest.get("built_from")
+    return isinstance(built_from, dict) and "phase7_mood_triage" in built_from
+
+
+def _expected_rows(
+    run_dir: Path, manifest: dict[str, Any]
+) -> list[dict[str, Any]] | None:
     built_from = manifest.get("built_from")
     if not isinstance(built_from, dict):
         raise CheckError("regrade_manifest.json built_from must be an object")
+    if _is_phase7_mood_triage_manifest(manifest):
+        return None
 
     review_rel = built_from.get(
         "q12_q13_sheet",
@@ -132,7 +146,7 @@ def _validate_manifest(manifest: dict[str, Any], run_id: str) -> dict[str, Any]:
 def _compare_structure(
     *,
     rows: list[dict[str, Any]],
-    expected_rows: list[dict[str, Any]],
+    expected_rows: list[dict[str, Any]] | None,
     snapshot: dict[str, Any],
     manifest: dict[str, Any],
 ) -> None:
@@ -148,7 +162,7 @@ def _compare_structure(
             "row count differs from manifest: "
             f"added row {len(expected_keys) + 1}"
         )
-    if len(expected_rows) != len(expected_keys):
+    if expected_rows is not None and len(expected_rows) != len(expected_keys):
         raise CheckError(
             "reconstructed RG-01 row count differs from regrade_manifest.json"
         )
@@ -176,12 +190,24 @@ def _compare_structure(
         raise CheckError("row count differs from manifest rows_by_qid")
 
     required_keys = set(build_regrade_sheet.ROW_KEYS)
-    for index, (row, expected_row, expected_key) in enumerate(
-        zip(rows, expected_rows, expected_keys),
-        start=1,
-    ):
+    if _is_phase7_mood_triage_manifest(manifest):
+        required_keys.add("label_provenance")
+
+    seen_keys: set[str] = set()
+    for index, row in enumerate(rows, start=1):
         row_key = _row_key(row, index)
-        if row_key != expected_key:
+        if expected_rows is None:
+            expected_key = row_key
+            if row_key not in snapshot:
+                raise CheckError(
+                    f"row {index}: {row_key} is not present in manifest snapshot"
+                )
+            if row_key in seen_keys:
+                raise CheckError(f"row {index}: duplicate gold label for {row_key}")
+            seen_keys.add(row_key)
+        else:
+            expected_key = expected_keys[index - 1]
+        if expected_rows is not None and row_key != expected_key:
             raise CheckError(
                 f"row {index}: expected {expected_key} from manifest, got {row_key}"
             )
@@ -192,6 +218,21 @@ def _compare_structure(
             raise CheckError(
                 f"row {index} ({row_key}): silver_grade differs from manifest"
             )
+        provenance = row.get("label_provenance")
+        if provenance is not None:
+            if provenance == "human_gold" or provenance not in PROVENANCE_VALUES:
+                allowed = ", ".join(sorted(PROVENANCE_VALUES))
+                raise CheckError(
+                    f"row {index} ({row_key}): label_provenance must be one of: "
+                    f"{allowed}"
+                )
+        elif _is_phase7_mood_triage_manifest(manifest):
+            raise CheckError(
+                f"row {index} ({row_key}): label_provenance is required"
+            )
+        if expected_rows is None:
+            continue
+        expected_row = expected_rows[index - 1]
         expected_non_gold = {
             key: value for key, value in expected_row.items() if key not in GOLD_KEYS
         }

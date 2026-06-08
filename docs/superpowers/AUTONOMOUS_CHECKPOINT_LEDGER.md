@@ -1569,3 +1569,27 @@ Every ticket/checkpoint appended below must include:
 - **Assumptions:** q65 mismatch remains intentional/adversarial per Claude recommendation and human decision
 - **Commit:** pending checkpoint commit
 - **Next safe action:** print q49 and Phase 7 `ai_draft` review table; do not upgrade provenance until explicit human approval.
+
+---
+
+### 2026-06-08T22:52:00+07:00 - PHASE-7-U-REGRADE-CHECKER-PHASE7-COMPATIBILITY
+
+- **Branch:** `main`
+- **Ticket/Gate:** Phase 7-U - regrade checker Phase 7 compatibility
+- **Agent:** Codex CLI
+- **Verdict:** PASS / SELF-REVIEWED
+- **Files changed:**
+  - `eval/scripts/check_regrade_sheet.py`
+  - `eval/tests/test_check_regrade_sheet.py`
+  - required ticket/report/checkpoint files
+- **Commands run:**
+  - `.\venv\Scripts\python.exe -m pytest eval/tests/test_check_regrade_sheet.py -q --basetemp="$env:TEMP\cinematch-7u-check"`
+  - `.\venv\Scripts\python.exe -m eval.scripts.check_regrade_sheet --run 2026-06-07-combined-nogit`
+- **Test results:**
+  - focused checker tests: PASS, 7 passed
+  - real Phase 7 checker: PASS, `complete=true`
+- **Artifacts:** refreshed `eval/runs/2026-06-07-combined-nogit/analysis/regrade/regrade_check.json`
+- **Failures:** initial real check failed on legacy source reconstruction and snapshot order assumptions for the custom Phase 7 batch-4 manifest; fixed in checker.
+- **Assumptions:** Phase 7 mood-triage manifests are custom handoff artifacts and cannot be reconstructed from legacy RG-01 sources.
+- **Commit:** pending scoped checkpoint commit
+- **Next safe action:** resume 7-T-8J label approval merge.

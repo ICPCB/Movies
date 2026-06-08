@@ -96,6 +96,10 @@ class CheckRegradeSheetTests(unittest.TestCase):
             for row in rows:
                 handle.write(json.dumps(row) + "\n")
 
+    def _write_json(self, path, data):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
     def _write_source_fixtures(self):
         self._write_jsonl(
             self.run_dir / "analysis" / "audit_silver_labels" / "review_sheet.jsonl",
@@ -270,6 +274,81 @@ class CheckRegradeSheetTests(unittest.TestCase):
                 },
             ],
         )
+
+    def _write_phase7_sheet(self, *, provenance="human_reviewed_ai_assisted"):
+        rows = [
+            {
+                "qid": "q21",
+                "tmdb_id": 101,
+                "query": "phase 7 query",
+                "title": "Phase 7 Movie",
+                "year": 2023,
+                "overview": "overview",
+                "genres": "Comedy",
+                "silver_grade": 2,
+                "silver_confidence": "high",
+                "silver_reason": "reason",
+                "in_top_5_of": [],
+                "flag_reasons": [],
+                "gold_grade": 3,
+                "gold_notes": "human reviewed rationale",
+                "batch": 4,
+                "batch_purpose": "phase7_mood_strict_calibration",
+                "label_provenance": provenance,
+            },
+            {
+                "qid": "q55",
+                "tmdb_id": 202,
+                "query": "phase 7 query 2",
+                "title": "Phase 7 Movie 2",
+                "year": 2024,
+                "overview": "overview",
+                "genres": "War",
+                "silver_grade": 1,
+                "silver_confidence": "high",
+                "silver_reason": "reason",
+                "in_top_5_of": [],
+                "flag_reasons": [],
+                "gold_grade": 1,
+                "gold_notes": None,
+                "batch": 4,
+                "batch_purpose": "phase7_mood_strict_calibration",
+                "label_provenance": "null_parse_error_fixed",
+            }
+        ]
+        manifest = {
+            "run_id": self.run_id,
+            "built_from": {
+                "phase7_mood_triage": "docs/superpowers/reports/phase7-mood-triage.md",
+                "error_report": "analysis/error_report/per_query_mode.jsonl",
+            },
+            "rows_total": 2,
+            "rows_by_batch": {"4": 2},
+            "rows_by_qid": {"q21": 1, "q55": 1},
+            "silver_grade_snapshot": {"q55:202": 1, "q21:101": 2},
+        }
+        regrade_dir = self.run_dir / "analysis" / "regrade"
+        self._write_jsonl(regrade_dir / "regrade_sheet.jsonl", rows)
+        self._write_json(regrade_dir / "regrade_manifest.json", manifest)
+
+    def test_phase7_custom_manifest_validates_without_legacy_sources(self):
+        self._write_phase7_sheet()
+
+        code, stdout, stderr = self._run_tool()
+
+        self.assertEqual(code, 0, stderr)
+        self.assertIn("complete=true", stdout)
+        report = json.loads(self.check_path.read_text(encoding="utf-8"))
+        self.assertTrue(report["complete"])
+        self.assertEqual(report["pending_by_batch"], {"4": 0})
+
+    def test_phase7_custom_manifest_rejects_human_gold_provenance(self):
+        self._write_phase7_sheet(provenance="human_gold")
+
+        code, _stdout, stderr = self._run_tool()
+
+        self.assertNotEqual(code, 0)
+        self.assertIn("label_provenance", stderr)
 
 
 if __name__ == "__main__":

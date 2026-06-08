@@ -433,3 +433,22 @@ Append-only log of agent dispatches and results.
 - **Details**: keep q65 `tags.mood.current_emotion` as `"bored"` even though the query text says "happy and energized"; do not add positive emotion schema support in this ticket.
 - **Commit**: pending checkpoint commit
 - **Next safe action**: print q49 and Phase 7 `ai_draft` review table; do not upgrade provenance until explicit human approval.
+
+---
+
+## Phase 7-U - Regrade Checker Phase 7 Compatibility
+
+- **Date**: 2026-06-08
+- **Ticket**: `.agents/inbox/codex/7Uregradecheckerphase7.md`
+- **Agent**: Codex CLI
+- **Verdict**: PASS / SELF-REVIEWED
+- **Files changed**:
+  - `eval/scripts/check_regrade_sheet.py`
+  - `eval/tests/test_check_regrade_sheet.py`
+  - `.agents/outbox/codex/7-U_result.md`
+- **Validation**:
+  - focused checker tests: PASS, 7 passed
+  - real Phase 7 checker: PASS, `complete=true`
+- **Production behavior**: unchanged
+- **Commit**: pending scoped checkpoint commit
+- **Next safe action**: resume 7-T-8J label approval merge.
