@@ -70,6 +70,7 @@ def _regrade_row(qid, tmdb_id, silver_grade, gold_grade, notes="gold note"):
         "flag_reasons": ["fixture"],
         "gold_grade": gold_grade,
         "gold_notes": notes,
+        "label_provenance": "ai_draft",
         "batch": 1,
         "batch_purpose": "fixture",
     }
@@ -223,6 +224,7 @@ class MergeLabelsTests(unittest.TestCase):
         self.assertEqual(row["gold_grade"], 3)
         self.assertEqual(row["silver_grade"], 1)
         self.assertEqual(row["label_source"], "gold")
+        self.assertEqual(row["label_provenance"], "ai_draft")
 
     def test_silver_passthrough_for_unregraded_pairs(self):
         self._write_fixture()
@@ -234,6 +236,7 @@ class MergeLabelsTests(unittest.TestCase):
         self.assertEqual(row["silver_grade"], 0)
         self.assertIsNone(row["gold_grade"])
         self.assertEqual(row["label_source"], "silver")
+        self.assertEqual(row["label_provenance"], "silver_llm_pregrade")
 
     def test_gold_only_pair_absent_from_silver_is_added(self):
         self._write_fixture(
@@ -250,6 +253,7 @@ class MergeLabelsTests(unittest.TestCase):
         self.assertEqual(row["grade"], 2)
         self.assertIsNone(row["silver_grade"])
         self.assertEqual(row["label_source"], "gold")
+        self.assertEqual(row["label_provenance"], "ai_draft")
 
     def test_metrics_json_envelope(self):
         self._write_fixture()
@@ -261,7 +265,16 @@ class MergeLabelsTests(unittest.TestCase):
         self.assertEqual(metrics["label_source"], "merged_gold_over_silver")
         self.assertEqual(
             metrics["label_provenance"],
-            {"gold": 1, "silver": 2, "total": 3, "regraded_queries": ["q01"]},
+            {
+                "gold": 1,
+                "silver": 2,
+                "total": 3,
+                "regraded_queries": ["q01"],
+                "counts": {
+                    "ai_draft": 1,
+                    "silver_llm_pregrade": 2,
+                },
+            },
         )
         self.assertEqual(
             metrics["built_from"],
@@ -320,6 +333,66 @@ class MergeLabelsTests(unittest.TestCase):
         metrics = json.loads(self.metrics_path.read_text(encoding="utf-8"))
         self.assertEqual(metrics["queries_total"], 60)
         self.assertEqual(metrics["label_provenance"]["regraded_queries"], ["q60"])
+        self.assertEqual(
+            sum(metrics["label_provenance"]["counts"].values()),
+            len(self._gold_rows()),
+        )
+
+    def test_missing_regrade_provenance_rejected(self):
+        row = _regrade_row("q01", 101, 1, 3)
+        row.pop("label_provenance")
+        self._write_fixture(regrade_rows=[row])
+
+        code, _stdout, stderr = self._run_main()
+
+        self.assertNotEqual(code, 0)
+        self.assertIn("label_provenance is required", stderr)
+        self.assertFalse(self.gold_path.exists())
+        self.assertFalse(self.metrics_path.exists())
+
+    def test_unsupported_regrade_provenance_rejected(self):
+        row = _regrade_row("q01", 101, 1, 3)
+        row["label_provenance"] = "robot_guess"
+        self._write_fixture(regrade_rows=[row])
+
+        code, _stdout, stderr = self._run_main()
+
+        self.assertNotEqual(code, 0)
+        self.assertIn("label_provenance must be one of", stderr)
+        self.assertFalse(self.gold_path.exists())
+        self.assertFalse(self.metrics_path.exists())
+
+    def test_human_gold_provenance_rejected(self):
+        row = _regrade_row("q01", 101, 1, 3)
+        row["label_provenance"] = "human_gold"
+        self._write_fixture(regrade_rows=[row])
+
+        code, _stdout, stderr = self._run_main()
+
+        self.assertNotEqual(code, 0)
+        self.assertIn("label_provenance must be one of", stderr)
+        self.assertFalse(self.gold_path.exists())
+        self.assertFalse(self.metrics_path.exists())
+
+    def test_metrics_provenance_counts_sum_to_total_labels(self):
+        self._write_fixture(
+            regrade_rows=[
+                _regrade_row("q01", 101, 1, 3),
+                {
+                    **_regrade_row("q02", 201, 2, 2),
+                    "label_provenance": "null_parse_error_fixed",
+                },
+            ]
+        )
+
+        self._run_merge()
+
+        metrics = json.loads(self.metrics_path.read_text(encoding="utf-8"))
+        counts = metrics["label_provenance"]["counts"]
+        self.assertEqual(sum(counts.values()), len(self._gold_rows()))
+        self.assertEqual(counts["ai_draft"], 1)
+        self.assertEqual(counts["null_parse_error_fixed"], 1)
+        self.assertEqual(counts["silver_llm_pregrade"], 1)
 
     def test_refuses_when_regrade_incomplete(self):
         self._write_fixture(complete=False)

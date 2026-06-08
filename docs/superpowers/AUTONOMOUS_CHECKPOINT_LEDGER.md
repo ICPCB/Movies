@@ -1487,3 +1487,37 @@ Every ticket/checkpoint appended below must include:
 - **Failures:** one mistyped local rerun used `--basetmp`; rerun with required `--basetemp` passed.
 - **Assumptions:** 8-H is a spec-restoring repair, not an accuracy fix.
 - **Next safe action:** commit scoped 8-I/8-H work if staged set is clean; keep 8-J blocked pending recorded human approval.
+
+---
+
+### Phase 7-R: Provenance and Phase 8 Plan Compliance Repair
+
+- **Timestamp:** 2026-06-08T20:43:07+07:00
+- **Branch:** main
+- **Commit:** pending final staging decision
+- **Ticket/Gate:** Phase 7-R - provenance and Phase 8 plan repair
+- **Verdict:** PASS / NEEDS_HUMAN_REVIEW
+- **Files changed:**
+  - `eval/scripts/merge_labels.py`
+  - `eval/tests/test_merge_labels.py`
+  - `eval/runs/2026-06-07-combined-nogit/analysis/regrade/regrade_sheet.jsonl`
+  - `eval/runs/2026-06-07-combined-nogit/gold_labels.jsonl`
+  - `eval/runs/2026-06-07-combined-nogit/metrics.json`
+  - `docs/superpowers/reports/phase7-mood-analysis.md`
+  - `docs/superpowers/plans/phase8-mood-retrieval-fixes.md`
+  - `.agents/outbox/codex/7-R_result.md`
+  - `.agents/ledger.md`
+  - `docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md`
+  - `.remember/remember.md`
+- **Commands run:**
+  - `.\venv\Scripts\python.exe -m pytest eval/tests/test_merge_labels.py -q --basetemp="$env:TEMP\cinematch-7r-merge"` -> PASS, 15 passed
+  - `.\venv\Scripts\python.exe eval/scripts/merge_labels.py --run 2026-06-07-combined-nogit --queries eval/queries/all.jsonl` -> PASS
+  - provenance assertion -> PASS
+- **Test results:** merge tests passed; generated labels/metrics passed provenance validation.
+- **Artifacts:**
+  - `eval/runs/2026-06-07-combined-nogit/analysis/regrade/regrade_sheet.jsonl`
+  - `eval/runs/2026-06-07-combined-nogit/gold_labels.jsonl`
+  - `eval/runs/2026-06-07-combined-nogit/metrics.json`
+- **Failures:** direct script merge initially failed before path bootstrap; fixed in allowed `merge_labels.py`.
+- **Assumptions:** existing non-q55 regrades are `ai_draft`; q55/Fury null parse repair is `null_parse_error_fixed`.
+- **Next safe action:** commit scoped 7-R tracked changes if staged set is clean; then stop for human review.

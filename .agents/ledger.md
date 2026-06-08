@@ -368,3 +368,32 @@ Append-only log of agent dispatches and results.
 - **Accuracy claims**: none. This is a behavior-affecting contract repair; ranking impact measurement is deferred to a separate gated eval ticket.
 - **Committed**: `2a1f640`
 - **Next safe action**: commit scoped 8-I/8-H work if staged set is clean; keep 8-J blocked pending recorded human approval.
+
+---
+
+## Phase 7-R - Provenance and Phase 8 Plan Compliance Repair
+
+- **Date**: 2026-06-08
+- **Ticket**: `.agents/inbox/codex/7Rphase7compliancerepair.md`
+- **Agent**: Codex CLI
+- **Verdict**: PASS / NEEDS_HUMAN_REVIEW
+- **Files changed**:
+  - `eval/scripts/merge_labels.py`
+  - `eval/tests/test_merge_labels.py`
+  - `eval/runs/2026-06-07-combined-nogit/analysis/regrade/regrade_sheet.jsonl`
+  - `eval/runs/2026-06-07-combined-nogit/gold_labels.jsonl`
+  - `eval/runs/2026-06-07-combined-nogit/metrics.json`
+  - `docs/superpowers/reports/phase7-mood-analysis.md`
+  - `docs/superpowers/plans/phase8-mood-retrieval-fixes.md`
+  - `.agents/outbox/codex/7-R_result.md`
+- **Provenance counts**:
+  - `ai_draft`: 13
+  - `null_parse_error_fixed`: 1
+  - `silver_llm_pregrade`: 630
+- **Validation**:
+  - merge tests: PASS, 15 passed
+  - real merge command: PASS
+  - provenance assertion: PASS
+- **Human decision still required**: 13 `ai_draft` regrades are not human-reviewed; 8-J remains blocked pending human q49 evidence review.
+- **Committed**: pending final staging decision
+- **Next safe action**: commit scoped 7-R tracked changes if staged set is clean.

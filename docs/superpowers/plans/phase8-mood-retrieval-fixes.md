@@ -18,11 +18,12 @@ Root cause: emotional preamble pollutes retrieval signal.
 - **File**: `src/llm/langchain_ollama.py` (modify SYNONYM_GROUPS)
 - **Test**: `src/tests/test_langchain_ollama.py` (extend)
 - **What**: Add mood-to-retrieval synonym groups:
-  - cozy → {cozy, warm, gentle, comforting, feel-good, heartwarming}
-  - calm → {calm, peaceful, serene, relaxing, soothing, meditative}
-  - funny → {funny, comedy, hilarious, absurd, satirical, witty}
-  - dark → {dark, disturbing, unsettling, psychological, gritty, bleak}
-  - uplifting → {uplifting, inspiring, hopeful, triumphant, motivating}
+  - cozy → {cozy, warm, gentle, tender, comforting, soothing, calm, peaceful}
+  - uplifting → {uplifting, hopeful, inspiring, heartwarming, feel-good, encouraging, optimistic}
+  - funny → {funny, comedy, hilarious, absurd, witty, playful, lighthearted}
+  - dark → {dark, disturbing, intense, gritty, devastating, raw, unflinching, bleak}
+  - emotional → {emotional, moving, touching, tender, vulnerable, heartbreaking, bittersweet}
+  - thrilling → {thrilling, exciting, adventurous, daring, gripping, suspenseful, edge-of-seat}
 - **Dependencies**: none (parallel with 8-A)
 - **Risk**: low — extends existing SYNONYM_GROUPS dict
 
@@ -40,7 +41,8 @@ Root cause: emotional preamble pollutes retrieval signal.
 - **What**: Post-rerank filter that demotes dark/horror/disturbing candidates when
   `MoodIntent.safety_sensitivity == "safe_hopeful"`.
   No-op when `dark_intended` or `neutral`.
-  Demotion = multiply final_score by 0.3 (configurable in config.py).
+  Demotion is a stable move-to-bottom reorder, not removal and not score multiplication.
+  Matching is based only on genres or keywords; title/overview text alone must not demote.
 - **Dependencies**: 8-A (needs MoodIntent)
 - **Risk**: medium — can suppress legitimate dark results if safety detection is wrong
 
@@ -56,11 +58,11 @@ Root cause: emotional preamble pollutes retrieval signal.
 ### 8-F: Stress Test Queries
 - **Files**: `eval/queries/all.jsonl` (append q61-q65), `eval/scripts/_schemas.py` (extend QUERY_IDS_V2)
 - **What**: 5 multi-constraint queries testing edge cases:
-  - q61: contradictory mood ("anxious but want horror")
-  - q62: no mood, pure movie-intent control
-  - q63: extreme vulnerability + explicit safety
-  - q64: double mood ("tired and sad, want energy")
-  - q65: mood with rare genre ("lonely, want documentary about connection")
+  - q61: bright family-comedy surface that slowly becomes a psychological thriller about isolation, with no ghosts, monsters, blood, and jazz music.
+  - q62: warm-hug first hour followed by a beautiful emotional gut punch.
+  - q63: war movie with no battle scenes, explosions, or guns; only letters home and waiting.
+  - q64: visually stunning, painting-like, minimal-dialogue film with haunting orchestral score in a decaying European city.
+  - q65: happy/energized user intentionally wants an emotionally devastating drama.
 - **Dependencies**: none (parallel)
 - **Risk**: low — eval-only
 
@@ -69,6 +71,7 @@ Root cause: emotional preamble pollutes retrieval signal.
 - **Gate criteria**: zero hit→miss regressions on non-mood queries.
 - **Dependencies**: 8-E, 8-F
 - **Risk**: this IS the risk check. Human gate.
+- **Current status**: stopped after the first 65-query run pending deterministic attribution and human review. Do not claim Phase 8 accuracy success until that gate is resolved.
 
 ## Execution Order
 
@@ -84,8 +87,8 @@ Parallel tracks: {8-A, 8-B, 8-F} can start immediately.
 
 ## Expected Metric Impact
 
-- Mood miss rate: 40% → ~10% (q22 and q49 should be rescued by cleaned_query + safety filter)
-- Non-mood miss rate: 8% → 8% (no change expected — mood code is no-op when no mood detected)
+- Mood miss rate: directional target only; must be measured in a gated 8-G rerun.
+- Non-mood behavior: no-mood prompt/query path should remain isolated, but ranking impact must be measured before any accuracy claim.
 - q53 (bored → absurd comedy): rescued by prompt rewriting stripping "bored"
 - q60 (bored → dark/disturbing): partially rescued by synonym expansion on "disturbing"
 - q22 (tired → cozy): rescued by safety filter demoting horror + cleaned query focusing on "cozy"
@@ -103,6 +106,7 @@ Modified:
 - `src/llm/prompts.py` (EXPAND_SYSTEM, HYDE_SYSTEM)
 - `src/pipelines/hybrid.py` (pipeline flow)
 - `src/pipelines/advanced.py` (pipeline flow)
-- `src/config.py` (SAFETY_DEMOTION_FACTOR constant)
 - `eval/queries/all.jsonl` (q61-q65)
 - `eval/scripts/_schemas.py` (QUERY_IDS_V2)
+
+No approved Phase 8 ticket authorizes a safety-demotion config constant.

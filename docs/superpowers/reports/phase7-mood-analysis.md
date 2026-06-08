@@ -50,7 +50,26 @@ Mood queries miss at **5x** the rate of non-mood queries.
 
 `safe_hopeful` misses occur when the pipeline returns dark/tense content to a vulnerable user (q22: `A Quiet Place` for a tired user wanting cozy).
 
-## 5. User-State vs Movie-Tone Problem
+## 5. Energy Level Breakdown
+
+| Energy Level | n | Misses | Miss Rate |
+|--------------|---|--------|-----------|
+| emotional_but_safe | 2 | 1 (q60) | 50% |
+| funny_energetic | 2 | 2 (q49, q53) | 100% |
+| light_cozy | 2 | 0 | 0% |
+| slow_gentle | 4 | 1 (q22) | 25% |
+
+## 6. Intensity Breakdown
+
+| Intensity | n | Misses | Miss Rate |
+|-----------|---|--------|-----------|
+| heavy_but_requested | 3 | 1 (q60) | 33% |
+| medium_emotional | 2 | 0 | 0% |
+| very_light | 5 | 3 (q22, q49, q53) | 60% |
+
+These bucket sizes are very small. Treat the energy_level and intensity miss rates as directional evidence for debugging, not as reliable population estimates.
+
+## 7. User-State vs Movie-Tone Problem
 
 The core issue: **emotional preamble pollutes retrieval**.
 
@@ -68,7 +87,7 @@ The user's state ("exhausted") describes **them**, not the movie they want. The 
 - **q53** ("I'm bored... most absurd comedy"): advanced mode returns `Requiem for a Dream`, `Inception` — semantic drift from "bored" toward existential content.
 - **q60** ("I'm bored and want something dark and disturbing"): hybrid returns `Dark Skies`, `The Dark Knight` — title-token matches on "dark" rather than psychological disturbance.
 
-## 6. Pipeline Gap Analysis
+## 8. Pipeline Gap Analysis
 
 ### Current flow (hybrid.py)
 ```
@@ -85,7 +104,7 @@ raw_query → normalize_query → expand_query (LLM) → semantic_search + bm25_
 
 4. **Synonym groups**: `SYNONYM_GROUPS` in `langchain_ollama.py` has 6 groups (dream, reality, mind, time, space, identity) — none for emotional/mood vocabulary. No expansion from "cozy" → {warm, gentle, feel-good, comforting}.
 
-## 7. Gold Metrics (60 queries)
+## 9. Gold Metrics (60 queries)
 
 | Mode | sh@5 | mrr@5 |
 |------|------|-------|
@@ -95,7 +114,7 @@ raw_query → normalize_query → expand_query (LLM) → semantic_search + bm25_
 
 `queries_excluded_null = 0` across all modes (Fury null fixed).
 
-## 8. Conclusion
+## 10. Conclusion
 
 Mood queries expose a systematic gap: the pipeline treats user emotional state as retrieval signal. Four interventions are needed:
 1. Mood preprocessor to split user-state from movie-tone

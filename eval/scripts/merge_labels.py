@@ -8,15 +8,28 @@ import sys
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
+if __package__ in (None, ""):
+    project_root = Path(__file__).resolve().parents[2]
+    project_root_str = str(project_root)
+    if project_root_str not in sys.path:
+        sys.path.insert(0, project_root_str)
+
 from eval.scripts import _run_io, build_regrade_sheet, check_regrade_sheet, compute_metrics
 
 
 GRADE_VALUES = {0, 1, 2, 3}
+REGRADE_PROVENANCE_VALUES = {
+    "ai_draft",
+    "human_reviewed_ai_assisted",
+    "null_parse_error_fixed",
+}
+SILVER_PROVENANCE = "silver_llm_pregrade"
 GOLD_LABEL_KEYS = (
     "qid",
     "tmdb_id",
     "grade",
     "label_source",
+    "label_provenance",
     "silver_grade",
     "gold_grade",
     "gold_notes",
@@ -116,22 +129,36 @@ def _validate_regrade_rows(
             raise MergeLabelsError(
                 f"row {index} ({qid}:{tmdb_id}): gold_grade must be one of 0, 1, 2, 3"
             )
+        provenance = row.get("label_provenance")
+        if not isinstance(provenance, str):
+            raise MergeLabelsError(
+                f"row {index} ({qid}:{tmdb_id}): label_provenance is required"
+            )
+        if provenance == "human_gold" or provenance not in REGRADE_PROVENANCE_VALUES:
+            allowed = ", ".join(sorted(REGRADE_PROVENANCE_VALUES))
+            raise MergeLabelsError(
+                f"row {index} ({qid}:{tmdb_id}): label_provenance must be one of: {allowed}"
+            )
 
 
 def _gold_map(
     rows: Iterable[Mapping[str, Any]],
-) -> dict[tuple[str, int], tuple[int, Any]]:
-    result: dict[tuple[str, int], tuple[int, Any]] = {}
+) -> dict[tuple[str, int], tuple[int, Any, str]]:
+    result: dict[tuple[str, int], tuple[int, Any, str]] = {}
     for row in rows:
         key = (str(row["qid"]), int(row["tmdb_id"]))
-        result[key] = (int(row["gold_grade"]), row.get("gold_notes"))
+        result[key] = (
+            int(row["gold_grade"]),
+            row.get("gold_notes"),
+            str(row["label_provenance"]),
+        )
     return result
 
 
 def _merge_gold_over_silver(
     *,
     silver_rows: list[Mapping[str, Any]],
-    gold_by_key: Mapping[tuple[str, int], tuple[int, Any]],
+    gold_by_key: Mapping[tuple[str, int], tuple[int, Any, str]],
 ) -> list[dict[str, Any]]:
     merged: list[dict[str, Any]] = []
     seen_silver_keys: set[tuple[str, int]] = set()
@@ -141,12 +168,13 @@ def _merge_gold_over_silver(
         seen_silver_keys.add(key)
         silver_grade = silver.get("grade")
         if key in gold_by_key:
-            gold_grade, gold_notes = gold_by_key[key]
+            gold_grade, gold_notes, label_provenance = gold_by_key[key]
             row = {
                 "qid": key[0],
                 "tmdb_id": key[1],
                 "grade": gold_grade,
                 "label_source": "gold",
+                "label_provenance": label_provenance,
                 "silver_grade": silver_grade,
                 "gold_grade": gold_grade,
                 "gold_notes": gold_notes,
@@ -157,6 +185,7 @@ def _merge_gold_over_silver(
                 "tmdb_id": key[1],
                 "grade": silver_grade,
                 "label_source": "silver",
+                "label_provenance": SILVER_PROVENANCE,
                 "silver_grade": silver_grade,
                 "gold_grade": None,
                 "gold_notes": None,
@@ -164,13 +193,14 @@ def _merge_gold_over_silver(
         merged.append(row)
 
     for qid, tmdb_id in sorted(set(gold_by_key) - seen_silver_keys):
-        gold_grade, gold_notes = gold_by_key[(qid, tmdb_id)]
+        gold_grade, gold_notes, label_provenance = gold_by_key[(qid, tmdb_id)]
         merged.append(
             {
                 "qid": qid,
                 "tmdb_id": tmdb_id,
                 "grade": gold_grade,
                 "label_source": "gold",
+                "label_provenance": label_provenance,
                 "silver_grade": None,
                 "gold_grade": gold_grade,
                 "gold_notes": gold_notes,
@@ -183,9 +213,13 @@ def _merge_gold_over_silver(
         if row["label_source"] == "gold":
             if row["grade"] != row["gold_grade"] or row["gold_grade"] is None:
                 raise MergeLabelsError(f"merged row {index}: invalid gold invariant")
+            if row["label_provenance"] not in REGRADE_PROVENANCE_VALUES:
+                raise MergeLabelsError(f"merged row {index}: invalid gold provenance")
         elif row["label_source"] == "silver":
             if row["grade"] != row["silver_grade"] or row["gold_grade"] is not None:
                 raise MergeLabelsError(f"merged row {index}: invalid silver invariant")
+            if row["label_provenance"] != SILVER_PROVENANCE:
+                raise MergeLabelsError(f"merged row {index}: invalid silver provenance")
         else:
             raise MergeLabelsError(f"merged row {index}: invalid label_source")
 
@@ -221,11 +255,16 @@ def _label_provenance(
     rows = list(merged_rows)
     gold_count = sum(1 for row in rows if row["label_source"] == "gold")
     silver_count = sum(1 for row in rows if row["label_source"] == "silver")
+    counts: dict[str, int] = {}
+    for row in rows:
+        provenance = str(row["label_provenance"])
+        counts[provenance] = counts.get(provenance, 0) + 1
     return {
         "gold": gold_count,
         "silver": silver_count,
         "total": len(rows),
         "regraded_queries": sorted({str(row["qid"]) for row in gold_rows}),
+        "counts": dict(sorted(counts.items())),
     }
 
 
