@@ -517,3 +517,37 @@ Append-only log of agent dispatches and results.
 - **Accuracy claims**: none; no full eval/model/network/retrieval job was run.
 - **Commit**: `91436b1`
 - **Next safe action**: gated 8-G eval only if explicitly authorized.
+
+---
+
+## Phase 8-G - Full Eval Regression Check
+
+- **Date**: 2026-06-09
+- **Ticket**: `.agents/inbox/codex/8Gevalregressioncheck.md`
+- **Agent**: Codex CLI
+- **Reviewer**: Claude Opus 4.6 read-only review
+- **Verdict**: PASS / NEEDS_REVIEW
+- **Files changed / created**:
+  - `eval/runs/2026-06-08-phase8j-gated-nogit/`
+  - `.agents/outbox/codex/8-G_result.md`
+- **Validation**:
+  - candidate generation: PASS
+  - silver pregrade: PASS, `rows_written=694`, `parse_rate=1.000`
+  - metrics: PASS, `queries_total=65`
+  - silver error report: PASS
+  - required aggregate comparison: PASS for `basic`, `advanced`, `hybrid`
+  - literal non-mood comparison: PASS for `basic`, `advanced`, `hybrid`
+  - effective non-mood comparison excluding explicit q29 mood overlap: PASS for `basic`, `advanced`, `hybrid`
+- **Mood regressions requiring follow-up**:
+  - q49 advanced: `1 -> 0`
+  - q53 hybrid: `1 -> 0`
+  - q59 advanced: `1 -> 0`
+  - q59 hybrid: `1 -> 0`
+- **Artifacts**:
+  - `eval/runs/2026-06-08-phase8j-gated-nogit/metrics_provisional.json`
+  - `eval/runs/2026-06-08-phase8j-gated-nogit/gate_8g_regression_comparison.json`
+  - `eval/runs/2026-06-08-phase8j-gated-nogit/analysis/error_report/per_query_mode.jsonl`
+  - `C:\Users\Minh Nguyen\.claude\plans\you-are-claude-code-toasty-lagoon.md`
+- **Failures**: none for non-mood safety gate; Phase 8 completion should wait for follow-up mood regression ticket.
+- **Commit**: pending
+- **Next safe action**: create a scoped follow-up investigation ticket for q59 first, then q49/q53 and q61/q65 triage.

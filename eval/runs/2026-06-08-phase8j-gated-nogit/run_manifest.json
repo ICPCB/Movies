@@ -1,0 +1,19 @@
+{
+  "run_id": "2026-06-08-phase8j-gated-nogit",
+  "git_sha": null,
+  "git_dirty": null,
+  "git_mode": "no_git",
+  "dataset_row_count": 27762,
+  "chroma_collection_count": 27762,
+  "embedding_model": "BAAI/bge-m3",
+  "reranker_model": "BAAI/bge-reranker-v2-m3",
+  "llm_model": "llama3.2",
+  "rng_seed": 42,
+  "warnings": [],
+  "timestamps": {
+    "start": "2026-06-08T16:32:05Z",
+    "candidates_done": "2026-06-08T17:33:09Z",
+    "silver_done": "2026-06-08T17:51:17Z",
+    "provisional_metrics_done": "2026-06-08T17:51:31Z"
+  }
+}

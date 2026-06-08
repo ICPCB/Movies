@@ -1674,3 +1674,41 @@ Every ticket/checkpoint appended below must include:
 - **Assumptions:** q49 label/provenance gate was satisfied by human approval and commit `982cb14`.
 - **Commit:** `91436b1`
 - **Next safe action:** gated 8-G eval only if explicitly authorized.
+
+---
+
+### 2026-06-09T00:58:00+07:00 - PHASE-8-G-FULL-EVAL-REGRESSION-CHECK
+
+- **Branch:** `main`
+- **Ticket/Gate:** Phase 8-G - full eval regression check
+- **Agent:** Codex CLI
+- **Reviewer:** Claude Opus 4.6 read-only review
+- **Verdict:** PASS / NEEDS_REVIEW
+- **Files changed:**
+  - `eval/runs/2026-06-08-phase8j-gated-nogit/`
+  - required result/checkpoint files
+- **Commands run:**
+  - `.\venv\Scripts\python.exe eval/scripts/run_pipelines.py --queries eval/queries/all.jsonl --top-k 15 --seed 42 --run-id 2026-06-08-phase8j-gated-nogit`
+  - `.\venv\Scripts\python.exe eval/scripts/llm_pregrade.py --run 2026-06-08-phase8j-gated-nogit --queries eval/queries/all.jsonl --seed 42`
+  - `.\venv\Scripts\python.exe eval/scripts/compute_metrics.py --run 2026-06-08-phase8j-gated-nogit --queries eval/queries/all.jsonl --bootstrap-b 1000 --seed 42`
+  - `.\venv\Scripts\python.exe eval/scripts/error_report.py --run 2026-06-08-phase8j-gated-nogit --k 5 --labels silver`
+  - required aggregate metrics comparison
+  - subset comparison for literal and effective non-mood qid sets
+  - `claude --model claude-opus-4-6 -p --permission-mode plan --output-format text ...`
+- **Test results:**
+  - candidates PASS
+  - silver labels PASS, `rows_written=694`, `parse_rate=1.000`
+  - metrics PASS, `queries_total=65`
+  - silver error report PASS
+  - required aggregate comparison PASS: basic `-0.026`, advanced `-0.041`, hybrid `-0.008`
+  - literal non-mood comparison PASS: basic `-0.019607`, advanced `+0.019608`, hybrid `+0.019608`
+  - effective non-mood comparison PASS: basic `-0.02`, advanced `+0.02`, hybrid `+0.02`
+- **Artifacts:**
+  - `eval/runs/2026-06-08-phase8j-gated-nogit/metrics_provisional.json`
+  - `eval/runs/2026-06-08-phase8j-gated-nogit/gate_8g_regression_comparison.json`
+  - `eval/runs/2026-06-08-phase8j-gated-nogit/analysis/error_report/per_query_mode.jsonl`
+  - `C:\Users\Minh Nguyen\.claude\plans\you-are-claude-code-toasty-lagoon.md`
+- **Failures:** none for non-mood gate; mood regressions q49 advanced, q53 hybrid, q59 advanced/hybrid require follow-up review.
+- **Assumptions:** the ticket's q29 overlap is a spec inconsistency, so both literal and mood-excluded non-mood checks are reported.
+- **Commit:** pending
+- **Next safe action:** open a scoped follow-up ticket for q59, then q49/q53 and q61/q65 triage, before Phase 8 completion.
