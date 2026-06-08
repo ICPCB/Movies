@@ -1710,5 +1710,5 @@ Every ticket/checkpoint appended below must include:
   - `C:\Users\Minh Nguyen\.claude\plans\you-are-claude-code-toasty-lagoon.md`
 - **Failures:** none for non-mood gate; mood regressions q49 advanced, q53 hybrid, q59 advanced/hybrid require follow-up review.
 - **Assumptions:** the ticket's q29 overlap is a spec inconsistency, so both literal and mood-excluded non-mood checks are reported.
-- **Commit:** pending
+- **Commit:** `707cab5`
 - **Next safe action:** open a scoped follow-up ticket for q59, then q49/q53 and q61/q65 triage, before Phase 8 completion.

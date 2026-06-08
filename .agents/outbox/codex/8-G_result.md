@@ -66,7 +66,7 @@ Git status summary:
 - Pre-existing unrelated dirty file remains: `eval/runs/2026-05-19-1846-nogit/analysis/rerank_regression/missing_label_review_queue.csv`.
 
 Commit:
-- Pending checkpoint commit.
+- `707cab5`
 
 Exact next recommended step:
 - Open a follow-up ticket for q59 first, plus q49/q53 and q61/q65 triage, before Phase 8 completion.

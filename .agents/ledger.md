@@ -549,5 +549,5 @@ Append-only log of agent dispatches and results.
   - `eval/runs/2026-06-08-phase8j-gated-nogit/analysis/error_report/per_query_mode.jsonl`
   - `C:\Users\Minh Nguyen\.claude\plans\you-are-claude-code-toasty-lagoon.md`
 - **Failures**: none for non-mood safety gate; Phase 8 completion should wait for follow-up mood regression ticket.
-- **Commit**: pending
+- **Commit**: `707cab5`
 - **Next safe action**: create a scoped follow-up investigation ticket for q59 first, then q49/q53 and q61/q65 triage.
