@@ -62,7 +62,7 @@ Ranking impact measurement:
 - Deferred to a separate gated eval ticket. 8-H ran tests only, not pipeline eval.
 
 Commit:
-- Pending final staging decision after checkpoint; validation passed.
+- `2a1f640`
 
 Next safe action:
 - Commit the scoped 8-I/8-H work if the staged set excludes unrelated dirty files.

@@ -1462,7 +1462,7 @@ Every ticket/checkpoint appended below must include:
 
 - **Timestamp:** 2026-06-08T20:31:59+07:00
 - **Branch:** main
-- **Commit:** pending final staging decision
+- **Commit:** `2a1f640`
 - **Ticket/Gate:** Phase 8-H - contract/isolation repair
 - **Verdict:** PASS / SELF-REVIEWED
 - **Files changed:**

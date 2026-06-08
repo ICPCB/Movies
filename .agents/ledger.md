@@ -366,5 +366,5 @@ Append-only log of agent dispatches and results.
   - eval tests: PASS, 352 passed
   - pipeline imports: PASS
 - **Accuracy claims**: none. This is a behavior-affecting contract repair; ranking impact measurement is deferred to a separate gated eval ticket.
-- **Committed**: pending final staging decision
+- **Committed**: `2a1f640`
 - **Next safe action**: commit scoped 8-I/8-H work if staged set is clean; keep 8-J blocked pending recorded human approval.
