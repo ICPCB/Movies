@@ -106,6 +106,19 @@ _USER_STATE_PREFIX_RE = re.compile(
     re.IGNORECASE,
 )
 _USER_BE_RE = re.compile(r"\b(?:i\s+am|i'm|im)\s+(?P<text>.+)", re.IGNORECASE)
+_LEADING_INTENSIFIERS = (
+    "super",
+    "really",
+    "very",
+    "so",
+    "extremely",
+    "totally",
+    "quite",
+)
+_USER_STATE_CONTEXT_RE = re.compile(
+    r"^(?:(?:from|after|at)\s+[a-z0-9]+|today|tonight|now|right\s+now|"
+    r"this\s+(?:morning|afternoon|evening|week|month)|and)(?:\s+|$)"
+)
 
 
 def _ascii(text: str) -> str:
@@ -159,6 +172,56 @@ def _emotion_search_span(lower_query: str, desired_start: int | None) -> str:
     return lower_query[:desired_start]
 
 
+def _strip_trailing_intent_marker(prefix: str) -> str:
+    stripped = prefix.strip(" ,.;:-")
+    stripped = re.sub(
+        r"\b(?:i\s+want|i\s+need|want|need|looking\s+for|give\s+me)\s*$",
+        "",
+        stripped,
+    ).strip(" ,.;:-")
+    return re.sub(r"\band\s*$", "", stripped).strip(" ,.;:-")
+
+
+def _context_is_user_state(rest: str) -> bool:
+    remaining = rest.strip(" ,.;:-")
+    while remaining:
+        match = _USER_STATE_CONTEXT_RE.match(remaining)
+        if not match:
+            return False
+        remaining = remaining[match.end() :].strip(" ,.;:-")
+    return True
+
+
+def _extract_adjective_led_emotion(
+    lower_query: str, desired_start: int | None
+) -> str | None:
+    if desired_start is None:
+        return None
+    prefix = _strip_trailing_intent_marker(lower_query[:desired_start])
+    if not prefix:
+        return None
+
+    start = 0
+    while True:
+        matched = False
+        for word in _LEADING_INTENSIFIERS:
+            match = re.match(rf"{word}\b\s*", prefix[start:])
+            if match:
+                start += match.end()
+                matched = True
+                break
+        if not matched:
+            break
+
+    text = prefix[start:]
+    for emotion, aliases in _EMOTION_TERMS.items():
+        for alias in aliases:
+            match = _word_pattern(alias).match(text)
+            if match and _context_is_user_state(text[match.end() :]):
+                return emotion
+    return None
+
+
 def _extract_current_emotion(lower_query: str, desired_start: int | None) -> str | None:
     mood_match = _MOOD_PHRASE_RE.search(lower_query)
     if mood_match:
@@ -176,6 +239,10 @@ def _extract_current_emotion(lower_query: str, desired_start: int | None) -> str
     be_match = _USER_BE_RE.search(_emotion_search_span(lower_query, desired_start))
     if be_match:
         return _find_first_term(be_match.group("text"), _EMOTION_TERMS)
+
+    adjective_led_emotion = _extract_adjective_led_emotion(lower_query, desired_start)
+    if adjective_led_emotion:
+        return adjective_led_emotion
 
     return None
 

@@ -68,3 +68,36 @@ def test_anxious_user_explicit_horror_request_stays_neutral():
     assert intent.desired_movie_tone == ["horror"]
     assert intent.safety_sensitivity == "neutral"
     assert intent.allow_dark_content is True
+
+
+def test_q49_adjective_led_user_state_detected():
+    intent = extract_mood_intent(
+        "super stressed from work need something light and funny to just zone out"
+    )
+
+    assert intent.current_emotion == "stressed"
+    assert intent.safety_sensitivity == "safe_hopeful"
+    assert "stressed" not in intent.cleaned_query.lower()
+    assert "work" not in intent.cleaned_query.lower()
+    assert "light" in intent.cleaned_query.lower()
+    assert "funny" in intent.cleaned_query.lower()
+    assert "zone out" in intent.cleaned_query.lower()
+
+
+def test_adjective_led_user_state_variants_require_later_movie_intent():
+    tired = extract_mood_intent("really tired today and want something gentle")
+    lonely = extract_mood_intent("very lonely tonight looking for a warm comedy")
+
+    assert tired.current_emotion == "tired"
+    assert tired.safety_sensitivity == "safe_hopeful"
+    assert lonely.current_emotion == "lonely"
+    assert lonely.safety_sensitivity == "safe_hopeful"
+
+
+def test_adjective_led_movie_descriptions_remain_neutral():
+    for query in ["a stressed detective", "a lonely hero", "a tired cop"]:
+        intent = extract_mood_intent(query)
+
+        assert intent.current_emotion is None
+        assert intent.safety_sensitivity == "neutral"
+        assert intent.cleaned_query == query

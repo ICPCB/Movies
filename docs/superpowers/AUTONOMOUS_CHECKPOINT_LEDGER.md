@@ -1646,3 +1646,31 @@ Every ticket/checkpoint appended below must include:
 - **Assumptions:** human approval covered all rows in the printed q49 and Phase 7 review tables; q55:228150 remains `null_parse_error_fixed`.
 - **Commit:** `982cb14`
 - **Next safe action:** 8-J q49 mood-detection ticket can proceed if no newer blocker appears.
+
+---
+
+### 2026-06-08T23:25:00+07:00 - PHASE-8-J-Q49-MOOD-DETECTION
+
+- **Branch:** `main`
+- **Ticket/Gate:** Phase 8-J - q49 mood detection
+- **Agent:** Codex CLI
+- **Verdict:** PASS / SELF-REVIEWED
+- **Files changed:**
+  - `src/retrieval/mood_preprocessor.py`
+  - `src/tests/test_mood_preprocessor.py`
+  - required result/checkpoint files
+- **Commands run:**
+  - `.\venv\Scripts\python.exe -m pytest src/tests/test_mood_preprocessor.py src/tests/test_mood_pipeline_integration.py -q --basetemp="$env:TEMP\cinematch-8j"`
+  - `.\venv\Scripts\python.exe -m pytest src/tests -q --basetemp="$env:TEMP\cinematch-8j-src"`
+  - direct q49 assertion command
+  - `git diff --name-only`
+  - `git status --short`
+- **Test results:**
+  - focused tests PASS, 15 passed
+  - source tests PASS, 26 passed
+  - direct q49 assertion PASS
+- **Artifacts:** `.agents/outbox/codex/8-J_result.md`
+- **Failures:** none
+- **Assumptions:** q49 label/provenance gate was satisfied by human approval and commit `982cb14`.
+- **Commit:** pending scoped checkpoint commit
+- **Next safe action:** gated 8-G eval only if explicitly authorized.
