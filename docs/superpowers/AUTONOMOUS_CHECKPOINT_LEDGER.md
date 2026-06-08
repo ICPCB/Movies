@@ -1742,5 +1742,5 @@ Every ticket/checkpoint appended below must include:
   - `eval/runs/2026-06-08-phase8j-gated-nogit/analysis/mood_regression/phase8-k-mood-regression-investigation.md`
 - **Failures:** none for investigation. Phase 8 remains NEEDS_REVIEW.
 - **Assumptions:** runtime mood objects are reconstructed from query tags and deterministic current extractor output because run artifacts do not persist mood objects.
-- **Commit:** pending
+- **Commit:** `f6551c2`
 - **Next safe action:** open q59-only fix-design ticket before any production change.

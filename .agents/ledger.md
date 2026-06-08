@@ -575,5 +575,5 @@ Append-only log of agent dispatches and results.
   - q53 hybrid: mixed retrieval and silver pregrade issue; `Pee-wee's Big Adventure` stayed in top 5 but fresh silver changed grade 2 -> 1, while `Absolutely Anything` disappeared.
   - q65 remains inherited 8-F data/ticket issue; q29 overlap remains preserved.
 - **Failures**: no implementation failure; Phase 8 still NEEDS_REVIEW and no fix was implemented.
-- **Commit**: pending
+- **Commit**: `f6551c2`
 - **Next safe action**: open q59-only fix-design ticket before any production change.
