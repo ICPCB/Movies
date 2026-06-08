@@ -450,5 +450,5 @@ Append-only log of agent dispatches and results.
   - focused checker tests: PASS, 7 passed
   - real Phase 7 checker: PASS, `complete=true`
 - **Production behavior**: unchanged
-- **Commit**: pending scoped checkpoint commit
+- **Commit**: `6211f82`
 - **Next safe action**: resume 7-T-8J label approval merge.

@@ -27,7 +27,7 @@ Assumptions:
 - Phase 7 mood-triage manifests are custom handoff artifacts; they cannot be reconstructed from legacy q12/q13/q03/q08 RG-01 sources.
 
 Commit:
-- Pending scoped checkpoint commit.
+- `6211f82`
 
 Next safe action:
 - Resume 7-T-8J label approval merge.

@@ -1591,5 +1591,5 @@ Every ticket/checkpoint appended below must include:
 - **Artifacts:** refreshed `eval/runs/2026-06-07-combined-nogit/analysis/regrade/regrade_check.json`
 - **Failures:** initial real check failed on legacy source reconstruction and snapshot order assumptions for the custom Phase 7 batch-4 manifest; fixed in checker.
 - **Assumptions:** Phase 7 mood-triage manifests are custom handoff artifacts and cannot be reconstructed from legacy RG-01 sources.
-- **Commit:** pending scoped checkpoint commit
+- **Commit:** `6211f82`
 - **Next safe action:** resume 7-T-8J label approval merge.
