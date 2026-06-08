@@ -396,4 +396,4 @@ Append-only log of agent dispatches and results.
   - provenance assertion: PASS
 - **Human decision still required**: 13 `ai_draft` regrades are not human-reviewed; 8-J remains blocked pending human q49 evidence review.
 - **Committed**: `bad023d`
-- **Next safe action**: commit scoped 7-R tracked changes if staged set is clean.
+- **Next safe action**: human review of 13 `ai_draft` regrades; keep 8-J blocked until q49 evidence approval is recorded.

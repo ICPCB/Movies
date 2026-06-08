@@ -58,5 +58,5 @@ Commit:
 - `bad023d`
 
 Next safe action:
-- Commit scoped 7-R tracked changes if staged set excludes unrelated dirty files.
 - Stop 8-J until human approval of q49 evidence is recorded.
+- Human review of the 13 `ai_draft` regrades before any provenance upgrade.

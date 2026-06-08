@@ -1520,4 +1520,4 @@ Every ticket/checkpoint appended below must include:
   - `eval/runs/2026-06-07-combined-nogit/metrics.json`
 - **Failures:** direct script merge initially failed before path bootstrap; fixed in allowed `merge_labels.py`.
 - **Assumptions:** existing non-q55 regrades are `ai_draft`; q55/Fury null parse repair is `null_parse_error_fixed`.
-- **Next safe action:** commit scoped 7-R tracked changes if staged set is clean; then stop for human review.
+- **Next safe action:** human review of 13 `ai_draft` regrades; keep 8-J blocked until q49 evidence approval is recorded.
