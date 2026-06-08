@@ -397,3 +397,25 @@ Append-only log of agent dispatches and results.
 - **Human decision still required**: 13 `ai_draft` regrades are not human-reviewed; 8-J remains blocked pending human q49 evidence review.
 - **Committed**: `bad023d`
 - **Next safe action**: human review of 13 `ai_draft` regrades; keep 8-J blocked until q49 evidence approval is recorded.
+
+---
+
+## Phase 7-S - Provenance Fixture Compatibility
+
+- **Date**: 2026-06-08
+- **Ticket**: `.agents/inbox/codex/7Sprovenancefixturesync.md`
+- **Agent**: Codex CLI
+- **Reviewer**: Claude Code Pro, planning review only
+- **Verdict**: PASS / SELF-REVIEWED
+- **Files changed**:
+  - `eval/tests/test_error_report.py`
+  - `eval/tests/test_hybrid_gap_trace.py`
+  - `eval/tests/test_hybrid_expansion_stability.py`
+  - `eval/tests/test_hybrid_live_trace.py`
+- **Validation**:
+  - pre-fix suite: 344 passed, 12 failed from missing `label_provenance`
+  - post-fix suite: 356 passed
+  - exact fixture schema/provenance assertion: PASS
+- **Production behavior**: unchanged
+- **Commit**: pending scoped checkpoint commit
+- **Next safe action**: human q65 decision and pending Phase 7/q49 label review.

@@ -17,6 +17,7 @@ def _gold(qid, tmdb_id, grade):
         "tmdb_id": tmdb_id,
         "grade": grade,
         "label_source": "silver",
+        "label_provenance": "silver_llm_pregrade",
         "silver_grade": grade,
         "gold_grade": None,
         "gold_notes": None,

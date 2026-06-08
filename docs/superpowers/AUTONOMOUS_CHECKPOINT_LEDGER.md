@@ -1521,3 +1521,34 @@ Every ticket/checkpoint appended below must include:
 - **Failures:** direct script merge initially failed before path bootstrap; fixed in allowed `merge_labels.py`.
 - **Assumptions:** existing non-q55 regrades are `ai_draft`; q55/Fury null parse repair is `null_parse_error_fixed`.
 - **Next safe action:** human review of 13 `ai_draft` regrades; keep 8-J blocked until q49 evidence approval is recorded.
+
+---
+
+### 2026-06-08T22:08:00+07:00 - PHASE-7-S-PROVENANCE-FIXTURE-COMPATIBILITY
+
+- **Branch:** `main`
+- **Ticket/Gate:** Phase 7-S - provenance fixture compatibility
+- **Agent:** Codex CLI
+- **Reviewer:** Claude Code Pro, planning review only
+- **Verdict:** PASS / SELF-REVIEWED
+- **Files changed:**
+  - `eval/tests/test_error_report.py`
+  - `eval/tests/test_hybrid_gap_trace.py`
+  - `eval/tests/test_hybrid_expansion_stability.py`
+  - `eval/tests/test_hybrid_live_trace.py`
+  - required ticket/report/checkpoint files
+- **Commands run:**
+  - pre-fix full eval suite
+  - post-fix `pytest eval/tests -q --basetemp="$env:TEMP\cinematch-7s-eval"`
+  - explicit fixture key-set and provenance assertion
+  - `git diff --name-only`
+  - `git status --short`
+- **Test results:**
+  - pre-fix: 344 passed, 12 failed
+  - post-fix: 356 passed
+  - fixture schema/provenance assertion: PASS
+- **Artifacts:** `.agents/outbox/codex/7-S_result.md`
+- **Failures:** none after repair
+- **Assumptions:** strict provenance validation is the intended artifact contract; only stale synthetic fixtures needed synchronization.
+- **Commit:** pending scoped checkpoint commit
+- **Next safe action:** human q65 annotation decision and pending Phase 7/q49 label review.

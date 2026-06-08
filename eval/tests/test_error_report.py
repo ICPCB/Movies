@@ -55,6 +55,11 @@ def _gold(
         "tmdb_id": tmdb_id,
         "grade": grade,
         "label_source": label_source,
+        "label_provenance": (
+            "human_reviewed_ai_assisted"
+            if label_source == "gold"
+            else "silver_llm_pregrade"
+        ),
         "silver_grade": silver_grade,
         "gold_grade": gold_grade,
         "gold_notes": None,
