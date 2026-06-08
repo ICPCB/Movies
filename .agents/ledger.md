@@ -515,5 +515,5 @@ Append-only log of agent dispatches and results.
   - source tests: PASS, 26 passed
   - direct q49 assertion: PASS
 - **Accuracy claims**: none; no full eval/model/network/retrieval job was run.
-- **Commit**: pending scoped checkpoint commit
+- **Commit**: `91436b1`
 - **Next safe action**: gated 8-G eval only if explicitly authorized.

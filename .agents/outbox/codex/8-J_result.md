@@ -37,7 +37,7 @@ Accuracy claims not made:
 - 8-J validates deterministic mood detection only.
 
 Commit:
-- Pending scoped checkpoint commit.
+- `91436b1`
 
 Next safe action:
 - Claude/human may authorize a fresh gated 8-G eval run if desired.

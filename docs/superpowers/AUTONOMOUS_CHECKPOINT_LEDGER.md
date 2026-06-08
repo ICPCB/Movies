@@ -1672,5 +1672,5 @@ Every ticket/checkpoint appended below must include:
 - **Artifacts:** `.agents/outbox/codex/8-J_result.md`
 - **Failures:** none
 - **Assumptions:** q49 label/provenance gate was satisfied by human approval and commit `982cb14`.
-- **Commit:** pending scoped checkpoint commit
+- **Commit:** `91436b1`
 - **Next safe action:** gated 8-G eval only if explicitly authorized.
