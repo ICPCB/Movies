@@ -9,6 +9,12 @@ from collections import Counter
 from pathlib import Path
 from typing import Any, Iterable
 
+if __package__ in (None, ""):
+    project_root = Path(__file__).resolve().parents[2]
+    project_root_str = str(project_root)
+    if project_root_str not in sys.path:
+        sys.path.insert(0, project_root_str)
+
 from eval.scripts import _run_io, build_regrade_sheet
 
 

@@ -452,3 +452,19 @@ Append-only log of agent dispatches and results.
 - **Production behavior**: unchanged
 - **Commit**: `6211f82`
 - **Next safe action**: resume 7-T-8J label approval merge.
+
+---
+
+## Phase 7-V - Regrade Checker Direct Script Bootstrap
+
+- **Date**: 2026-06-08
+- **Ticket**: `.agents/inbox/codex/7Vcheckregradebootstrap.md`
+- **Agent**: Codex CLI
+- **Verdict**: PASS / SELF-REVIEWED
+- **Files changed**:
+  - `eval/scripts/check_regrade_sheet.py`
+  - `.agents/outbox/codex/7-V_result.md`
+- **Validation**:
+  - direct script check: PASS, `complete=true`
+- **Commit**: pending scoped checkpoint commit
+- **Next safe action**: resume 7-T-8J label approval validation.

@@ -1593,3 +1593,23 @@ Every ticket/checkpoint appended below must include:
 - **Assumptions:** Phase 7 mood-triage manifests are custom handoff artifacts and cannot be reconstructed from legacy RG-01 sources.
 - **Commit:** `6211f82`
 - **Next safe action:** resume 7-T-8J label approval merge.
+
+---
+
+### 2026-06-08T23:02:00+07:00 - PHASE-7-V-REVGRADE-CHECKER-DIRECT-SCRIPT-BOOTSTRAP
+
+- **Branch:** `main`
+- **Ticket/Gate:** Phase 7-V - regrade checker direct script bootstrap
+- **Agent:** Codex CLI
+- **Verdict:** PASS / SELF-REVIEWED
+- **Files changed:**
+  - `eval/scripts/check_regrade_sheet.py`
+  - required ticket/report/checkpoint files
+- **Commands run:**
+  - `.\venv\Scripts\python.exe eval/scripts/check_regrade_sheet.py --run 2026-06-07-combined-nogit`
+- **Test results:** direct script check PASS, `complete=true`
+- **Artifacts:** refreshed `eval/runs/2026-06-07-combined-nogit/analysis/regrade/regrade_check.json`
+- **Failures:** none after bootstrap
+- **Assumptions:** bootstrap mirrors `merge_labels.py`
+- **Commit:** pending scoped checkpoint commit
+- **Next safe action:** resume 7-T-8J label approval validation.
