@@ -1552,3 +1552,20 @@ Every ticket/checkpoint appended below must include:
 - **Assumptions:** strict provenance validation is the intended artifact contract; only stale synthetic fixtures needed synchronization.
 - **Commit:** `b2ac050`
 - **Next safe action:** human q65 annotation decision and pending Phase 7/q49 label review.
+
+---
+
+### 2026-06-08T22:20:00+07:00 - PHASE-8-F-Q65-HUMAN-DECISION
+
+- **Branch:** `main`
+- **Ticket/Gate:** Phase 8-F q65 annotation decision
+- **Agent:** Human decision recorded by Codex CLI
+- **Verdict:** Option A accepted; inherited 8-F ticket/data issue
+- **Files changed:** governance/handoff only
+- **Commands run:** current handoff, lock, status, and recent commit inspection
+- **Test results:** not applicable; no code, schema, query, or label artifact change
+- **Artifacts:** none
+- **Failures:** none
+- **Assumptions:** q65 mismatch remains intentional/adversarial per Claude recommendation and human decision
+- **Commit:** pending checkpoint commit
+- **Next safe action:** print q49 and Phase 7 `ai_draft` review table; do not upgrade provenance until explicit human approval.

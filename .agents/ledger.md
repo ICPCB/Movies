@@ -419,3 +419,17 @@ Append-only log of agent dispatches and results.
 - **Production behavior**: unchanged
 - **Commit**: `b2ac050`
 - **Next safe action**: human q65 decision and pending Phase 7/q49 label review.
+
+---
+
+## Phase 8-F q65 Human Decision
+
+- **Date**: 2026-06-08
+- **Agent**: Human decision recorded by Codex CLI
+- **Decision**: q65 Option A
+- **Verdict**: accepted as inherited 8-F ticket/data issue
+- **Behavior change**: none
+- **Schema change**: none
+- **Details**: keep q65 `tags.mood.current_emotion` as `"bored"` even though the query text says "happy and energized"; do not add positive emotion schema support in this ticket.
+- **Commit**: pending checkpoint commit
+- **Next safe action**: print q49 and Phase 7 `ai_draft` review table; do not upgrade provenance until explicit human approval.
