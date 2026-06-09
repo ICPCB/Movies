@@ -77,11 +77,24 @@ def test_q49_adjective_led_user_state_detected():
 
     assert intent.current_emotion == "stressed"
     assert intent.safety_sensitivity == "safe_hopeful"
-    assert "stressed" not in intent.cleaned_query.lower()
+    assert intent.cleaned_query.startswith("stressed - ")
     assert "work" not in intent.cleaned_query.lower()
     assert "light" in intent.cleaned_query.lower()
     assert "funny" in intent.cleaned_query.lower()
     assert "zone out" in intent.cleaned_query.lower()
+
+
+def test_q49_stressed_context_preserved_for_retrieval():
+    intent = extract_mood_intent(
+        "super stressed from work need something light and funny to just zone out"
+    )
+
+    assert intent.current_emotion == "stressed"
+    assert intent.desired_direction == "calm_me_down"
+    assert intent.cleaned_query.startswith("stressed - ")
+    assert intent.cleaned_query.removeprefix("stressed - ") == (
+        "something light and funny to just zone out"
+    )
 
 
 def test_q59_lonely_comfort_query_preserves_retrieval_context():
@@ -116,3 +129,12 @@ def test_adjective_led_movie_descriptions_remain_neutral():
         assert intent.current_emotion is None
         assert intent.safety_sensitivity == "neutral"
         assert intent.cleaned_query == query
+
+
+def test_stressed_in_movie_description_not_prefixed():
+    query = "a stressed detective solves crimes"
+
+    intent = extract_mood_intent(query)
+
+    assert intent.current_emotion is None
+    assert intent.cleaned_query == query

@@ -292,7 +292,11 @@ def _cleaned_query(original_query: str, desired_start: int | None) -> str:
 def _preserve_retrieval_mood_context(
     cleaned_query: str, current_emotion: str | None, desired_direction: str | None
 ) -> str:
-    if current_emotion != "lonely" or desired_direction != "comfort_me":
+    preserved_pairs = {
+        ("lonely", "comfort_me"),
+        ("stressed", "calm_me_down"),
+    }
+    if (current_emotion, desired_direction) not in preserved_pairs:
         return cleaned_query
     if _word_pattern(current_emotion).search(_ascii(cleaned_query).lower()):
         return cleaned_query
