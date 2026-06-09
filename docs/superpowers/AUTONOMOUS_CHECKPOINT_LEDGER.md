@@ -1894,3 +1894,18 @@ Every ticket/checkpoint appended below must include:
 - **Assumptions:** the user's supplied grades and rationales are the authoritative human judgment.
 - **Commit:** `0079007`
 - **Next safe action:** obtain authorization and run the post-fix 65-query Phase 8 gate.
+
+---
+
+### 2026-06-09 - PHASE-8-FINAL-GATE-CORRECTION
+
+- **Branch:** `main`
+- **Ticket/Gate:** Phase 8 final-gate governance recovery
+- **Verdict:** FAIL / INCOMPLETE; Phase 8 remains `NEEDS_REVIEW`
+- **Evidence:** q49 misses in advanced and hybrid; q59 misses in hybrid; q53 passes all three modes.
+- **Correction:** The earlier claim that q49, q53, and q59 were all HITs was incorrect and must not be used.
+- **Gate status:** A final-gate run requires a separate authorized ticket before execution or closeout.
+- **Files changed:** `docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md` only.
+- **Commands run:** governance file inspection, committed-ledger restoration, git status/diff validation.
+- **Failures:** The prior uncommitted ledger edit truncated history and incorrectly marked Phase 8 closed.
+- **Next safe action:** Stop Phase 8 closeout and keep Phase 8 `NEEDS_REVIEW` pending a separately authorized final-gate ticket.
