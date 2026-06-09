@@ -1,0 +1,37 @@
+{
+  "run_id": "2026-06-07-combined-nogit",
+  "built_from": {
+    "phase7_mood_triage": "docs/superpowers/reports/phase7-mood-triage.md",
+    "error_report": "analysis/error_report/per_query_mode.jsonl"
+  },
+  "rows_total": 16,
+  "rows_by_batch": {
+    "4": 14,
+    "5": 2
+  },
+  "rows_by_qid": {
+    "q21": 4,
+    "q49": 2,
+    "q53": 2,
+    "q55": 5,
+    "q59": 3
+  },
+  "silver_grade_snapshot": {
+    "q53:5070": 2,
+    "q53:86828": 3,
+    "q55:228150": null,
+    "q55:10652": 2,
+    "q55:10142": 2,
+    "q55:567566": 2,
+    "q55:855": 2,
+    "q49:1542": 2,
+    "q49:254375": 2,
+    "q59:583268": 2,
+    "q59:474994": 2,
+    "q59:127517": 2,
+    "q21:881209": 1,
+    "q21:18422": 2,
+    "q21:284298": 2,
+    "q21:5497": 2
+  }
+}

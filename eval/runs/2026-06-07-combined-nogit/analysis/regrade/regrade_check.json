@@ -1,16 +1,17 @@
 {
   "run_id": "2026-06-07-combined-nogit",
   "complete": true,
-  "rows_total": 14,
-  "rows_filled": 14,
+  "rows_total": 16,
+  "rows_filled": 16,
   "pending_by_batch": {
-    "4": 0
+    "4": 0,
+    "5": 0
   },
   "agreement": {
-    "exact": 0.21428571428571427,
-    "within_1": 0.7857142857142857,
-    "disagree_ge1_count": 11,
-    "disagree_ge2_count": 3
+    "exact": 0.1875,
+    "within_1": 0.75,
+    "disagree_ge1_count": 13,
+    "disagree_ge2_count": 4
   },
   "threshold_crossings": [
     {
@@ -89,6 +90,20 @@
       "silver_grade": 2,
       "gold_grade": 3,
       "crossing": "silver<3->gold==3"
+    },
+    {
+      "qid": "q53",
+      "tmdb_id": 5070,
+      "silver_grade": 2,
+      "gold_grade": 3,
+      "crossing": "silver<3->gold==3"
+    },
+    {
+      "qid": "q53",
+      "tmdb_id": 86828,
+      "silver_grade": 3,
+      "gold_grade": 1,
+      "crossing": "silver>=2->gold<2; silver==3->gold<3"
     }
   ],
   "by_qid": {
@@ -97,6 +112,10 @@
       "changed": 3
     },
     "q49": {
+      "filled": 2,
+      "changed": 2
+    },
+    "q53": {
       "filled": 2,
       "changed": 2
     },

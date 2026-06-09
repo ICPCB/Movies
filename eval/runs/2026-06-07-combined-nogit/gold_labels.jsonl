@@ -558,7 +558,7 @@
 {"qid": "q53", "tmdb_id": 116711, "grade": 1, "label_source": "silver", "label_provenance": "silver_llm_pregrade", "silver_grade": 1, "gold_grade": null, "gold_notes": null}
 {"qid": "q53", "tmdb_id": 108930, "grade": 1, "label_source": "silver", "label_provenance": "silver_llm_pregrade", "silver_grade": 1, "gold_grade": null, "gold_notes": null}
 {"qid": "q53", "tmdb_id": 27205, "grade": 1, "label_source": "silver", "label_provenance": "silver_llm_pregrade", "silver_grade": 1, "gold_grade": null, "gold_notes": null}
-{"qid": "q53", "tmdb_id": 5070, "grade": 2, "label_source": "silver", "label_provenance": "silver_llm_pregrade", "silver_grade": 2, "gold_grade": null, "gold_notes": null}
+{"qid": "q53", "tmdb_id": 5070, "grade": 3, "label_source": "gold", "label_provenance": "human_reviewed_ai_assisted", "silver_grade": 2, "gold_grade": 3, "gold_notes": "Released in 1985, it satisfies the 1980-2000 era constraint. Its surreal, high-energy and harmless absurd-comedy set pieces directly match the request and make it an excellent boredom cure. The prior silver downgrade was a calibration error."}
 {"qid": "q53", "tmdb_id": 32685, "grade": 3, "label_source": "silver", "label_provenance": "silver_llm_pregrade", "silver_grade": 3, "gold_grade": null, "gold_notes": null}
 {"qid": "q53", "tmdb_id": 109431, "grade": 1, "label_source": "silver", "label_provenance": "silver_llm_pregrade", "silver_grade": 1, "gold_grade": null, "gold_notes": null}
 {"qid": "q53", "tmdb_id": 13805, "grade": 1, "label_source": "silver", "label_provenance": "silver_llm_pregrade", "silver_grade": 1, "gold_grade": null, "gold_notes": null}
@@ -567,7 +567,7 @@
 {"qid": "q53", "tmdb_id": 33035, "grade": 1, "label_source": "silver", "label_provenance": "silver_llm_pregrade", "silver_grade": 1, "gold_grade": null, "gold_notes": null}
 {"qid": "q53", "tmdb_id": 469052, "grade": 2, "label_source": "silver", "label_provenance": "silver_llm_pregrade", "silver_grade": 2, "gold_grade": null, "gold_notes": null}
 {"qid": "q53", "tmdb_id": 9081, "grade": 1, "label_source": "silver", "label_provenance": "silver_llm_pregrade", "silver_grade": 1, "gold_grade": null, "gold_notes": null}
-{"qid": "q53", "tmdb_id": 86828, "grade": 3, "label_source": "silver", "label_provenance": "silver_llm_pregrade", "silver_grade": 3, "gold_grade": null, "gold_notes": null}
+{"qid": "q53", "tmdb_id": 86828, "grade": 1, "label_source": "gold", "label_provenance": "human_reviewed_ai_assisted", "silver_grade": 3, "gold_grade": 1, "gold_notes": "Although the premise is absurd, its 2015 release violates the strict 1980-2000 era constraint. The weak and repetitive comedic execution further reduces suitability, so it is only a weak match and its disappearance is not a material q53 regression."}
 {"qid": "q54", "tmdb_id": 61348, "grade": 1, "label_source": "silver", "label_provenance": "silver_llm_pregrade", "silver_grade": 1, "gold_grade": null, "gold_notes": null}
 {"qid": "q54", "tmdb_id": 275060, "grade": 2, "label_source": "silver", "label_provenance": "silver_llm_pregrade", "silver_grade": 2, "gold_grade": null, "gold_notes": null}
 {"qid": "q54", "tmdb_id": 276401, "grade": 2, "label_source": "silver", "label_provenance": "silver_llm_pregrade", "silver_grade": 2, "gold_grade": null, "gold_notes": null}
