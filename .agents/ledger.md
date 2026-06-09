@@ -608,3 +608,30 @@ Append-only log of agent dispatches and results.
 - **Failures**: none for scoped ticket; Phase 8 still NEEDS_REVIEW pending q49/q53 or post-fix eval decision.
 - **Commit**: `43d9c29`
 - **Next safe action**: commit 8-L, then open separate q49/q53 ticket or request authorization for gated post-fix eval.
+
+---
+
+## Phase 8-M - q49 Advanced Retrieval Fix
+
+- **Date**: 2026-06-09
+- **Ticket**: `.agents/inbox/codex/8-M-q49-advanced-retrieval-fix.md`
+- **Agent**: Codex CLI
+- **Planner**: Claude Opus 4.6
+- **Verdict**: PASS (Claude Opus review COMPLETE - previously blocked review now passed)
+- **Files changed / created**:
+  - `src/retrieval/mood_preprocessor.py`
+  - `src/tests/test_mood_preprocessor.py`
+  - `.agents/inbox/codex/8-M-q49-advanced-retrieval-fix.md`
+  - `.agents/outbox/codex/8-M_result.md`
+- **Validation**:
+  - mood preprocessor tests: PASS, 13 passed
+  - source tests: PASS, 29 passed
+  - q49/q59/no-mood/movie-description assertion: PASS
+  - Claude Opus review: PASS (previously blocked by session limit)
+- **Findings**:
+  - q49 cleaned query now starts `stressed -`.
+  - q59 still starts `lonely -`.
+  - no-mood and movie-description controls unchanged.
+- **Failures**: none for scoped ticket; Phase 8 still NEEDS_REVIEW pending q53 or post-fix eval decision.
+- **Commit**: `2a87102`
+- **Next safe action**: q53 label/artifact triage decision; post-fix eval remains gated pending authorization.

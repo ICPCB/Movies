@@ -1785,3 +1785,37 @@ Every ticket/checkpoint appended below must include:
 - **Assumptions:** 8-L authorizes deterministic q59 retrieval-input fix only; q49/q53 remain separate.
 - **Commit:** `43d9c29`
 - **Next safe action:** commit 8-L, then open separate q49/q53 ticket or request authorization for gated post-fix eval.
+
+---
+
+### 2026-06-09T02:20:00+07:00 - PHASE-8-M-Q49-ADVANCED-RETRIEVAL-FIX
+
+- **Branch:** `main`
+- **Ticket/Gate:** Phase 8-M - q49 advanced retrieval fix
+- **Agent:** Codex CLI
+- **Planner:** Claude Opus 4.6
+- **Verdict:** PASS
+- **Files changed:**
+  - `src/retrieval/mood_preprocessor.py`
+  - `src/tests/test_mood_preprocessor.py`
+  - `.agents/inbox/codex/8-M-q49-advanced-retrieval-fix.md`
+  - `.agents/outbox/codex/8-M_result.md`
+  - required checkpoint files
+- **Commands run:**
+  - `.\venv\Scripts\python.exe -m pytest src/tests/test_mood_preprocessor.py -q`
+  - `.\venv\Scripts\python.exe -m pytest src/tests -q --basetemp="$env:TEMP\cinematch-8m-src"`
+  - direct q49/q59/no-mood/movie-description assertion
+  - `claude --model claude-opus-4-6 -p --permission-mode plan --output-format text ...` for planning
+  - `claude --model claude-opus-4-6 -p --permission-mode plan --output-format text ...` for review attempt
+- **Test results:**
+  - mood preprocessor tests PASS, 13 passed
+  - source tests PASS, 29 passed
+  - direct q49/q59/no-mood/movie-description assertion PASS
+  - Claude Opus review PASS (previously blocked by session limit)
+- **Artifacts:**
+  - `.agents/outbox/codex/8-M_result.md`
+  - `C:\Users\Minh Nguyen\.claude\plans\you-are-claude-code-rippling-karp.md`
+- **Failures:** none for scoped ticket; no full eval was run.
+- **Assumptions:** Phase 8 remains NEEDS_REVIEW until q53 triage and any authorized post-fix eval are resolved.
+- **Commit:** `2a87102`
+- **Next safe action:** q53 label/artifact triage decision; post-fix eval remains gated pending authorization.
