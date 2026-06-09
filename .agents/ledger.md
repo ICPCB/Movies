@@ -635,3 +635,56 @@ Append-only log of agent dispatches and results.
 - **Failures**: none for scoped ticket; Phase 8 still NEEDS_REVIEW pending q53 or post-fix eval decision.
 - **Commit**: `2a87102`
 - **Next safe action**: q53 label/artifact triage decision; post-fix eval remains gated pending authorization.
+
+---
+
+## Phase q53-T — q53 Artifact Triage
+
+- **Date**: 2026-06-09
+- **Ticket**: `.agents/inbox/codex/q53-artifact-triage.md`
+- **Agent**: Codex CLI
+- **Reviewer**: Claude Opus 4.6
+- **Verdict**: PASS / NEEDS_HUMAN_DECISION
+- **Files created**:
+  - `eval/runs/2026-06-08-phase8j-gated-nogit/analysis/mood_regression/q53-artifact-triage.md`
+  - `.agents/outbox/codex/q53-T_result.md`
+- **Validation**:
+  - Deterministic JSONL inspection of q53 rows in baseline/fresh candidate and silver-label files: PASS
+  - `git status --short`: consistent with pre-existing dirty CSV + `.remember/remember.md`
+  - `git diff --name-only`: no src/eval/query/label artifacts modified
+  - No eval, model, network, Ollama, source, query, candidate, or label write performed
+- **Findings**:
+  - `Absolutely Anything` (86828): present in baseline hybrid rank 4 with silver grade 3; absent from fresh candidates/silver
+  - `Pee-wee's Big Adventure` (5070): present in both; hybrid rank 1→3; rerank_score identical; silver grade flips 2→1
+  - Phase 8-K records q53 `current_emotion=null`; not a mood-preprocessor regression
+  - Both target labels are `silver_llm_pregrade`, not human_gold
+- **Decision deferred to human**: Options A (freeze 5070 as human_reviewed_ai_assisted), B (treat as silver noise / gate-set question), C (route 86828 recall loss to separate ticket), or combination
+- **Failures**: none
+- **Commit**: none
+- **Next safe action**: human chooses A/B/C or combination; post-fix eval remains gated pending authorization
+
+---
+
+## Phase q53-H - q53 Human Label Resolution
+
+- **Date**: 2026-06-09
+- **Ticket**: `.agents/inbox/codex/q53-human-label-approval.md`
+- **Agent**: Codex CLI
+- **Reviewer**: SELF-REVIEWED against explicit human judgment
+- **Verdict**: PASS / HUMAN_APPROVED
+- **Human decisions**:
+  - q53:5070 `Pee-wee's Big Adventure`: grade 3
+  - q53:86828 `Absolutely Anything`: grade 1
+  - provenance: `human_reviewed_ai_assisted`
+- **Validation**:
+  - regrade checker: PASS, complete=true, 16/16
+  - merge: PASS, 16 gold over 644 labels
+  - provenance counts: 15 human-reviewed, 1 null-parse fix, 628 silver
+  - no `human_gold`
+  - no src, query, silver-label, or candidate changes
+- **Findings**:
+  - Pee-wee is a reliable q53 positive.
+  - Absolutely Anything violates the strict 1980-2000 era constraint and is a weak match.
+  - Its fresh-run disappearance is not a material q53 regression.
+- **Commit**: `0079007`
+- **Next safe action**: authorize and run the post-fix 65-query Phase 8 gate.

@@ -1819,3 +1819,78 @@ Every ticket/checkpoint appended below must include:
 - **Assumptions:** Phase 8 remains NEEDS_REVIEW until q53 triage and any authorized post-fix eval are resolved.
 - **Commit:** `2a87102`
 - **Next safe action:** q53 label/artifact triage decision; post-fix eval remains gated pending authorization.
+
+---
+
+### 2026-06-09T21:30:00+07:00 - PHASE-Q53-T-ARTIFACT-TRIAGE
+
+- **Branch:** `main`
+- **Ticket/Gate:** q53-T - q53 artifact triage (read-only investigation)
+- **Agent:** Codex CLI
+- **Reviewer:** Claude Opus 4.6
+- **Verdict:** PASS / NEEDS_HUMAN_DECISION
+- **Files changed:**
+  - `eval/runs/2026-06-08-phase8j-gated-nogit/analysis/mood_regression/q53-artifact-triage.md` (created)
+  - `.agents/outbox/codex/q53-T_result.md` (created)
+- **Commands run:**
+  - Deterministic PowerShell JSONL parsing for q53 rows in baseline/fresh candidate and silver-label files
+  - `git status --short`
+  - `git diff --name-only`
+- **Test results:**
+  - JSONL inspection of q53 tmdb 86828 and 5070: PASS (exact evidence collected)
+  - Recall loss and silver-pregrade flip reported separately: PASS
+  - No provenance decision was made: PASS
+  - No eval, model, network, Ollama, source, query, candidate, or label write performed: PASS
+- **Artifacts:**
+  - `eval/runs/2026-06-08-phase8j-gated-nogit/analysis/mood_regression/q53-artifact-triage.md`
+  - `.agents/outbox/codex/q53-T_result.md`
+- **Findings:**
+  - `Absolutely Anything` (86828): present in baseline candidate union at hybrid rank 4 with silver grade 3; absent from fresh candidate and silver files (candidate recall loss).
+  - `Pee-wee's Big Adventure` (5070): present in both runs; hybrid rank 1→3; rerank_score identical (0.00918); silver grade flips 2→1 (llama3.2 pregrade noise).
+  - Phase 8-K records q53 `current_emotion=null`; this is NOT a mood-preprocessor regression.
+  - Both target labels are `silver_llm_pregrade`, not human_gold.
+- **Decision deferred to human:** Options A (human-review 5070 and freeze as `human_reviewed_ai_assisted`), B (treat 5070 flip as silver noise / gate-set question), C (route 86828 recall loss to separate retrieval-recall investigation ticket), or combination.
+- **Failures:** none.
+- **Assumptions:** provenance classification follows Phase 8-K artifact; silver JSONL rows identify `model=llama3.2` but do not contain explicit provenance field.
+- **Commit:** none. Orchestrator review only.
+- **Next safe action:** human chooses A/B/C or combination; post-fix eval remains gated pending authorization.
+- **External review:** Human decision required for provenance and retrieval-recall routing.
+
+---
+
+### 2026-06-09T13:15:00+07:00 - PHASE-Q53-H-HUMAN-LABEL-RESOLUTION
+
+- **Branch:** `main`
+- **Ticket/Gate:** q53-H - q53 human label resolution
+- **Agent:** Codex CLI
+- **Reviewer:** SELF-REVIEWED against explicit human judgment
+- **Verdict:** PASS / HUMAN_APPROVED
+- **Files changed:**
+  - `eval/runs/2026-06-07-combined-nogit/analysis/regrade/regrade_manifest.json`
+  - `eval/runs/2026-06-07-combined-nogit/analysis/regrade/regrade_sheet.jsonl`
+  - `eval/runs/2026-06-07-combined-nogit/analysis/regrade/regrade_check.json`
+  - `eval/runs/2026-06-07-combined-nogit/gold_labels.jsonl`
+  - `eval/runs/2026-06-07-combined-nogit/metrics.json`
+- **Commands run:**
+  - `check_regrade_sheet.py --run 2026-06-07-combined-nogit`
+  - `merge_labels.py --run 2026-06-07-combined-nogit --queries eval/queries/all.jsonl`
+  - deterministic q53/provenance assertions
+  - git diff/status boundary checks
+- **Test results:**
+  - checker complete=true, 16/16: PASS
+  - q53:5070 gold grade 3: PASS
+  - q53:86828 gold grade 1: PASS
+  - provenance 15 human-reviewed / 1 null-parse fix / 628 silver: PASS
+  - no `human_gold`: PASS
+  - no forbidden file changes: PASS
+- **Artifacts:**
+  - merged q53 human-reviewed labels and refreshed metrics
+  - `.agents/outbox/codex/q53-H-result.md`
+- **Findings:**
+  - Pee-wee's Big Adventure is a reliable q53 positive.
+  - Absolutely Anything is a weak match due to the strict era violation.
+  - The missing 86828 candidate is not a material q53 regression after human review.
+- **Failures:** none.
+- **Assumptions:** the user's supplied grades and rationales are the authoritative human judgment.
+- **Commit:** `0079007`
+- **Next safe action:** obtain authorization and run the post-fix 65-query Phase 8 gate.
