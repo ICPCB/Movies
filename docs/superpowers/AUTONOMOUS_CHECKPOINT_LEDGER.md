@@ -1909,3 +1909,24 @@ Every ticket/checkpoint appended below must include:
 - **Commands run:** governance file inspection, committed-ledger restoration, git status/diff validation.
 - **Failures:** The prior uncommitted ledger edit truncated history and incorrectly marked Phase 8 closed.
 - **Next safe action:** Stop Phase 8 closeout and keep Phase 8 `NEEDS_REVIEW` pending a separately authorized final-gate ticket.
+
+---
+
+### 2026-06-09 - PHASE-8-O-HYBRID-STAGE-TRACE
+
+- **Branch:** `main`
+- **Ticket/Gate:** Phase 8-O - Hybrid Stage Trace for Final-Gate Blockers
+- **Verdict:** NEEDS_REVIEW
+- **Files changed:**
+  - `.agents/inbox/codex/8-O-hybrid-stage-trace.md`
+  - `docs/superpowers/reports/phase8-o-hybrid-stage-trace.md`
+  - `.agents/outbox/codex/8-O_result.md`
+  - required ledger/checkpoint entries
+- **Commands run:** saved-artifact inspection, deterministic JSON/JSONL parsing, side-effect-free mood extraction, git boundary checks.
+- **Validation results:** no sidecar required; no source/eval-run/label/provenance/production changes; no model, network, Ollama, LLM, pipeline, or full eval.
+- **Findings:** earliest persisted loss is the candidate/per-mode output boundary; semantic, BM25, fusion, and pre-rerank pools are `NOT OBSERVABLE`.
+- **Ownership:** exact minimal implementation ownership remains unsupported for q59 hybrid, q49 hybrid, and q49 advanced.
+- **Guards:** q53 B+C preserved, q65 Option A preserved, `human_gold == 0`.
+- **Failures/blockers:** saved artifacts lack intermediate-stage pools required to assign exact production ownership.
+- **Commit:** `2ac0a37`
+- **Next safe action:** Human review and separate authorization for any live stage capture; no implementation ticket.

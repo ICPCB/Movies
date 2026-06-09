@@ -688,3 +688,31 @@ Append-only log of agent dispatches and results.
   - Its fresh-run disappearance is not a material q53 regression.
 - **Commit**: `0079007`
 - **Next safe action**: authorize and run the post-fix 65-query Phase 8 gate.
+
+---
+
+## Phase 8-O - Hybrid Stage Trace for Final-Gate Blockers
+
+- **Date**: 2026-06-09
+- **Ticket**: `.agents/inbox/codex/8-O-hybrid-stage-trace.md`
+- **Agent**: Codex CLI
+- **Reviewer**: Human-authorized
+- **Verdict**: NEEDS_REVIEW
+- **Files created**:
+  - `docs/superpowers/reports/phase8-o-hybrid-stage-trace.md`
+  - `.agents/outbox/codex/8-O_result.md`
+- **Validation**:
+  - saved-artifact-only trace completed
+  - no sidecar required
+  - no `src/*`, eval run, label, provenance, query, candidate, metric, model, schema, prompt, ranking, or retrieval behavior change
+  - no model, LLM, Ollama, network, pipeline, or full-eval call
+  - unrelated dirty/untracked files untouched
+- **Findings**:
+  - q59 hybrid approved target disappears by the persisted candidate/per-mode boundary after baseline
+  - q49 hybrid never persists the approved target; an authorized silver-only HIT came from a different candidate
+  - q49 advanced loses the approved target while basic remains stable, but mood preprocessing is not proven as sole owner
+  - semantic, BM25, fusion, and pre-rerank stages are `NOT OBSERVABLE`
+  - q53 B+C and q65 Option A remain preserved; `human_gold` remains 0
+- **Ownership**: exact implementation files remain `NEEDS_REVIEW` for q59 hybrid, q49 hybrid, and q49 advanced
+- **Commit**: `2ac0a37`
+- **Next safe action**: Human review; any further trace requires separate authorization for live stage capture. Do not create an implementation ticket.
