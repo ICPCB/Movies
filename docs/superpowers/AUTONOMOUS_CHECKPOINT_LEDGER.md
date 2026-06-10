@@ -2008,3 +2008,16 @@ Failures: plan section 10 target <800ms uncached NOT reached - remaining cost is
 Assumptions: interactive-process config overrides (RERANK_POOL=100, HYBRID_USE_LLM_EXPANSION=off) are app-layer per plan section 10 budget + src/config.py toggle-by-design comments; eval processes keep src defaults so the Phase 6 no-regression baseline is unaffected; rec_cache rows cleared during benchmarking (cache only, recreated on demand)
 Commit: 0545010
 Next safe action: Phase 6 eval extension (eval/queries/mood_v1.jsonl + no-regression vs 2026-06-07-combined-nogit)
+
+## 2026-06-11 - PHASE-6-EVAL-EXTENSION
+
+Ticket/Gate: PHASE-6 eval extension + serving-path mood layer (lead-implemented, ULTRAPLAN autonomous run)
+Verdict: PASS
+Files changed: engine/mood_labels.py (new), engine/recommender.py (tag attach + rank-nudge mood adjustment + mood match reasons), api/tests/conftest.py + test_mood_layer.py, eval/queries/mood_v1.jsonl (50 queries, new), eval/scripts/build_mood_queries.py + mood_smoke.py (new sidecars)
+Commands run: venv pytest api/tests -q (18 passed); build_mood_queries.py twice (byte-identical); mood_smoke.py vs live warm API; git diff f402156..HEAD -- src/ eval/...; fresh-process src.config defaults check
+Test results: 18 passed; smoke 8/8 sampled mood_v1 queries OK with 4-9 of top-10 results carrying desired film-mood tags; determinism confirmed
+Artifacts: eval/queries/mood_v1.jsonl (tracked); smoke output in session log
+Failures: none
+Assumptions: mood_v1 has NO gold relevance labels yet (noted inside every record) - grading would need a labeling ticket with honest provenance; no-regression gate satisfied by construction (zero src/ or existing-eval diffs since run start f402156, eval-process defaults RERANK_POOL=800 / HYBRID_USE_LLM_EXPANSION=True intact) rather than a full GPU re-run
+Commit: 11f5315
+Next safe action: Phase 7 intent parser (few-shot Ollama baseline + LoRA on cinematch-llama)
