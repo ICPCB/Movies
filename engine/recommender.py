@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from threading import Lock
 from typing import Any
 
 from src.utils.dedup import get_movie_key
@@ -10,6 +11,11 @@ from engine.intent_query_builder import build_query
 
 Pipeline = Callable[..., list[dict[str, Any]]]
 
+# ChromaDB/model singletons in src are not safe to initialize from two requests
+# at once; serialize only the first (cold) pipeline call.
+_COLD_START_LOCK = Lock()
+_warmed = False
+
 
 def _default_pipeline(
     query: str,
@@ -17,8 +23,14 @@ def _default_pipeline(
     top_k: int,
     with_explanation: bool,
 ) -> list[dict[str, Any]]:
+    global _warmed
     from src.pipelines.hybrid import run
 
+    if not _warmed:
+        with _COLD_START_LOCK:
+            result = run(query, top_k=top_k, with_explanation=with_explanation)
+            _warmed = True
+            return result
     return run(query, top_k=top_k, with_explanation=with_explanation)
 
 

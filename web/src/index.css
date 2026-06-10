@@ -1,0 +1,104 @@
+@import "@fontsource-variable/outfit";
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "tailwindcss";
+
+@theme {
+  --color-night-950: #07080c;
+  --color-night-900: #0b0d12;
+  --color-night-800: #11141c;
+  --color-night-700: #181c27;
+  --color-night-600: #232838;
+  --color-night-500: #303749;
+  --color-gold-300: #f5cf7e;
+  --color-gold-400: #efc15f;
+  --color-gold-500: #e8b34b;
+  --color-gold-600: #c9952f;
+  --color-crimson-500: #b32a40;
+  --color-crimson-600: #8f1d2c;
+  --color-fog-300: #c3cad9;
+  --color-fog-400: #9aa3b5;
+  --color-fog-500: #717b90;
+  --color-snow: #eef1f7;
+
+  --font-display: "Outfit Variable", "Outfit", ui-sans-serif, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-card: 0 8px 30px rgb(0 0 0 / 0.45);
+  --shadow-glow: 0 0 0 1px rgb(232 179 75 / 0.35), 0 10px 40px rgb(232 179 75 / 0.12);
+
+  --animate-rise: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes shimmer {
+    from {
+      background-position: -400px 0;
+    }
+    to {
+      background-position: 400px 0;
+    }
+  }
+}
+
+html {
+  background-color: var(--color-night-900);
+  color-scheme: dark;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-snow);
+  background:
+    radial-gradient(1100px 500px at 75% -10%, rgb(143 29 44 / 0.16), transparent 60%),
+    radial-gradient(900px 420px at 10% -5%, rgb(232 179 75 / 0.07), transparent 55%),
+    var(--color-night-900);
+  min-height: 100vh;
+}
+
+/* Film-grain overlay for the whole app */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
+}
+
+::selection {
+  background: rgb(232 179 75 / 0.3);
+}
+
+@utility font-display {
+  font-family: var(--font-display);
+}
+
+@utility skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-night-700) 0%,
+    var(--color-night-600) 45%,
+    var(--color-night-700) 90%
+  );
+  background-size: 800px 100%;
+  animation: var(--animate-shimmer);
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

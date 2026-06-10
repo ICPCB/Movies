@@ -54,3 +54,7 @@ codex-*.txt
 graphify-out/
 archive/
 cinematch-llama/
+
+node_modules/
+web/dist/
+*.tsbuildinfo
