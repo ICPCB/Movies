@@ -1,7 +1,7 @@
 ﻿ticket_id: WEB-2A
 agent: codex
 start: 2026-06-10T17:30:00+07:00
-status: ACTIVE
+status: CLOSED (PASS, commit 83d5df4, ledger PHASE-2-BACKEND 2026-06-11)
 mode: workspace-write
 source_ticket: .agents/inbox/codex/current.md
 allowed_files:

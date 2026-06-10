@@ -1956,3 +1956,29 @@ Failures: none
 Assumptions: weights are Llama-3.2-1B BASE (eos 128001) not Instruct - acceptable for LoRA parser training; runtime parsing stays few-shot Ollama until adapter beats baseline
 Commit: (this commit)
 Next safe action: Phase 2 - backend foundation (api/ FastAPI + SQLite + intent schema)
+
+## 2026-06-11 - PHASE-2-BACKEND (WEB-2A)
+
+Ticket/Gate: WEB-2A backend foundation (Codex CLI implementation, ULTRAPLAN autonomous run)
+Verdict: PASS (SELF-REVIEWED by Claude lead)
+Files changed: api/ (FastAPI app, db, db_models, schemas, routes_library, routes_search, 14 tests), engine/ (intent_schema, intent_query_builder, movie_store, recommender), requirements-api.txt; .agents WEB-2A ticket/result/lock
+Commands run: python -m pytest api/tests -q; python -c import-app-check; git status --short (re-run by lead, not just Codex report)
+Test results: 14 passed in 0.17s; app import ok
+Artifacts: .agents/outbox/codex/current_result.md (Codex verdict PASS)
+Failures: none
+Assumptions: engine/recommender imports src read-only (get_movie_key, lazy hybrid pipeline); model warm-up opt-in via CINEMATCH_WARM=1; no src/* edits confirmed via git status
+Commit: 83d5df4
+Next safe action: Phase 4 frontend
+
+## 2026-06-11 - PHASE-3-MOOD-LAYER
+
+Ticket/Gate: PHASE-3 mood label layer (lead-implemented, disjoint from Codex WEB-2A scope)
+Verdict: PASS
+Files changed: labels/ (user_mood_vocab.json, film_mood_vocab.json, user_mood_map.json, mood_rules.jsonl 213 rules, movie_mood_labels.jsonl 27758 lines, validate_labels.py, build_movie_mood_labels.py, drafts/)
+Commands run: python labels/build_movie_mood_labels.py; python labels/validate_labels.py (OK, expected_count=27758)
+Test results: validator OK; coverage 26714/27758 movies with >=1 tag (96.2%)
+Artifacts: labels/*.json(l); draft provenance trail in labels/drafts/
+Failures: none (Gemini draft BOM + 3 off-enum tags fixed before acceptance)
+Assumptions: 27762 CSV rows minus 4 title+year collisions merged via engine dedup keys = 27758; provenance values: human_provided (user vocab), authored_static_table (map), deterministic_rules (movie labels) - no human_gold claims
+Commit: 5af4ec0
+Next safe action: Phase 4 frontend (web/ React+Vite+Tailwind)
