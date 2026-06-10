@@ -1,0 +1,24 @@
+﻿{"match_type": "genre", "pattern": "comedy", "add": ["funny", "lighthearted"]}
+{"match_type": "genre", "pattern": "romance", "add": ["romantic"]}
+{"match_type": "genre", "pattern": "family", "add": ["warm", "feel-good"]}
+{"match_type": "genre", "pattern": "animation", "add": ["lighthearted", "feel-good"]}
+{"match_type": "genre", "pattern": "horror", "add": ["scary", "disturbing"]}
+{"match_type": "genre", "pattern": "thriller", "add": ["thrilling", "suspenseful"]}
+{"match_type": "genre", "pattern": "action", "add": ["action-packed", "exciting"]}
+{"match_type": "genre", "pattern": "adventure", "add": ["exciting", "epic"]}
+{"match_type": "genre", "pattern": "war", "add": ["gritty", "tense"]}
+{"match_type": "genre", "pattern": "crime", "add": ["gritty", "dark"]}
+{"match_type": "genre", "pattern": "mystery", "add": ["suspenseful", "thought-provoking"]}
+{"match_type": "genre", "pattern": "fantasy", "add": ["epic", "exciting"]}
+{"match_type": "genre", "pattern": "music", "add": ["uplifting", "warm"]}
+{"match_type": "genre", "pattern": "history", "add": ["thought-provoking"]}
+{"match_type": "genre", "pattern": "documentary", "add": ["thought-provoking"]}
+{"match_type": "genre", "pattern": "western", "add": ["gritty", "action-packed"]}
+{"match_type": "genre", "pattern": "science fiction", "add": ["mind-bending", "exciting"]}
+{"match_type": "keyword", "pattern": "friendship", "add": ["warm", "heartwarming"]}
+{"match_type": "keyword", "pattern": "christmas", "add": ["warm", "feel-good"]}
+{"match_type": "keyword", "pattern": "holiday", "add": ["feel-good", "lighthearted"]}
+{"match_type": "keyword", "pattern": "wedding", "add": ["romantic", "feel-good"]}
+{"match_type": "keyword", "pattern": "dog", "add": ["warm", "heartwarming"]}
+{"match_type": "keyword", "pattern": "cat", "add": ["warm", "lighthearted"]}
+{"match_type": "keyword", "pattern": "animal", "add": ["warm", "feel-good"]}

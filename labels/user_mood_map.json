@@ -1,0 +1,25 @@
+{
+  "$schema_note": "Fixed translation table: USER feeling category -> desired/avoid FILM moods. This is the ONLY bridge between user moods and film moods; the LLM never invents this mapping. All values must exist in labels/film_mood_vocab.json. Rationale: recommend what helps the feeling, not what mirrors it (a lonely user gets warm films, not lonely films).",
+  "provenance": "authored_static_table",
+  "version": 1,
+  "map": {
+    "accepting_open":      { "desired": ["thought-provoking", "warm", "uplifting"],                  "avoid": ["disturbing"] },
+    "aliveness_joy":       { "desired": ["feel-good", "funny", "exciting", "uplifting"],             "avoid": ["bleak"] },
+    "angry_annoyed":       { "desired": ["action-packed", "exciting", "funny"],                      "avoid": ["melancholic", "bleak"] },
+    "courageous_powerful": { "desired": ["epic", "inspiring", "action-packed"],                      "avoid": ["bleak"] },
+    "connected_loving":    { "desired": ["romantic", "heartwarming", "warm"],                        "avoid": ["disturbing"] },
+    "curious":             { "desired": ["mind-bending", "thought-provoking", "suspenseful"],        "avoid": [] },
+    "despair_sad":         { "desired": ["warm", "heartwarming", "hopeful", "uplifting"],            "avoid": ["bleak", "melancholic", "disturbing"] },
+    "disconnected_numb":   { "desired": ["heartwarming", "exciting", "inspiring"],                   "avoid": ["bleak", "melancholic"] },
+    "embarrassed_shame":   { "desired": ["funny", "lighthearted", "heartwarming"],                   "avoid": ["dark", "disturbing"] },
+    "fear":                { "desired": ["warm", "lighthearted", "feel-good"],                       "avoid": ["scary", "disturbing", "tense"] },
+    "fragile":             { "desired": ["warm", "heartwarming", "lighthearted"],                    "avoid": ["disturbing", "scary", "bleak"] },
+    "grateful":            { "desired": ["heartwarming", "uplifting", "inspiring"],                  "avoid": [] },
+    "guilt":               { "desired": ["hopeful", "thought-provoking", "uplifting"],               "avoid": ["bleak"] },
+    "hopeful":             { "desired": ["inspiring", "uplifting", "epic"],                          "avoid": ["bleak"] },
+    "powerless":           { "desired": ["inspiring", "epic", "action-packed"],                      "avoid": ["bleak", "disturbing"] },
+    "tender":              { "desired": ["romantic", "warm", "bittersweet"],                         "avoid": ["disturbing"] },
+    "stressed_tense":      { "desired": ["lighthearted", "funny", "feel-good", "warm"],              "avoid": ["tense", "dark", "disturbing"] },
+    "unsettled_doubt":     { "desired": ["feel-good", "hopeful", "warm"],                            "avoid": ["mind-bending", "disturbing"] }
+  }
+}

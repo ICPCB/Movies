@@ -1,0 +1,31 @@
+{
+  "$schema_note": "Closed enum of FILM moods. Every film_mood tag anywhere in CineMatch MUST be one of these 24 values. Distinct from user moods (labels/user_mood_vocab.json).",
+  "provenance": "authored_in_ultraplan",
+  "version": 1,
+  "film_moods": [
+    "warm",
+    "heartwarming",
+    "feel-good",
+    "uplifting",
+    "hopeful",
+    "funny",
+    "lighthearted",
+    "romantic",
+    "inspiring",
+    "exciting",
+    "thrilling",
+    "suspenseful",
+    "tense",
+    "action-packed",
+    "epic",
+    "mind-bending",
+    "thought-provoking",
+    "dark",
+    "gritty",
+    "bleak",
+    "melancholic",
+    "scary",
+    "disturbing",
+    "bittersweet"
+  ]
+}

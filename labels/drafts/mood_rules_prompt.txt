@@ -1,0 +1,12 @@
+﻿You are generating a deterministic rules file for tagging movies with FILM MOODS based on TMDB metadata. Output ONLY raw JSONL (one JSON object per line). No markdown, no code fences, no commentary, no blank lines.
+
+Each line: {"match_type": "genre"|"keyword", "pattern": "<lowercase exact tmdb genre or keyword>", "add": ["<film_mood>", ...]}
+
+The ONLY allowed film_mood values (closed enum, use nothing else):
+warm, heartwarming, feel-good, uplifting, hopeful, funny, lighthearted, romantic, inspiring, exciting, thrilling, suspenseful, tense, action-packed, epic, mind-bending, thought-provoking, dark, gritty, bleak, melancholic, scary, disturbing, bittersweet
+
+Rules to produce:
+1. One "genre" rule for each TMDB genre where a mood is clearly implied: Comedy, Romance, Family, Animation, Horror, Thriller, Action, Adventure, War, Crime, Mystery, Fantasy, Music, History, Documentary, Western, Science Fiction. (Skip Drama and TV Movie - too generic.) 1-3 moods each, only obvious implications.
+2. About 180 "keyword" rules for common TMDB keywords (use real TMDB keyword phrasings, lowercase), covering: feel-good themes (friendship, family bonds, holidays, weddings, animals, sports underdogs), romance, comedy styles (parody, satire, slapstick, romantic comedy), inspiration (based on true story, biography, overcoming, redemption, coming of age), excitement (heist, chase, spy, espionage, martial arts, superhero, survival, treasure hunt, disaster), suspense/thriller (serial killer, conspiracy, hostage, kidnapping, investigation, noir), mind-bending (time travel, parallel world, dream, memory loss, plot twist, artificial intelligence), dark/gritty (gang, prison, drug, war crimes, corruption, revenge, dystopia, post-apocalyptic), sad/bleak (grief, loss, terminal illness, suicide, depression, holocaust, tragedy), scary/disturbing (ghost, haunted house, demon, zombie, vampire, monster, slasher, torture, gore, exorcism, supernatural horror), bittersweet/melancholic (nostalgia, unrequited love, farewell, old age, memory).
+3. Each "add" list: 1-3 moods, only strong unambiguous implications. Never tag a mood that only weakly applies.
+4. No duplicate patterns. Patterns must be lowercase. Total 190-210 lines.

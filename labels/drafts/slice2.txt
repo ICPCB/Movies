@@ -1,0 +1,24 @@
+﻿{"match_type": "keyword", "pattern": "underdog", "add": ["inspiring", "uplifting"]}
+{"match_type": "keyword", "pattern": "baseball", "add": ["inspiring", "uplifting"]}
+{"match_type": "keyword", "pattern": "childhood", "add": ["warm", "bittersweet"]}
+{"match_type": "keyword", "pattern": "graduation", "add": ["uplifting", "hopeful"]}
+{"match_type": "keyword", "pattern": "reunion", "add": ["warm", "heartwarming"]}
+{"match_type": "keyword", "pattern": "birthday", "add": ["warm", "funny"]}
+{"match_type": "keyword", "pattern": "fairy tale", "add": ["warm", "feel-good"]}
+{"match_type": "keyword", "pattern": "kindness", "add": ["heartwarming", "uplifting"]}
+{"match_type": "keyword", "pattern": "toy", "add": ["warm", "lighthearted"]}
+{"match_type": "keyword", "pattern": "musical", "add": ["uplifting", "feel-good"]}
+{"match_type": "keyword", "pattern": "father son relationship", "add": ["warm", "heartwarming"]}
+{"match_type": "keyword", "pattern": "mother daughter relationship", "add": ["warm", "heartwarming"]}
+{"match_type": "keyword", "pattern": "grandfather", "add": ["warm", "heartwarming"]}
+{"match_type": "keyword", "pattern": "magic", "add": ["exciting", "warm"]}
+{"match_type": "keyword", "pattern": "love", "add": ["romantic"]}
+{"match_type": "keyword", "pattern": "flirtation", "add": ["romantic", "lighthearted"]}
+{"match_type": "keyword", "pattern": "blind date", "add": ["romantic", "funny"]}
+{"match_type": "keyword", "pattern": "breakup", "add": ["bittersweet", "melancholic"]}
+{"match_type": "keyword", "pattern": "marriage proposal", "add": ["romantic", "heartwarming"]}
+{"match_type": "keyword", "pattern": "honeymoon", "add": ["romantic", "lighthearted"]}
+{"match_type": "keyword", "pattern": "affair", "add": ["romantic", "tense"]}
+{"match_type": "keyword", "pattern": "forbidden love", "add": ["romantic", "tense"]}
+{"match_type": "keyword", "pattern": "star crossed lovers", "add": ["romantic", "bittersweet"]}
+{"match_type": "keyword", "pattern": "crush", "add": ["romantic", "warm"]}

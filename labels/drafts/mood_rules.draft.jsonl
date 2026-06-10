@@ -1,0 +1,213 @@
+{"match_type": "genre", "pattern": "comedy", "add": ["funny", "lighthearted"]}
+{"match_type": "genre", "pattern": "romance", "add": ["romantic"]}
+{"match_type": "genre", "pattern": "family", "add": ["warm", "feel-good"]}
+{"match_type": "genre", "pattern": "animation", "add": ["lighthearted", "feel-good"]}
+{"match_type": "genre", "pattern": "horror", "add": ["scary", "disturbing"]}
+{"match_type": "genre", "pattern": "thriller", "add": ["thrilling", "suspenseful"]}
+{"match_type": "genre", "pattern": "action", "add": ["action-packed", "exciting"]}
+{"match_type": "genre", "pattern": "adventure", "add": ["exciting", "epic"]}
+{"match_type": "genre", "pattern": "war", "add": ["gritty", "tense"]}
+{"match_type": "genre", "pattern": "crime", "add": ["gritty", "dark"]}
+{"match_type": "genre", "pattern": "mystery", "add": ["suspenseful", "thought-provoking"]}
+{"match_type": "genre", "pattern": "fantasy", "add": ["epic", "exciting"]}
+{"match_type": "genre", "pattern": "music", "add": ["uplifting", "warm"]}
+{"match_type": "genre", "pattern": "history", "add": ["thought-provoking"]}
+{"match_type": "genre", "pattern": "documentary", "add": ["thought-provoking"]}
+{"match_type": "genre", "pattern": "western", "add": ["gritty", "action-packed"]}
+{"match_type": "genre", "pattern": "science fiction", "add": ["mind-bending", "exciting"]}
+{"match_type": "keyword", "pattern": "friendship", "add": ["warm", "heartwarming"]}
+{"match_type": "keyword", "pattern": "christmas", "add": ["warm", "feel-good"]}
+{"match_type": "keyword", "pattern": "holiday", "add": ["feel-good", "lighthearted"]}
+{"match_type": "keyword", "pattern": "wedding", "add": ["romantic", "feel-good"]}
+{"match_type": "keyword", "pattern": "dog", "add": ["warm", "heartwarming"]}
+{"match_type": "keyword", "pattern": "cat", "add": ["warm", "lighthearted"]}
+{"match_type": "keyword", "pattern": "animal", "add": ["warm", "feel-good"]}
+{"match_type": "keyword", "pattern": "underdog", "add": ["inspiring", "uplifting"]}
+{"match_type": "keyword", "pattern": "baseball", "add": ["inspiring", "uplifting"]}
+{"match_type": "keyword", "pattern": "childhood", "add": ["warm", "bittersweet"]}
+{"match_type": "keyword", "pattern": "graduation", "add": ["uplifting", "hopeful"]}
+{"match_type": "keyword", "pattern": "reunion", "add": ["warm", "heartwarming"]}
+{"match_type": "keyword", "pattern": "birthday", "add": ["warm", "funny"]}
+{"match_type": "keyword", "pattern": "fairy tale", "add": ["warm", "feel-good"]}
+{"match_type": "keyword", "pattern": "kindness", "add": ["heartwarming", "uplifting"]}
+{"match_type": "keyword", "pattern": "toy", "add": ["warm", "lighthearted"]}
+{"match_type": "keyword", "pattern": "musical", "add": ["uplifting", "feel-good"]}
+{"match_type": "keyword", "pattern": "father son relationship", "add": ["warm", "heartwarming"]}
+{"match_type": "keyword", "pattern": "mother daughter relationship", "add": ["warm", "heartwarming"]}
+{"match_type": "keyword", "pattern": "grandfather", "add": ["warm", "heartwarming"]}
+{"match_type": "keyword", "pattern": "magic", "add": ["exciting", "warm"]}
+{"match_type": "keyword", "pattern": "love", "add": ["romantic"]}
+{"match_type": "keyword", "pattern": "flirtation", "add": ["romantic", "lighthearted"]}
+{"match_type": "keyword", "pattern": "blind date", "add": ["romantic", "funny"]}
+{"match_type": "keyword", "pattern": "breakup", "add": ["bittersweet", "melancholic"]}
+{"match_type": "keyword", "pattern": "marriage proposal", "add": ["romantic", "heartwarming"]}
+{"match_type": "keyword", "pattern": "honeymoon", "add": ["romantic", "lighthearted"]}
+{"match_type": "keyword", "pattern": "affair", "add": ["romantic", "tense"]}
+{"match_type": "keyword", "pattern": "forbidden love", "add": ["romantic", "tense"]}
+{"match_type": "keyword", "pattern": "star crossed lovers", "add": ["romantic", "bittersweet"]}
+{"match_type": "keyword", "pattern": "crush", "add": ["romantic", "warm"]}
+{"match_type": "keyword", "pattern": "dating", "add": ["romantic", "funny"]}
+{"match_type": "keyword", "pattern": "valentine's day", "add": ["romantic", "feel-good"]}
+{"match_type": "keyword", "pattern": "secret love", "add": ["romantic", "tense"]}
+{"match_type": "keyword", "pattern": "falling in love", "add": ["romantic", "heartwarming"]}
+{"match_type": "keyword", "pattern": "romantic comedy", "add": ["romantic", "funny"]}
+{"match_type": "keyword", "pattern": "satire", "add": ["funny", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "parody", "add": ["funny"]}
+{"match_type": "keyword", "pattern": "slapstick", "add": ["funny"]}
+{"match_type": "keyword", "pattern": "dark comedy", "add": ["funny", "dark"]}
+{"match_type": "keyword", "pattern": "screwball comedy", "add": ["funny", "lighthearted"]}
+{"match_type": "keyword", "pattern": "stand-up", "add": ["funny"]}
+{"match_type": "keyword", "pattern": "mockumentary", "add": ["funny", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "irony", "add": ["funny", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "black comedy", "add": ["funny", "dark"]}
+{"match_type": "keyword", "pattern": "spoof", "add": ["funny"]}
+{"match_type": "keyword", "pattern": "situational comedy", "add": ["funny", "lighthearted"]}
+{"match_type": "keyword", "pattern": "absurdist comedy", "add": ["funny", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "based on true story", "add": ["inspiring", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "biography", "add": ["inspiring", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "autobiography", "add": ["inspiring", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "rags to riches", "add": ["inspiring", "uplifting"]}
+{"match_type": "keyword", "pattern": "redemption", "add": ["inspiring", "heartwarming"]}
+{"match_type": "keyword", "pattern": "overcoming", "add": ["inspiring", "uplifting"]}
+{"match_type": "keyword", "pattern": "persistence", "add": ["inspiring", "hopeful"]}
+{"match_type": "keyword", "pattern": "success", "add": ["inspiring", "uplifting"]}
+{"match_type": "keyword", "pattern": "hero", "add": ["inspiring", "exciting"]}
+{"match_type": "keyword", "pattern": "mentor", "add": ["inspiring", "warm"]}
+{"match_type": "keyword", "pattern": "teacher", "add": ["inspiring", "warm"]}
+{"match_type": "keyword", "pattern": "coming of age", "add": ["bittersweet", "warm"]}
+{"match_type": "keyword", "pattern": "social justice", "add": ["inspiring", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "triumph", "add": ["inspiring", "uplifting"]}
+{"match_type": "keyword", "pattern": "heist", "add": ["exciting", "thrilling"]}
+{"match_type": "keyword", "pattern": "bank robbery", "add": ["exciting", "tense"]}
+{"match_type": "keyword", "pattern": "car chase", "add": ["exciting", "action-packed"]}
+{"match_type": "keyword", "pattern": "pursuit", "add": ["exciting", "tense"]}
+{"match_type": "keyword", "pattern": "explosion", "add": ["action-packed", "exciting"]}
+{"match_type": "keyword", "pattern": "martial arts", "add": ["action-packed", "exciting"]}
+{"match_type": "keyword", "pattern": "kung fu", "add": ["action-packed", "exciting"]}
+{"match_type": "keyword", "pattern": "samurai", "add": ["action-packed", "epic"]}
+{"match_type": "keyword", "pattern": "superhero", "add": ["exciting", "action-packed"]}
+{"match_type": "keyword", "pattern": "based on comic", "add": ["exciting", "epic"]}
+{"match_type": "keyword", "pattern": "alien", "add": ["exciting", "scary"]}
+{"match_type": "keyword", "pattern": "outer space", "add": ["exciting", "epic"]}
+{"match_type": "keyword", "pattern": "space travel", "add": ["exciting", "epic"]}
+{"match_type": "keyword", "pattern": "space opera", "add": ["exciting", "epic"]}
+{"match_type": "keyword", "pattern": "journey", "add": ["exciting", "epic"]}
+{"match_type": "keyword", "pattern": "quest", "add": ["exciting", "epic"]}
+{"match_type": "keyword", "pattern": "treasure", "add": ["exciting", "epic"]}
+{"match_type": "keyword", "pattern": "jungle", "add": ["exciting", "tense"]}
+{"match_type": "keyword", "pattern": "mountain climbing", "add": ["exciting", "tense"]}
+{"match_type": "keyword", "pattern": "survival", "add": ["tense", "hopeful"]}
+{"match_type": "keyword", "pattern": "wilderness", "add": ["exciting", "tense"]}
+{"match_type": "keyword", "pattern": "disaster", "add": ["tense", "exciting"]}
+{"match_type": "keyword", "pattern": "natural disaster", "add": ["tense", "exciting"]}
+{"match_type": "keyword", "pattern": "plane crash", "add": ["tense", "exciting"]}
+{"match_type": "keyword", "pattern": "pirate", "add": ["exciting", "action-packed"]}
+{"match_type": "keyword", "pattern": "serial killer", "add": ["scary", "disturbing"]}
+{"match_type": "keyword", "pattern": "murder", "add": ["suspenseful", "gritty"]}
+{"match_type": "keyword", "pattern": "investigation", "add": ["suspenseful", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "detective", "add": ["suspenseful", "gritty"]}
+{"match_type": "keyword", "pattern": "private eye", "add": ["suspenseful", "gritty"]}
+{"match_type": "keyword", "pattern": "police", "add": ["tense", "gritty"]}
+{"match_type": "keyword", "pattern": "law enforcement", "add": ["tense", "gritty"]}
+{"match_type": "keyword", "pattern": "conspiracy", "add": ["suspenseful", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "political thriller", "add": ["suspenseful", "tense"]}
+{"match_type": "keyword", "pattern": "surveillance", "add": ["suspenseful", "tense"]}
+{"match_type": "keyword", "pattern": "hostage", "add": ["tense", "thrilling"]}
+{"match_type": "keyword", "pattern": "kidnapping", "add": ["tense", "disturbing"]}
+{"match_type": "keyword", "pattern": "ransom", "add": ["tense", "thrilling"]}
+{"match_type": "keyword", "pattern": "stalker", "add": ["scary", "tense"]}
+{"match_type": "keyword", "pattern": "psychological thriller", "add": ["suspenseful", "mind-bending"]}
+{"match_type": "keyword", "pattern": "neo-noir", "add": ["dark", "gritty"]}
+{"match_type": "keyword", "pattern": "femme fatale", "add": ["dark", "suspenseful"]}
+{"match_type": "keyword", "pattern": "double cross", "add": ["suspenseful", "tense"]}
+{"match_type": "keyword", "pattern": "undercover", "add": ["suspenseful", "tense"]}
+{"match_type": "keyword", "pattern": "time travel", "add": ["mind-bending", "exciting"]}
+{"match_type": "keyword", "pattern": "parallel universe", "add": ["mind-bending", "epic"]}
+{"match_type": "keyword", "pattern": "virtual reality", "add": ["mind-bending", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "dream", "add": ["mind-bending", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "lucid dreaming", "add": ["mind-bending", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "amnesia", "add": ["mind-bending", "suspenseful"]}
+{"match_type": "keyword", "pattern": "memory", "add": ["thought-provoking", "melancholic"]}
+{"match_type": "keyword", "pattern": "identity", "add": ["thought-provoking", "mind-bending"]}
+{"match_type": "keyword", "pattern": "hallucination", "add": ["mind-bending", "scary"]}
+{"match_type": "keyword", "pattern": "simulation", "add": ["mind-bending", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "paradox", "add": ["mind-bending", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "twist ending", "add": ["mind-bending", "thrilling"]}
+{"match_type": "keyword", "pattern": "artificial intelligence", "add": ["thought-provoking", "mind-bending"]}
+{"match_type": "keyword", "pattern": "robot", "add": ["exciting", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "android", "add": ["thought-provoking", "exciting"]}
+{"match_type": "keyword", "pattern": "gang", "add": ["dark", "gritty"]}
+{"match_type": "keyword", "pattern": "organized crime", "add": ["dark", "gritty"]}
+{"match_type": "keyword", "pattern": "mafia", "add": ["dark", "gritty"]}
+{"match_type": "keyword", "pattern": "drug", "add": ["dark", "gritty"]}
+{"match_type": "keyword", "pattern": "drug trafficking", "add": ["dark", "gritty"]}
+{"match_type": "keyword", "pattern": "prison", "add": ["dark", "gritty"]}
+{"match_type": "keyword", "pattern": "jail", "add": ["dark", "gritty"]}
+{"match_type": "keyword", "pattern": "convict", "add": ["gritty", "tense"]}
+{"match_type": "keyword", "pattern": "bounty hunter", "add": ["gritty", "action-packed"]}
+{"match_type": "keyword", "pattern": "assassin", "add": ["dark", "action-packed"]}
+{"match_type": "keyword", "pattern": "hitman", "add": ["dark", "action-packed"]}
+{"match_type": "keyword", "pattern": "corruption", "add": ["dark", "gritty"]}
+{"match_type": "keyword", "pattern": "police corruption", "add": ["dark", "gritty"]}
+{"match_type": "keyword", "pattern": "vigilante", "add": ["dark", "action-packed"]}
+{"match_type": "keyword", "pattern": "revenge", "add": ["dark", "tense"]}
+{"match_type": "keyword", "pattern": "vengeance", "add": ["dark", "tense"]}
+{"match_type": "keyword", "pattern": "urban", "add": ["gritty", "dark"]}
+{"match_type": "keyword", "pattern": "slum", "add": ["gritty", "dark"]}
+{"match_type": "keyword", "pattern": "violence", "add": ["dark", "disturbing"]}
+{"match_type": "keyword", "pattern": "brutal", "add": ["dark", "disturbing"]}
+{"match_type": "keyword", "pattern": "grief", "add": ["melancholic", "bleak"]}
+{"match_type": "keyword", "pattern": "bereavement", "add": ["melancholic", "bleak"]}
+{"match_type": "keyword", "pattern": "death", "add": ["melancholic", "dark"]}
+{"match_type": "keyword", "pattern": "widow", "add": ["melancholic", "bittersweet"]}
+{"match_type": "keyword", "pattern": "orphan", "add": ["warm", "melancholic"]}
+{"match_type": "keyword", "pattern": "terminal illness", "add": ["bleak", "melancholic"]}
+{"match_type": "keyword", "pattern": "cancer", "add": ["bleak", "melancholic"]}
+{"match_type": "keyword", "pattern": "funeral", "add": ["melancholic", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "suicide", "add": ["bleak", "disturbing"]}
+{"match_type": "keyword", "pattern": "self harm", "add": ["bleak", "disturbing"]}
+{"match_type": "keyword", "pattern": "depression", "add": ["melancholic", "bleak"]}
+{"match_type": "keyword", "pattern": "loneliness", "add": ["melancholic", "bleak"]}
+{"match_type": "keyword", "pattern": "isolation", "add": ["melancholic", "tense"]}
+{"match_type": "keyword", "pattern": "heartbreak", "add": ["melancholic", "bittersweet"]}
+{"match_type": "keyword", "pattern": "separation", "add": ["melancholic", "bittersweet"]}
+{"match_type": "keyword", "pattern": "divorce", "add": ["melancholic", "bittersweet"]}
+{"match_type": "keyword", "pattern": "midlife crisis", "add": ["funny", "melancholic"]}
+{"match_type": "keyword", "pattern": "old age", "add": ["melancholic", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "nostalgia", "add": ["melancholic", "warm"]}
+{"match_type": "keyword", "pattern": "regret", "add": ["melancholic", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "ghost", "add": ["scary", "suspenseful"]}
+{"match_type": "keyword", "pattern": "spirit", "add": ["scary"]}
+{"match_type": "keyword", "pattern": "haunted house", "add": ["scary", "suspenseful"]}
+{"match_type": "keyword", "pattern": "possession", "add": ["scary", "disturbing"]}
+{"match_type": "keyword", "pattern": "exorcism", "add": ["scary", "disturbing"]}
+{"match_type": "keyword", "pattern": "demon", "add": ["scary", "disturbing"]}
+{"match_type": "keyword", "pattern": "devil", "add": ["scary", "dark"]}
+{"match_type": "keyword", "pattern": "satanism", "add": ["dark", "disturbing"]}
+{"match_type": "keyword", "pattern": "occult", "add": ["dark", "scary"]}
+{"match_type": "keyword", "pattern": "witchcraft", "add": ["dark", "scary"]}
+{"match_type": "keyword", "pattern": "supernatural", "add": ["scary", "exciting"]}
+{"match_type": "keyword", "pattern": "vampire", "add": ["scary", "romantic"]}
+{"match_type": "keyword", "pattern": "werewolf", "add": ["scary", "exciting"]}
+{"match_type": "keyword", "pattern": "monster", "add": ["scary", "exciting"]}
+{"match_type": "keyword", "pattern": "creature", "add": ["scary", "exciting"]}
+{"match_type": "keyword", "pattern": "creature feature", "add": ["scary", "exciting"]}
+{"match_type": "keyword", "pattern": "slasher", "add": ["scary", "disturbing"]}
+{"match_type": "keyword", "pattern": "psycho", "add": ["scary", "disturbing"]}
+{"match_type": "keyword", "pattern": "gore", "add": ["disturbing", "scary"]}
+{"match_type": "keyword", "pattern": "blood", "add": ["disturbing", "action-packed"]}
+{"match_type": "keyword", "pattern": "torture", "add": ["disturbing", "dark"]}
+{"match_type": "keyword", "pattern": "body horror", "add": ["disturbing", "scary"]}
+{"match_type": "keyword", "pattern": "jump scare", "add": ["scary"]}
+{"match_type": "keyword", "pattern": "unrequited love", "add": ["bittersweet", "melancholic"]}
+{"match_type": "keyword", "pattern": "first love", "add": ["bittersweet", "warm"]}
+{"match_type": "keyword", "pattern": "end of an era", "add": ["bittersweet", "melancholic"]}
+{"match_type": "keyword", "pattern": "passing of time", "add": ["melancholic", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "sacrifice", "add": ["inspiring", "bittersweet"]}
+{"match_type": "keyword", "pattern": "tragic hero", "add": ["epic", "bittersweet"]}
+{"match_type": "keyword", "pattern": "farewell", "add": ["bittersweet", "melancholic"]}
+{"match_type": "keyword", "pattern": "goodbye", "add": ["bittersweet", "melancholic"]}
+{"match_type": "keyword", "pattern": "holocaust", "add": ["bleak", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "dystopia", "add": ["bleak", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "post-apocalyptic", "add": ["bleak", "gritty"]}
+{"match_type": "keyword", "pattern": "zombies", "add": ["scary", "action-packed"]}

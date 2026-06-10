@@ -1,0 +1,24 @@
+﻿{"match_type": "keyword", "pattern": "dating", "add": ["romantic", "funny"]}
+{"match_type": "keyword", "pattern": "valentine's day", "add": ["romantic", "feel-good"]}
+{"match_type": "keyword", "pattern": "secret love", "add": ["romantic", "tense"]}
+{"match_type": "keyword", "pattern": "falling in love", "add": ["romantic", "heartwarming"]}
+{"match_type": "keyword", "pattern": "romantic comedy", "add": ["romantic", "funny"]}
+{"match_type": "keyword", "pattern": "satire", "add": ["funny", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "parody", "add": ["funny"]}
+{"match_type": "keyword", "pattern": "slapstick", "add": ["funny"]}
+{"match_type": "keyword", "pattern": "dark comedy", "add": ["funny", "dark"]}
+{"match_type": "keyword", "pattern": "screwball comedy", "add": ["funny", "lighthearted"]}
+{"match_type": "keyword", "pattern": "stand-up", "add": ["funny"]}
+{"match_type": "keyword", "pattern": "mockumentary", "add": ["funny", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "irony", "add": ["funny", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "black comedy", "add": ["funny", "dark"]}
+{"match_type": "keyword", "pattern": "spoof", "add": ["funny"]}
+{"match_type": "keyword", "pattern": "situational comedy", "add": ["funny", "lighthearted"]}
+{"match_type": "keyword", "pattern": "absurdist comedy", "add": ["funny", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "based on true story", "add": ["inspiring", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "biography", "add": ["inspiring", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "autobiography", "add": ["inspiring", "thought-provoking"]}
+{"match_type": "keyword", "pattern": "rags to riches", "add": ["inspiring", "uplifting"]}
+{"match_type": "keyword", "pattern": "redemption", "add": ["inspiring", "heartwarming"]}
+{"match_type": "keyword", "pattern": "overcoming", "add": ["inspiring", "uplifting"]}
+{"match_type": "keyword", "pattern": "persistence", "add": ["inspiring", "hopeful"]}
