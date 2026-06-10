@@ -1982,3 +1982,16 @@ Failures: none (Gemini draft BOM + 3 off-enum tags fixed before acceptance)
 Assumptions: 27762 CSV rows minus 4 title+year collisions merged via engine dedup keys = 27758; provenance values: human_provided (user vocab), authored_static_table (map), deterministic_rules (movie labels) - no human_gold claims
 Commit: 5af4ec0
 Next safe action: Phase 4 frontend (web/ React+Vite+Tailwind)
+
+## 2026-06-11 - PHASE-4-FRONTEND
+
+Ticket/Gate: PHASE-4 frontend (lead-implemented with frontend-design skill, ULTRAPLAN autonomous run)
+Verdict: PASS
+Files changed: web/ (Vite+React+TS+Tailwind v4 app: 3 pages, 9 components, typed API client, mood data module from labels/), engine/recommender.py (cold-start pipeline lock), .gitignore (node_modules, web/dist, *.tsbuildinfo)
+Commands run: npm install; npm run build (tsc -b && vite build, clean); venv pytest api/tests -q (14 passed); live verification via uvicorn(venv) + vite dev + Playwright
+Test results: build clean; 14 api tests pass; live: /api/categories, /api/random, /api/history, /api/favorites, /api/watchlist all 200; real mood search returned 50 ranked movies (BGE-M3 on cuda + BM25 27,762 movies + RRF + rerank); Ollama-off expand_query fallback exercised
+Artifacts: home-mood.png, home-category.png, results-grid.png (untracked verification screenshots)
+Failures: two cold-start 500s from concurrent ChromaDB client init - fixed by serializing first pipeline call in engine/recommender.py; global python lacked rank_bm25 - API must run under venv\Scripts\python.exe
+Assumptions: TMDB image CDN = static assets per plan; fonts bundled locally (fontsource); user took over live browser session mid-verification (observed typing) - servers left running
+Commit: d320b15
+Next safe action: Phase 5 speed pass (CINEMATCH_WARM pre-warm, /api/explain async Ollama, latency benchmark)
