@@ -1995,3 +1995,16 @@ Failures: two cold-start 500s from concurrent ChromaDB client init - fixed by se
 Assumptions: TMDB image CDN = static assets per plan; fonts bundled locally (fontsource); user took over live browser session mid-verification (observed typing) - servers left running
 Commit: d320b15
 Next safe action: Phase 5 speed pass (CINEMATCH_WARM pre-warm, /api/explain async Ollama, latency benchmark)
+
+## 2026-06-11 - PHASE-5-SPEED-PASS
+
+Ticket/Gate: PHASE-5 speed pass (lead-implemented, ULTRAPLAN autonomous run)
+Verdict: PASS with recorded latency gap (no false metric claims)
+Files changed: api/main.py (hot-path overrides + full warm-up), api/schemas.py (log_history), api/routes_search.py (cache envelope, cache_key, /api/explain), api/tests/test_search_routes.py (+2 tests), web/src (async modal explanations, history-once pagination, favicon), eval/scripts/latency_benchmark.py (new sidecar)
+Commands run: venv pytest api/tests -q (16 passed); npm run build (clean); latency benchmark x3 against live warm server; in-process DEBUG_RETRIEVAL stage profile; live /api/explain check (deterministic fallback path)
+Test results: 16 passed; benchmark before overrides p50 3701ms uncached -> after p50 1759ms / p95 2638ms uncached, p50 8ms cache-hit; warm stage profile: semantic 122ms, bm25 430ms, rrf 11ms, rerank(100) 686ms
+Artifacts: eval/runs/2026-06-11-latency-nogit/latency.json (untracked per -nogit convention)
+Failures: plan section 10 target <800ms uncached NOT reached - remaining cost is inside protected src/* (pure-python rank_bm25 430ms, cross-encoder throughput 686ms@100 pairs on this GPU). Knob available: CINEMATCH_RERANK_POOL=50 saves ~350ms at quality cost - owner decision, not taken autonomously.
+Assumptions: interactive-process config overrides (RERANK_POOL=100, HYBRID_USE_LLM_EXPANSION=off) are app-layer per plan section 10 budget + src/config.py toggle-by-design comments; eval processes keep src defaults so the Phase 6 no-regression baseline is unaffected; rec_cache rows cleared during benchmarking (cache only, recreated on demand)
+Commit: 0545010
+Next safe action: Phase 6 eval extension (eval/queries/mood_v1.jsonl + no-regression vs 2026-06-07-combined-nogit)
