@@ -15,7 +15,7 @@ from sqlalchemy import delete
 from api.db import SessionLocal, create_all
 from api.db_models import Base
 from api.main import app
-from engine import movie_store
+from engine import mood_labels, movie_store
 
 
 MOVIES = [
@@ -87,6 +87,7 @@ def stub_pipeline(query: str, *, top_k: int, with_explanation: bool) -> list[dic
 @pytest.fixture
 def client():
     movie_store.load(df=pd.DataFrame(MOVIES))
+    mood_labels.load(labels={})  # hermetic: no real label file in tests
     create_all()
     with SessionLocal() as session:
         for table in reversed(Base.metadata.sorted_tables):

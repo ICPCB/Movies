@@ -6,6 +6,7 @@ from typing import Any
 
 from src.utils.dedup import get_movie_key
 
+from engine import mood_labels
 from engine.intent_query_builder import build_query
 
 
@@ -90,7 +91,46 @@ def _match_reason(movie: dict[str, Any], intent: dict[str, Any]) -> str:
         text = str(genre).strip()
         if text and text.casefold() in movie_genres and text not in signals:
             signals.append(text)
-    return f"matches: {', '.join(signals)}" if signals else "matches: content relevance"
+    mood_hits = sorted(
+        set(movie.get("film_mood_tags", []))
+        & set(intent.get("desired_film_moods", []))
+    )
+    parts = []
+    if signals:
+        parts.append(", ".join(signals))
+    if mood_hits:
+        parts.append(" · ".join(mood_hits))
+    return f"matches: {' · '.join(parts)}" if parts else "matches: content relevance"
+
+
+# Post-rerank mood adjustment (plan section 10): rank-unit nudges are
+# scale-free, so we never have to guess what score field the pipeline used.
+_DESIRED_RANK_BONUS = 5
+_AVOID_RANK_PENALTY = 8
+_MAX_COUNTED_HITS = 2
+
+
+def _mood_adjusted_order(
+    movies: list[dict[str, Any]],
+    desired: set[str],
+    avoid: set[str],
+) -> list[dict[str, Any]]:
+    if not desired and not avoid:
+        return movies
+
+    def adjusted_rank(item: tuple[int, dict[str, Any]]) -> int:
+        index, movie = item
+        tags = set(movie.get("film_mood_tags", []))
+        desired_hits = min(len(tags & desired), _MAX_COUNTED_HITS)
+        avoid_hits = min(len(tags & avoid), _MAX_COUNTED_HITS)
+        return (
+            index
+            - desired_hits * _DESIRED_RANK_BONUS
+            + avoid_hits * _AVOID_RANK_PENALTY
+        )
+
+    indexed = sorted(enumerate(movies), key=adjusted_rank)
+    return [movie for _, movie in indexed]
 
 
 def recommend(
@@ -105,14 +145,18 @@ def recommend(
         top_k=pool_size,
         with_explanation=False,
     )
+    desired = set(built["boosts"]["desired_film_moods"])
+    avoid = set(built["boosts"]["avoid_film_moods"])
     output = []
     for candidate in movies:
         movie = dict(candidate)
         if not _matches_filters(movie, built["filters"]):
             continue
         movie.setdefault("movie_key", get_movie_key(movie))
+        if not movie.get("film_mood_tags"):
+            movie["film_mood_tags"] = mood_labels.tags_for(movie["movie_key"])
         movie["match_reason"] = _match_reason(movie, intent)
         output.append(movie)
         if len(output) >= pool_size:
             break
-    return output
+    return _mood_adjusted_order(output, desired, avoid)
