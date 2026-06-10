@@ -46,3 +46,10 @@ settings.json
 .DS_Store
 Thumbs.db
 *.log
+
+# Temp / test caches / session dumps
+.pytest_cache/
+.tmp/
+codex-*.txt
+graphify-out/
+archive/
