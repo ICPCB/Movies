@@ -11,12 +11,30 @@ from api.db import create_all
 from api.routes_library import router as library_router
 from api.routes_search import router as search_router
 
+# Interactive hot-path overrides (plan section 10). The API process trims the
+# cross-encoder pool from the eval default of 800 to 100, and keeps LLM query
+# expansion off the render path (a down Ollama costs ~2.7s of connection
+# retries per search; an up Ollama costs an LLM round-trip — neither fits the
+# <800ms budget, which has no expansion stage). Must run before
+# src.pipelines.hybrid is first imported (the engine imports it lazily);
+# eval runs in its own process and keeps the src defaults.
+from src import config as engine_config
+
+engine_config.RERANK_POOL = int(os.getenv("CINEMATCH_RERANK_POOL", "100"))
+engine_config.HYBRID_USE_LLM_EXPANSION = os.getenv("CINEMATCH_LLM_EXPANSION") == "1"
+
 
 def _warm_models() -> None:
     from src.models import get_embedder, get_reranker
 
     get_embedder()
     get_reranker()
+    # One tiny end-to-end query also builds the BM25 index, ChromaDB client,
+    # and CSV caches, so the first real user search is hot-path only.
+    from engine import recommender
+    from engine.intent_schema import empty_intent
+
+    recommender.recommend(empty_intent("warm up", "content"), pool_size=1)
 
 
 @asynccontextmanager

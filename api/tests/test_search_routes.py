@@ -31,6 +31,50 @@ def test_random_is_seeded_and_movie_404s(client):
     assert client.get("/api/movies/999").status_code == 404
 
 
+def test_recommend_log_history_false_skips_history(client):
+    payload = {
+        "free_text": "spy story",
+        "mode": "content",
+        "page": 2,
+        "page_size": 2,
+        "log_history": False,
+    }
+    assert client.post("/api/recommend", json=payload).status_code == 200
+    assert client.get("/api/history").json() == []
+
+
+def test_explain_returns_async_explanation_from_cache(client):
+    from api.main import app
+
+    first = client.post(
+        "/api/recommend",
+        json={"free_text": "spy story", "mode": "content", "page_size": 2},
+    ).json()
+    cache_key = first["cache_key"]
+    movie_key = first["results"][0]["movie_key"]
+
+    seen = {}
+
+    def stub_explainer(query: str, movie: dict) -> str:
+        seen["query"] = query
+        seen["title"] = movie["title"]
+        return "stub explanation"
+
+    app.state.explainer = stub_explainer
+    try:
+        response = client.get(f"/api/explain/{cache_key}/{movie_key}")
+        assert response.status_code == 200
+        assert response.json() == {
+            "movie_key": movie_key,
+            "explanation": "stub explanation",
+        }
+        assert seen == {"query": "spy story", "title": "Spy One"}
+        assert client.get(f"/api/explain/{cache_key}/missing-key").status_code == 404
+        assert client.get(f"/api/explain/nope/{movie_key}").status_code == 404
+    finally:
+        del app.state.explainer
+
+
 def test_parse_intent_returns_valid_intent_and_query(client):
     response = client.post(
         "/api/parse-intent",

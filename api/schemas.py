@@ -34,3 +34,5 @@ class RecommendRequest(StrictModel):
     mode: Mode = "content"
     page: int = Field(default=1, ge=1)
     page_size: int = Field(default=20, ge=1, le=100)
+    # Pagination/reroll and benchmarks re-run the same intent; only log it once.
+    log_history: bool = True

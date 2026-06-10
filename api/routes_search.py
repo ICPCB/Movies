@@ -37,6 +37,23 @@ def _cache_key(intent: dict, page_size: int) -> str:
     return hashlib.sha256(_canonical_json(payload).encode("utf-8")).hexdigest()
 
 
+def _cached_envelope(cached: RecCache) -> tuple[str, list[dict]]:
+    loaded = json.loads(cached.results_json)
+    if isinstance(loaded, list):  # legacy cache rows stored the bare pool
+        return "", loaded
+    return loaded.get("query_text", ""), loaded.get("results", [])
+
+
+def _cached_results(cached: RecCache) -> list[dict]:
+    return _cached_envelope(cached)[1]
+
+
+def _default_explainer(query: str, movie: dict) -> str:
+    from src.llm.langchain_ollama import explain_movie
+
+    return explain_movie(query, movie)
+
+
 @router.post("/parse-intent")
 def parse_intent(payload: ParseIntentRequest) -> dict:
     intent = empty_intent(payload.text, payload.mode)
@@ -60,13 +77,14 @@ def recommend_movies(
         intent = empty_intent(payload.free_text or "", payload.mode)
 
     query = build_query(intent)
-    session.add(
-        SearchHistory(
-            mode=intent["mode"],
-            query_text=query["query_text"],
-            intent_json=_canonical_json(intent),
+    if payload.log_history:
+        session.add(
+            SearchHistory(
+                mode=intent["mode"],
+                query_text=query["query_text"],
+                intent_json=_canonical_json(intent),
+            )
         )
-    )
 
     key = _cache_key(intent, payload.page_size)
     cached = session.get(RecCache, key)
@@ -76,20 +94,23 @@ def recommend_movies(
         and cached.created_at + timedelta(seconds=cached.ttl_seconds) > now
     )
     if cache_hit:
-        pool = json.loads(cached.results_json)
+        pool = _cached_results(cached)
     else:
         pipeline = getattr(request.app.state, "recommend_pipeline", None)
         pool_size = max(100, payload.page * payload.page_size)
         pool = recommender.recommend(intent, pool_size=pool_size, pipeline=pipeline)
+        envelope = _canonical_json(
+            {"query_text": query["query_text"], "results": pool}
+        )
         if cached is None:
             cached = RecCache(
                 intent_hash=key,
-                results_json=_canonical_json(pool),
+                results_json=envelope,
                 ttl_seconds=CACHE_TTL_SECONDS,
             )
             session.add(cached)
         else:
-            cached.results_json = _canonical_json(pool)
+            cached.results_json = envelope
             cached.created_at = now
             cached.ttl_seconds = CACHE_TTL_SECONDS
     session.commit()
@@ -100,6 +121,32 @@ def recommend_movies(
         "page": payload.page,
         "total_pool": len(pool),
         "cache_hit": cache_hit,
+        "cache_key": key,
+    }
+
+
+@router.get("/explain/{cache_key}/{movie_key:path}")
+def explain_cached_movie(
+    cache_key: str,
+    movie_key: str,
+    request: Request,
+    session: Session = Depends(get_session),
+) -> dict:
+    cached = session.get(RecCache, cache_key)
+    if cached is None:
+        raise HTTPException(status_code=404, detail="cache entry not found")
+    query_text, results = _cached_envelope(cached)
+    movie = next(
+        (item for item in results if item.get("movie_key") == movie_key), None
+    )
+    if movie is None:
+        raise HTTPException(status_code=404, detail="movie not in cached results")
+    explainer = getattr(request.app.state, "explainer", None) or _default_explainer
+    # Sync route: FastAPI runs it in a worker thread, so the Ollama call
+    # (or its deterministic fallback) never blocks the event loop.
+    return {
+        "movie_key": movie_key,
+        "explanation": explainer(query_text, movie),
     }
 
 

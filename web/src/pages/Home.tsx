@@ -16,6 +16,7 @@ interface ResultsState {
   page: number;
   totalPool: number;
   cacheHit: boolean;
+  cacheKey: string | null;
   headline: string;
 }
 
@@ -41,12 +42,18 @@ export default function Home() {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.recommend({ intent, page, page_size: PAGE_SIZE });
+      const response = await api.recommend({
+        intent,
+        page,
+        page_size: PAGE_SIZE,
+        log_history: page === 1,
+      });
       setResults({
         movies: response.results,
         page: response.page,
         totalPool: response.total_pool,
         cacheHit: response.cache_hit,
+        cacheKey: response.cache_key,
         headline,
       });
       requestAnimationFrame(() =>
@@ -125,6 +132,7 @@ export default function Home() {
         page: 1,
         totalPool: 1,
         cacheHit: false,
+        cacheKey: null,
         headline: "The reel has spoken",
       });
       setOpenMovie(movie);
@@ -332,7 +340,11 @@ export default function Home() {
         )}
       </section>
 
-      <DetailModal movie={openMovie} onClose={() => setOpenMovie(null)} />
+      <DetailModal
+        movie={openMovie}
+        cacheKey={results?.cacheKey}
+        onClose={() => setOpenMovie(null)}
+      />
     </>
   );
 }

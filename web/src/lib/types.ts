@@ -44,6 +44,7 @@ export interface RecommendResponse {
   page: number;
   total_pool: number;
   cache_hit: boolean;
+  cache_key: string;
 }
 
 export interface EraBucket {

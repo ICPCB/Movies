@@ -1,16 +1,40 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { api } from "../lib/api";
 import { useLibrary } from "../hooks/useLibrary";
 import { asList, backdropUrl, posterUrl } from "../lib/tmdb";
 import type { Movie } from "../lib/types";
 
 interface DetailModalProps {
   movie: Movie | null;
+  cacheKey?: string | null;
   onClose: () => void;
 }
 
-export default function DetailModal({ movie, onClose }: DetailModalProps) {
+export default function DetailModal({ movie, cacheKey, onClose }: DetailModalProps) {
   const { isFavorite, watchlistItem, toggleFavorite, toggleWatchlist, toggleWatched } =
     useLibrary();
+  const [explanation, setExplanation] = useState<string | null>(null);
+  const [explaining, setExplaining] = useState(false);
+
+  // Explanations stream in after render — they are never on the result path.
+  useEffect(() => {
+    setExplanation(null);
+    if (!movie?.movie_key || !cacheKey) return;
+    let cancelled = false;
+    setExplaining(true);
+    api
+      .explain(cacheKey, movie.movie_key)
+      .then((response) => {
+        if (!cancelled) setExplanation(response.explanation);
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (!cancelled) setExplaining(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [movie?.movie_key, cacheKey]);
 
   useEffect(() => {
     if (!movie) return;
@@ -105,6 +129,14 @@ export default function DetailModal({ movie, onClose }: DetailModalProps) {
             {movie.match_reason && (
               <p className="mt-3 rounded-xl bg-night-700/70 px-3 py-2 text-xs italic text-gold-300/85 ring-1 ring-night-600/60">
                 {movie.match_reason}
+              </p>
+            )}
+            {explaining && (
+              <div className="skeleton mt-3 h-9 rounded-xl" aria-label="Loading explanation" />
+            )}
+            {explanation && (
+              <p className="mt-3 rounded-xl bg-gold-500/10 px-3 py-2 text-xs leading-relaxed text-gold-300 ring-1 ring-gold-500/25">
+                {explanation}
               </p>
             )}
             {movie.overview && (

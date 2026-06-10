@@ -46,11 +46,17 @@ export const api = {
     mode?: Mode;
     page?: number;
     page_size?: number;
+    log_history?: boolean;
   }) =>
     request<RecommendResponse>("/api/recommend", {
       method: "POST",
       body: JSON.stringify(body),
     }),
+
+  explain: (cacheKey: string, movieKey: string) =>
+    request<{ movie_key: string; explanation: string }>(
+      `/api/explain/${encodeURIComponent(cacheKey)}/${encodeURIComponent(movieKey)}`,
+    ),
 
   categories: () => request<CategoriesResponse>("/api/categories"),
 
