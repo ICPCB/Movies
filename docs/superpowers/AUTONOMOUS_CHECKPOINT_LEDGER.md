@@ -1930,3 +1930,29 @@ Every ticket/checkpoint appended below must include:
 - **Failures/blockers:** saved artifacts lack intermediate-stage pools required to assign exact production ownership.
 - **Commit:** `2ac0a37`
 - **Next safe action:** Human review and separate authorization for any live stage capture; no implementation ticket.
+
+## 2026-06-10 - PHASE-0-CLEANUP (CineMatch web-app ULTRAPLAN run)
+
+Ticket/Gate: PHASE-0-CLEANUP (Human-approved ULTRAPLAN plan, single approval for full run)
+Verdict: PASS
+Files changed: deleted legacy wrappers (recommend_bgem3.py, hybrid_recommend.py, test_fix.py), .agents/dispatchphase78.ps1, 43 finished ledger-recorded .agents transcripts; .gitignore +5 patterns (.pytest_cache/, .tmp/, codex-*.txt, graphify-out/, archive/)
+Commands run: 9 parallel read-only Explore subagent audits; Remove-Item on untracked dumps/logs/caches; Move-Item scratch artifacts to archive/cleanup-2026-06-10/; git rm; git commit f402156
+Test results: n/a (no code changes; deletions verified unreferenced by src/, app.py, eval/tests via audit + codegraph grep)
+Artifacts: archive/cleanup-2026-06-10/ (reversible holding area: 16 untracked finished transcripts, 7 label-free scratch eval run dirs)
+Failures: eval/tests/.pytest_cache, src/tests/.pytest_cache, .tmp/ are permission-locked (left in place, now gitignored); graphify-out internals kept per standing convention
+Assumptions: NEEDS_REVIEW phase-8 transcripts (8-G/8-N/8-O) and q05-01 kept because Phase 8 gate is still open; unauthorized 2026-06-09 phase8 run dirs kept (cited as diagnostic evidence in phase8-final-gate-blocker-fix-plan.md)
+Commit: f402156
+Next safe action: Phase 1 - write CINEMATCH_ULTRAPLAN.md
+
+## 2026-06-10 - PHASE-1-ULTRAPLAN
+
+Ticket/Gate: PHASE-1-ULTRAPLAN (approved plan, autonomous run)
+Verdict: PASS
+Files changed: CINEMATCH_ULTRAPLAN.md (new, 16 sections + assumptions + blockers); .gitignore (+cinematch-llama/)
+Commands run: audit of user-inserted cinematch-llama/ (Llama-3.2-1B base weights 2.36GB + prior stage1 LoRA smoke run); git check-ignore verification
+Test results: n/a (doc phase)
+Artifacts: CINEMATCH_ULTRAPLAN.md; cinematch-llama/ confirmed gitignored, never committed
+Failures: none
+Assumptions: weights are Llama-3.2-1B BASE (eos 128001) not Instruct - acceptable for LoRA parser training; runtime parsing stays few-shot Ollama until adapter beats baseline
+Commit: (this commit)
+Next safe action: Phase 2 - backend foundation (api/ FastAPI + SQLite + intent schema)
