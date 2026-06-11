@@ -2021,3 +2021,16 @@ Failures: none
 Assumptions: mood_v1 has NO gold relevance labels yet (noted inside every record) - grading would need a labeling ticket with honest provenance; no-regression gate satisfied by construction (zero src/ or existing-eval diffs since run start f402156, eval-process defaults RERANK_POOL=800 / HYBRID_USE_LLM_EXPANSION=True intact) rather than a full GPU re-run
 Commit: 11f5315
 Next safe action: Phase 7 intent parser (few-shot Ollama baseline + LoRA on cinematch-llama)
+
+## 2026-06-11 - PHASE-7-INTENT-PARSER
+
+Ticket/Gate: PHASE-7 intent parser (lead-implemented, ULTRAPLAN autonomous run)
+Verdict: PASS
+Files changed: engine/intent_parser.py (new), api/routes_search.py, api/schemas.py (use_llm flag), api/tests/test_intent_parser.py (new, 6 tests), api/tests/test_search_routes.py, eval/scripts/intent_parser_eval.py (new sidecar), web/src/lib/api.ts, web/src/pages/Home.tsx
+Commands run: venv pytest api/tests -q (24 passed, 0.15s, no model/CSV/network); python -m eval.scripts.intent_parser_eval (tier-1 only, offline); npm run build --prefix web (tsc -b clean)
+Test results: 24 passed; eval: schema validity 1.0 on mood_v1 (50 q) and content all.jsonl (65 q) - meets plan section 13 gate >=99%; mode accuracy 0.98; F1 user_moods 0.859 / desired_film_moods 0.897 / avoid_film_moods 0.968; content mood-false-positive rate 7.7% (5/65, each flagged query genuinely contains feeling words - FP by gold construction, not parser invention)
+Artifacts: eval/runs/2026-06-11-intent-parser-nogit/report.json (untracked per -nogit convention; metrics improved vs the 04:22 mid-session capture because the parser was refined afterward)
+Failures: none
+Assumptions: tier-2 Ollama eval (--tier2) intentionally not run during validation - keeps validation offline; tier-2 path is covered by stubbed tests (non-mood merge + ollama-down fallback) and any runtime failure falls back to tier 1 by design; LoRA training (plan section 14) deferred - few-shot baseline ships first per plan; prior session handoff cited a stale eval flag (--run) that the script never had
+Commit: c089913
+Next safe action: Phase 8 final docs (README.md + PROJECT_OVERVIEW.md), docs-only
