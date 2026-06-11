@@ -2113,3 +2113,17 @@ Failures: Codex dispatch failed (OpenAI usage limit, resets 2026-06-15); no repo
 Assumptions: committing generated jsonl is authorized by training/README.md after determinism+validation gate review (done, this entry is the evidence); owner manual-cleanup candidates reported: Llama-3.2-1B/original/ 2.36 GB, outputs/stage1_smoke_lora/ ~150 MB
 Commit: (this commit - "feat: intent dataset generator + LoRA adapter training run")
 Next safe action: owner decision on (1) authorizing a tier-2 Ollama baseline run on intent_v1 to adjudicate gate clause (b), and (2) manual disk cleanup; serving integration only after full gate PASS + Claude review
+
+## 2026-06-11 - LORA-GATE-REVIEW
+
+Ticket/Gate: spec section 5 acceptance gate adjudication (owner authorized the tier-2 Ollama baseline run + disk cleanup this session)
+Verdict: GATE FAILED - adapter does NOT ship (clause (b))
+Evidence: eval/runs/2026-06-11-intent-parser-nogit/report.json now contains intent_v1 tier1 + tier2_few_shot sections (115-query tier2 json_validity=1.0; 84-query intent_v1 per-slice). Gate slice plot_elements F1, tier2 vs adapter: plot_description 0.9412 vs 0.60 (FAIL), hybrid 0.7027 vs 0.4706 (FAIL), implicit_plot 0.0 vs 0.9167 (PASS). Clauses (a) validity 1.0 and (c) no mood regression both PASS; (b) requires beating tier-2 on ALL three plot slices - not met.
+Files changed: docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md, .remember/remember.md (this checkpoint)
+Commands run: python -m eval.scripts.intent_parser_eval --intent-v1 --tier2 (owner-authorized Ollama run, llama3.2 local)
+Test results: see evidence; runtime stays tier-1 lexicon + tier-2 few-shot per spec section 5
+Artifacts: cinematch-llama/outputs/intent_lora/ adapter retained locally (wins big on film_mood_only 0->1.0, avoid 0.52->0.97, implicit 0->0.92 - candidate for a revised training ticket targeting plot-phrase diversity)
+Failures: none in execution; gate outcome is a finding, not an error
+Assumptions: owner authorized deletion of Llama-3.2-1B/original/ + outputs/stage1_smoke_lora/, but the harness permission layer blocked Remove-Item - cleanup handed back to owner as a manual command
+Commit: (this commit - "docs: LoRA gate review - tier-2 baseline beats adapter on plot slices")
+Next safe action: owner runs the cleanup command manually; optional follow-up ticket: retrain with richer plot_description/hybrid data (multi-phrase gold, paraphrase variety) to close the 0.60/0.47 vs 0.94/0.70 gap
