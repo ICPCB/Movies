@@ -32,10 +32,12 @@ Claude owns:
 
 Claude is **not** the default implementation coder.
 
-Default implementation roles:
+Default implementation roles (full pipeline: `docs/AGENT_PIPELINE.md`):
 
+* **Claude Code Pro** — head reviewer/planner; picks the coder per ticket.
 * **Codex CLI** — implementation coder.
-* **Claude Code Pro** — planner/reviewer.
+* **Gemini CLI** — implementation coder.
+* **Kiro AI** — additional terminal-callable implementation/subagent option.
 * **Copilot CLI** — shell/debug helper only.
 * **ChatGPT Plus** — external reviewer only.
 * **Human** — owner of decisions requiring private judgment, paid services, external credentials, destructive actions, or merge outside the automation branch.
@@ -274,21 +276,15 @@ The lead Claude must synthesize findings and decide the next safe action.
 
 ---
 
-## Accuracy-audit scope
+## Spec scope
 
-For CineMatch accuracy-audit work, source specs live under:
-
-```text
-docs/superpowers/specs/accuracy-audit/
-```
+Source specs live under `docs/superpowers/specs/`.
 
 Claude should read only files relevant to the active phase/ticket.
 
-Do not read all specs upfront unless the task is specifically a cross-phase audit.
+Do not read all specs upfront unless the task is specifically a cross-phase review.
 
 Do not act on inactive phases.
-
-Do not start Phase 5 implementation unless the current handoff and active ticket explicitly state that the regression-eval gate has passed.
 
 ---
 
@@ -381,9 +377,9 @@ Do not flood logs with large file contents.
 Summarize large artifacts and cite exact paths.
 ## Claude Orchestrator Mode
 
-Claude Code may operate as the local orchestrator for Codex CLI and Copilot CLI.
+Claude Code may operate as the local orchestrator for Codex CLI, Gemini CLI, Kiro AI, and Copilot CLI. The mandatory pipeline is `docs/AGENT_PIPELINE.md`.
 
-Claude should use Codex as an implementation sub-agent by writing a bounded prompt to `.agents/inbox/codex/` and invoking Codex non-interactively.
+Claude should use Codex or Gemini as the implementation sub-agent by writing a bounded prompt to `.agents/inbox/<agent>/` and invoking the agent non-interactively — one coder per ticket, chosen in the plan.
 
 Claude should use Copilot CLI only as a shell/debug/review helper.
 
@@ -417,6 +413,18 @@ If Codex fails due to Windows/sandbox shell issues, Claude must:
 1. STOP and record `STOPPED` in the ledger with the error details.
 2. Not escalate to `--dangerously-bypass-approvals-and-sandbox` automatically.
 3. Either patch the command/profile for `workspace-write` mode, or implement directly — but only if the ledger records Codex STOPPED and Claude implemented after failure.
+
+### Gemini dispatch command pattern, Windows PowerShell
+
+From the repository root:
+
+```powershell
+Get-Content .agents\inbox\gemini\current.md -Raw |
+  gemini --sandbox --output-format text - |
+  Out-File .agents\outbox\gemini\current_result.md
+```
+
+Gemini follows the same ticket, sandbox, lock, and report rules as Codex. If the installed Gemini CLI version uses different flags, adapt the invocation but keep: prompt read from the inbox file, result written to the outbox file, workspace-scoped write access only, no approval bypass flags.
 
 ### Copilot helper command pattern
 

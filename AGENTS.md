@@ -6,10 +6,13 @@ This file defines repo-wide operating rules for:
 
 * Claude Code Pro
 * Codex CLI
+* Gemini CLI
+* Kiro AI
 * Copilot CLI
 * ChatGPT Plus
-* Gemini or other external reviewers
 * Any Claude subagents / agent teammates
+
+The mandatory who-does-what pipeline lives in `docs/AGENT_PIPELINE.md`.
 
 ---
 
@@ -36,12 +39,18 @@ Important:
 
 ## Roles
 
-* **Claude Code Pro** — plan owner, repo architect, schema owner, reviewer.
-  Owns planning, ticket splitting, schema contracts, and code review.
+* **Claude Code Pro** — head reviewer, planner, repo architect, schema owner, gatekeeper.
+  Owns planning, ticket splitting, schema contracts, label/dataset specs, and code review.
   Not the default implementation coder.
 
-* **Codex CLI** — main implementation coder.
+* **Codex CLI** — implementation coder.
   Works one ticket at a time, on one branch at a time.
+
+* **Gemini CLI** — implementation coder.
+  Same rules and ticket format as Codex. Claude picks Codex or Gemini per ticket; never both at once.
+
+* **Kiro AI** — additional terminal-callable implementation/subagent option.
+  Same ticket rules as Codex/Gemini when used as a coder.
 
 * **Copilot CLI** — shell and debug helper only.
   Used for terminal commands, command explanation, debugging, and tiny isolated helper/test snippets.
@@ -331,7 +340,7 @@ Codex may proceed without Human approval on the automation branch only when:
 * checkpoint is recorded in the ledger
 * commit is created when appropriate
 
-External review by Claude, ChatGPT, Gemini, or Human is optional and non-blocking unless the active ticket says otherwise or the work requires private judgment, paid services, external credentials, destructive operations, or merge outside the automation branch.
+External review by Claude, ChatGPT, or Human is optional and non-blocking unless the active ticket says otherwise or the work requires private judgment, paid services, external credentials, destructive operations, or merge outside the automation branch.
 
 Autonomous work should be marked:
 
@@ -457,22 +466,20 @@ Read-only context unless active ticket says otherwise:
 
 ```text
 .remember/remember.md
+docs/AGENT_PIPELINE.md
 docs/ARCHITECTURE.md
 docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md
-docs/superpowers/specs/accuracy-audit/
-docs/superpowers/plans/
-docs/superpowers/reports/
+docs/superpowers/specs/
 eval/runs/
 eval/scripts/
 eval/tests/
 ```
 
-For accuracy-audit work:
+Spec work:
 
 * read only files relevant to the active phase/ticket
 * do not read all specs upfront unless doing cross-phase review
 * do not act on inactive phases
-* do not start Phase 5 implementation unless current handoff and active ticket explicitly say the regression-eval gate has passed
 
 ---
 
@@ -506,9 +513,10 @@ Prefer exact paths and short evidence summaries.
 ### Roles
 
 * Claude Code is the primary orchestrator, planner, reviewer, and gatekeeper.
-* Codex CLI is the implementation sub-agent.
+* Codex CLI and Gemini CLI are the implementation sub-agents; Claude picks one per ticket.
+* Kiro AI is an additional terminal-callable implementation/subagent option.
 * Copilot CLI is the shell/debug/review helper only.
-* Human approval is only required for hard-stop conditions, destructive operations, external credentials, paid services, private data decisions, or Phase 5 unblock decisions.
+* Human approval is only required for hard-stop conditions, destructive operations, external credentials, paid services, or private data decisions.
 
 ### Communication model
 
@@ -518,9 +526,11 @@ Agents communicate through repository-local mailbox files under:
 .agents/
   inbox/
     codex/
+    gemini/
     copilot/
   outbox/
     codex/
+    gemini/
     copilot/
   prompts/
   logs/
@@ -529,9 +539,9 @@ Agents communicate through repository-local mailbox files under:
   ledger.md
 ```
 
-Claude must write a complete ticket prompt before invoking Codex or Copilot.
+Claude must write a complete ticket prompt before invoking Codex, Gemini, or Copilot.
 
-Codex and Copilot must return a final report to their assigned outbox file.
+Codex, Gemini, and Copilot must return a final report to their assigned outbox file.
 
 Claude must read the returned report, inspect the working tree, run or verify validation commands, and record the result in `.agents/ledger.md`.
 
@@ -553,9 +563,14 @@ Codex must not:
 * run model/network/LLM calls unless the active ticket explicitly allows it;
 * run full evals unless the active ticket explicitly allows it;
 * modify retrieval/ranking/reranker behavior unless the active ticket explicitly allows it;
-* start Phase 5 work unless the regression eval gate has passed and the Phase 5 ticket explicitly allows it;
 * overwrite existing human-gold labels;
 * represent AI-assisted labels as pure human-gold.
+
+### Gemini as implementation sub-agent
+
+Gemini CLI operates under exactly the same rules as Codex above: one bounded ticket at a time, ticket-listed files only, ticket-listed validation commands only, same prohibitions, same final-report format. Tickets are written to `.agents/inbox/gemini/current.md` and reports returned to `.agents/outbox/gemini/current_result.md`.
+
+Claude chooses Codex or Gemini per ticket in the plan. Both must never hold the active-ticket lock at the same time.
 
 ### Copilot as shell/debug helper
 
@@ -618,10 +633,3 @@ Codex must return:
 6. Risks or caveats.
 7. Whether anything was committed.
 8. Exact next recommended step.
-
-### CineMatch current hard gates
-
-* Phase 5 COMPLETE (5-A: q10 fixed commit `5a7da48`, 5-B: q05 fixed commit `dcedad1`).
-* Dep #3 grading is accepted as `human_reviewed_ai_assisted`, not `human_gold`.
-* Phase 6 IN_PROGRESS: eval expansion (no `src/*` changes).
-* No `src/*` edits unless an active ticket explicitly authorizes it.
