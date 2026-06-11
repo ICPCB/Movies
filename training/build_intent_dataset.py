@@ -206,7 +206,7 @@ CONCEPTS: dict[str, list[str]] = {
         "the last awkward year before adulthood changes everything",
         "a boy learning hard truths the year he turns thirteen",
     ],
-    "courtroom drama": [
+    "courtroom": [
         "a lawyer defending an innocent man at trial",
         "a jury deciding a case that could ruin a life",
         "an attorney risking everything on a final witness",
@@ -245,6 +245,46 @@ PLOT_POOL: list[tuple[str, str]] = [
     ("a circus", "circus"), ("a lighthouse keeper", "lighthouse keeper"),
     ("a train journey", "train journey"), ("a casino", "casino"),
     ("street racing", "street racing"), ("a hacker", "hacker"),
+    ("a ghost ship", "ghost ship"), ("an escape room", "escape room"),
+    ("a rookie cop", "rookie cop"), ("a getaway driver", "getaway driver"),
+    ("a masked vigilante", "masked vigilante"), ("a chess prodigy", "chess prodigy"),
+    ("a corrupt mayor", "corrupt mayor"), ("a custody battle", "custody battle"),
+    ("a wildfire", "wildfire"), ("wrestling", "wrestling"),
+    ("surfing", "surfing"), ("an underdog", "underdog"),
+]
+
+# Plural-subject action clauses: gold keeps the plural surface subject and the
+# object noun phrase; the verb is dropped (spec 3.8 atomic noun phrases).
+PLURAL_SUBJECT_ACTIONS: list[tuple[str, str, str]] = [
+    ("firefighters", "battling a wildfire", "wildfire"),
+    ("smugglers", "running a blockade at sea", "blockade"),
+    ("journalists", "exposing a corrupt mayor", "corrupt mayor"),
+    ("soldiers", "escorting a convoy behind enemy lines", "convoy"),
+    ("hunters", "tracking a wounded bear through the snow", "wounded bear"),
+    ("monks", "guarding an ancient relic", "ancient relic"),
+    ("sailors", "chasing a ghost ship", "ghost ship"),
+    ("teenagers", "running an underground radio station", "radio station"),
+    ("climbers", "racing a blizzard down a deadly peak", "blizzard"),
+    ("rebels", "plotting against a ruthless emperor", "ruthless emperor"),
+]
+PLURAL_SUBJECT_TEMPLATES = [
+    "{s} {act}",
+    "a movie about {s} {act}",
+    "something with {s} {act}",
+    "a film about {s} {act}",
+]
+
+# Place-genre compounds ("a courtroom drama"): the place noun stays a plot
+# element and the genre word resolves to genres_include (spec 3.8 fusion rule).
+PLACE_GENRE_COMPOUNDS: list[tuple[str, str, str, tuple[str, ...]]] = [
+    ("courtroom", "drama", "Drama",
+     ("con artist", "gangster", "missing child", "kidnapping")),
+    ("hospital", "drama", "Drama",
+     ("missing child", "unlikely friendship", "rookie cop")),
+    ("newsroom", "drama", "Drama",
+     ("hacker", "corrupt mayor", "con artist")),
+    ("prison", "drama", "Drama",
+     ("boxer", "gangster", "unlikely friendship")),
 ]
 
 SETTING_DISPLAYS = {
@@ -293,8 +333,10 @@ GENRE_WORDS: list[tuple[str, str]] = [
     ("animated", "Animation"), ("romance", "Romance"), ("action", "Action"),
     ("adventure", "Adventure"), ("mystery", "Mystery"), ("fantasy", "Fantasy"),
     ("sci-fi", "Science Fiction"), ("crime", "Crime"), ("war", "War"),
+    ("family", "Family"), ("musical", "Music"),
 ]
-MOVIE_REQUIRED_GENRES = {"animated", "action", "sci-fi", "crime", "war", "horror"}
+MOVIE_REQUIRED_GENRES = {"animated", "action", "sci-fi", "crime", "war", "horror",
+                         "family"}
 
 IMPLICIT_FILM_MOODS: dict[str, list[str]] = {
     "funny": ["something that will make me laugh out loud", "a movie with jokes that actually land"],
@@ -810,6 +852,34 @@ def gen_plot_description(film_moods: list[str], user_words: set[str]):
         for event, event_gold in EVENTS:
             text = PLOT_EVENT_TEMPLATE.format(topic=d1, event=event)
             multi.append((text, dict(plot=[g1, event_gold])))
+    # Targeted v3 bucket (quota-guaranteed in main): plural subjects,
+    # three-element queries, place-genre compounds.
+    targeted = []
+    # Plural subjects with verb-mediated objects: verbs drop from gold, the
+    # plural surface subject and object noun phrase stay (spec 3.8).
+    for si, (subj, act, obj_gold) in enumerate(PLURAL_SUBJECT_ACTIONS):
+        _assert_separation(want_text=f"{subj} {act}", film_moods=film_moods,
+                           user_words=user_words)
+        for template in PLURAL_SUBJECT_TEMPLATES:
+            targeted.append((template.format(s=subj, act=act),
+                             dict(plot=[subj, obj_gold])))
+    # Three-element queries: two topics plus a setting.
+    for i, (d1, g1) in enumerate(TOPICS[::4]):
+        d2, g2 = TOPICS[(i * 4 + 9) % len(TOPICS)]
+        if g1 == g2:
+            continue
+        setting, setting_gold = NATURAL_SET_IN_SETTINGS[i % len(NATURAL_SET_IN_SETTINGS)]
+        _assert_separation(want_text=f"{d1} {d2} {setting}",
+                           film_moods=film_moods, user_words=user_words)
+        targeted.append((f"a movie about {d1} and {d2} set in {setting}",
+                         dict(plot=[g1, g2, setting_gold])))
+    # Place-genre compounds: "a courtroom drama (about X)".
+    for place, gw, genre, obj_golds in PLACE_GENRE_COMPOUNDS:
+        targeted.append((_an(f"{place} {gw}"), dict(plot=[place], genres=[genre])))
+        for obj_gold in obj_golds:
+            obj_display = TOPIC_BY_GOLD[obj_gold][0]
+            targeted.append((f"{_an(f'{place} {gw}')} about {obj_display}",
+                             dict(plot=[place, obj_gold], genres=[genre])))
     # Explicit with genre word.
     for gi, (gw, genre) in enumerate(GENRE_WORDS):
         for display, gold in TOPICS[gi::3]:
@@ -818,7 +888,7 @@ def gen_plot_description(film_moods: list[str], user_words: set[str]):
             singles.append((template.format(ag=_an(gw),
                                              agm=_an(f"{gw} movie"), p=display),
                             dict(plot=[gold], genres=[genre])))
-        if gw == "animated":
+        if gw not in FUSED_GENRE_TOPICS:
             continue
         for topic_display, topic_gold in FUSED_GENRE_TOPICS[gw]:
             for setting, setting_gold in NATURAL_SET_IN_SETTINGS:
@@ -831,6 +901,7 @@ def gen_plot_description(film_moods: list[str], user_words: set[str]):
                                          genres=[genre])))
     singles = [(t, _intent(t, "content", **kw)) for t, kw in singles]
     multi = [(t, _intent(t, "content", **kw)) for t, kw in multi]
+    targeted = [(t, _intent(t, "content", **kw)) for t, kw in targeted]
     fused = [(t, _intent(t, "content", **kw)) for t, kw in fused]
     # Implicit (rule 7).
     implicit = []
@@ -852,13 +923,14 @@ def gen_plot_description(film_moods: list[str], user_words: set[str]):
                     w in lowered.replace("-", " ").split() for w in concept_words
                 ), f"implicit phrasing leaks concept '{concept}': {text}"
                 implicit.append((text, _intent(text, "content", plot=[concept])))
-    return singles, multi, fused, implicit
+    return singles, multi, targeted, fused, implicit
 
 
 def gen_hybrid(words: dict[str, list[str]], mood_map: dict,
                film_moods: list[str], user_words: set[str]):
     singles = []
     multi = []
+    plural = []
     fused = []
     for category, cat_words in sorted(words.items()):
         desired, avoid = _map_fields([category], mood_map)
@@ -900,8 +972,15 @@ def gen_hybrid(words: dict[str, list[str]], mood_map: dict,
                                   event=event),
                               dict(plot=[TOPICS[(wi + 5) % len(TOPICS)][1], event_gold],
                                    **kw)))
+            subj, act, obj_gold = PLURAL_SUBJECT_ACTIONS[
+                (wi * 3 + len(word)) % len(PLURAL_SUBJECT_ACTIONS)
+            ]
+            _assert_separation(feeling_text=feeling, want_text=f"{subj} {act}",
+                               film_moods=film_moods, user_words=user_words)
+            plural.append((f"{feeling}, want a movie about {subj} {act}",
+                           dict(plot=[subj, obj_gold], **kw)))
             for gi, (gw, genre) in enumerate(GENRE_WORDS):
-                if gw == "animated":
+                if gw not in FUSED_GENRE_TOPICS:
                     continue
                 genre_topics = FUSED_GENRE_TOPICS[gw]
                 d1, g1 = genre_topics[(wi * 5 + gi) % len(genre_topics)]
@@ -920,6 +999,7 @@ def gen_hybrid(words: dict[str, list[str]], mood_map: dict,
     return (
         [(t, _intent(t, "hybrid", **kw)) for t, kw in singles],
         [(t, _intent(t, "hybrid", **kw)) for t, kw in multi],
+        [(t, _intent(t, "hybrid", **kw)) for t, kw in plural],
         [(t, _intent(t, "hybrid", **kw)) for t, kw in fused],
     )
 
@@ -995,10 +1075,10 @@ def main() -> int:
         words, mood_map, vocab["body_sensations"], film_moods
     )
     film_explicit, film_implicit = gen_mood_film_only(film_moods)
-    plot_single, plot_multi, plot_fused, implicit_plot = gen_plot_description(
+    plot_single, plot_multi, plot_targeted, plot_fused, implicit_plot = gen_plot_description(
         film_moods, user_words
     )
-    hybrid_single, hybrid_multi, hybrid_fused = gen_hybrid(
+    hybrid_single, hybrid_multi, hybrid_plural, hybrid_fused = gen_hybrid(
         words, mood_map, film_moods, user_words
     )
     candidates: dict[str, list[tuple[str, dict]]] = {
@@ -1027,18 +1107,22 @@ def main() -> int:
     rng.shuffle(chosen["mood_film_only"])
 
     plot_fused_take = _take(plot_fused, rng, 180, heldout, seen_texts)
+    plot_targeted_take = _take(plot_targeted, rng, 60, heldout, seen_texts)
     plot_multi_take = _take(plot_multi, rng, 90, heldout, seen_texts)
     implicit_take = _take(implicit_plot, rng, 180, heldout, seen_texts)
-    plot_single_take = _take(plot_single, rng, 150, heldout, seen_texts)
-    plot_all = plot_fused_take + plot_multi_take + implicit_take + plot_single_take
+    plot_single_take = _take(plot_single, rng, 90, heldout, seen_texts)
+    plot_all = (plot_fused_take + plot_targeted_take + plot_multi_take
+                + implicit_take + plot_single_take)
     rng.shuffle(plot_all)
     chosen["plot_description"] = plot_all
 
     hybrid_fused_take = _take(hybrid_fused, rng, 180, heldout, seen_texts)
-    hybrid_multi_take = _take(hybrid_multi, rng, 90, heldout, seen_texts)
+    hybrid_plural_take = _take(hybrid_plural, rng, 30, heldout, seen_texts)
+    hybrid_multi_take = _take(hybrid_multi, rng, 60, heldout, seen_texts)
     hybrid_single_take = _take(hybrid_single, rng, 330, heldout, seen_texts)
     chosen["hybrid_queries"] = (
-        hybrid_fused_take + hybrid_multi_take + hybrid_single_take
+        hybrid_fused_take + hybrid_plural_take + hybrid_multi_take
+        + hybrid_single_take
     )
     rng.shuffle(chosen["hybrid_queries"])
 
@@ -1097,11 +1181,13 @@ def main() -> int:
         "implicit_user_body": {t.strip().lower() for t, _ in user_implicit_take},
         "plot_fused_genre": {t.strip().lower() for t, _ in plot_fused_take},
         "plot_multi": {
-            t.strip().lower() for t, _ in plot_fused_take + plot_multi_take
+            t.strip().lower()
+            for t, _ in plot_fused_take + plot_targeted_take + plot_multi_take
         },
         "hybrid_fused_genre": {t.strip().lower() for t, _ in hybrid_fused_take},
         "hybrid_multi": {
-            t.strip().lower() for t, _ in hybrid_fused_take + hybrid_multi_take
+            t.strip().lower()
+            for t, _ in hybrid_fused_take + hybrid_plural_take + hybrid_multi_take
         },
     }
 

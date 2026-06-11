@@ -2153,3 +2153,30 @@ Failures: Codex usage limit (second occurrence; first was LORA-TRAIN-1)
 Assumptions: Claude finishing a Codex-STOPPED ticket inside the same ticket scope is authorized by CLAUDE.md orchestrator failure protocol
 Commit: none yet (commit after Gemini round-3 PASS)
 Next safe action: read Gemini round-3 verdict; on PASS commit dataset+spec+ledger and start retrain; on FAIL iterate
+
+## 2026-06-12 - LORA-GATE-REVIEW-2
+
+Ticket/Gate: spec section 5 acceptance gate, adapter v2 (trained on dataset v2 @ 320bfbf) vs tier-2 baseline
+Verdict: GATE FAILED - clause (b) not met on plot_description; clause (c) marginal regression
+Evidence: cinematch-llama/outputs/intent_lora/eval_report.json (untracked). plot_elements F1 tier2 vs adapter-v2: plot_description 0.9412 vs 0.8261 (FAIL; v1 was 0.60), hybrid 0.7027 vs 0.7429 (PASS; v1 0.4706), implicit_plot 0.0 vs 0.9167 (PASS). Clause (a) validity 1.0 on all 7 slices PASS. Clause (c): user_moods F1 user_mood_only 0.96 (tier1) vs 0.9231 (adapter) - REGRESSION via over-prediction (extra moods: uplifting/warm/bittersweet/tender/stressed_tense); user_and_film 1.0 vs 1.0 OK. Held-out test split: validity 1.0 all, exact_match 0.67-1.0. Training: 3 epochs, eval_loss 0.00674.
+Files changed: docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md, .remember/remember.md (this checkpoint)
+Commands run: train_intent_lora.py; generate_intent_predictions.py; grade_intent_predictions.py; gate comparison vs eval/runs/2026-06-11-intent-parser-nogit/report.json intent_v1.tier2_few_shot
+Test results: see evidence
+Artifacts: cinematch-llama/outputs/intent_lora/ (adapter, predictions.jsonl, eval_report.json, final_val_metrics.json - untracked)
+Failures: gate outcome is a finding. Failure analysis from queries_with_field_mismatch: (1) under-extraction of multi-element plot queries (missed courtroom, detectives, space, championship+sports team); (2) span normalization instead of canonical/verbatim NP copying (alien vs alien creature, animal vs animals, space adventure vs space); (3) adjunct over-extraction (rain); (4) genre over-prediction not in gold (sports, adventure, romance); (5) mood over-prediction beyond user_mood_map set of the stated category.
+Assumptions: improving via dataset v3 with NEW concept/template coverage (plural subjects, compound NPs, verb-phrase concepts, adjunct-exclusion negatives, mood-restraint contrast pairs) is legitimate; copying eval intent_v1 query phrasings into training would be teach-to-the-test and is forbidden (false-improvement hard stop)
+Commit: (this commit)
+Next safe action: author LORA-TRAIN-3 dataset-v3 ticket targeting the 5 failure modes with non-eval-overlapping examples; Codex usage-limited until ~4:14 AM, Gemini write-capable mode unavailable (no docker) - Claude implements per failure protocol with 3-AI review before retrain
+
+## 2026-06-12 - LORA-TRAIN-3
+
+Ticket/Gate: dataset v3 targeting LORA-GATE-REVIEW-2 failure modes. Codex still usage-limited; Claude implemented directly per failure protocol (precedent LORA-TRAIN-1/2d), with a 2-AI review panel before training per spec 3.9/3.10.
+Verdict: PASS (dataset stage; training gate pending)
+Files changed: training/build_intent_dataset.py (PLURAL_SUBJECT_ACTIONS pool + templates, PLACE_GENRE_COMPOUNDS, 12 compound-NP topics, three-element template, family/Family + musical/Music genre words, MOVIE_REQUIRED_GENRES += family, FUSED_GENRE_TOPICS guards, quota buckets: plot fused 180/targeted 60/multi 90/implicit 180/single 90, hybrid fused 180/plural 30/multi 60/single 330; reviewer-D fixes: concept "courtroom drama" renamed "courtroom", climbers object = blizzard), training/*.jsonl x7 (rebuilt), docs/superpowers/specs/2026-06-11-llama-intent-parser-lora.md (section 3.10 added; concept table courtroom rename; PP-adjunct drop rule documented)
+Commands run: build x2 + Get-FileHash (BYTE-IDENTICAL); audit_dataset_v2.py (all zeros, exit 0); pytest training -q (6 passed); coverage greps (plural subjects 5-10 records each, place compounds present, 12 triples, family movie 4, musical 4); verification greps for both reviewer-D findings (0 "courtroom drama" in plot_elements, 0 "deadly peak" golds, 10 blizzard golds)
+Test results: 3,600 records, 600/category, plot multi-element ratio 0.55, all ratio assertions pass
+Artifacts: review panel - Gemini reviewer-C round 4 VERDICT: PASS (.agents/outbox/gemini/current_result.md); Claude subagent reviewer D round 1 FAIL (2 real findings: implicit "courtroom drama" gold contradicted place-genre fusion records + climbers object NP error), round 2 after fixes VERDICT: PASS (verified all 7,200 records genre-word-free in plot_elements, all 126 plural-subject golds uniform). Reviewer-D non-blocking note: 16 "family reunion" compound-NP golds correctly keep genres [] - flagged for owner awareness.
+Failures: none unresolved
+Assumptions: 2-reviewer panel (Gemini + fresh-context Claude subagent) satisfies spec 3.9 "two independent AI reviewers (not the generator's implementer)"; caveat recorded that reviewer D shares the lead's base model. intent_v1 gold-vs-spec inconsistencies (iv47 rain, iv52 animals, iv38 falls-in-love) documented in spec 3.10 for owner - eval gold NOT touched.
+Commit: (this commit)
+Next safe action: retrain, generate, grade, gate vs tier-2
