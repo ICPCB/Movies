@@ -2100,3 +2100,16 @@ Failures: none
 Assumptions: owner statement "training longer ... is fine" = explicit authorization for the long local LoRA training run on the owner PC (ticket section 7 authorizes the job)
 Commit: (this commit - "docs: record base-variant decision + fixed prompt-format contract")
 Next safe action: dispatch spec section 7 ticket to Codex (cleanup, prompt_format.py, generator, dataset, LoRA train, gate eval)
+
+## 2026-06-11 - LORA-TRAIN-1
+
+Ticket/Gate: spec section 7 local training ticket (Codex STOPPED on usage limit with zero changes; Gemini blocked - no docker for sandbox; Claude implemented directly per CLAUDE.md failure protocol; SELF-REVIEWED)
+Verdict: PASS (training + eval complete; section 5 gate clause (b) vs tier-2 few-shot baseline PENDING - tier-2 needs an authorized Ollama run; serving path untouched)
+Files changed: training/prompt_format.py (new, spec 6.1 contract), training/test_prompt_format.py (new, 6 tests), training/build_intent_dataset.py (implemented), training/{mood_user_only,mood_film_only,mood_user_and_film,avoid_preferences,plot_description,hybrid_queries,final_intent_train}.jsonl (3,600 records, 600/category, 540/30/30 splits, 200 implicit-plot pairs, provenance deterministic_rules)
+Commands run: python -m pytest api/tests eval/tests training -q (138 passed); build_intent_dataset.py twice (Get-FileHash byte-identical); python -m eval.scripts.intent_parser_eval --intent-v1 (tier-1 baseline reproduced); train_intent_lora.py (609 steps, eval_loss 0.0066); generate_intent_predictions.py (264 greedy generations); grade_intent_predictions.py
+Test results: adapter on intent_v1 - validity 1.0 and mode_acc 1.0 on ALL 7 slices; key-field F1 tier-1 -> adapter: film_mood_only 0.0->1.0, avoid_preferences 0.52->0.97, implicit_plot 0.0->0.92, plot_description 0.0->0.60, hybrid 0.0->0.47, user_mood_only 0.96->0.96, user_and_film 0.95->0.965 (no mood regression). Held-out test split: validity 1.0 all categories, exact-match 0.67-1.0.
+Artifacts: cinematch-llama/outputs/intent_lora/ (adapter_model.safetensors 13.6 MB, predictions.jsonl, eval_report.json, final_val_metrics.json - all untracked); sidecar scripts cinematch-llama/scripts/{train_intent_lora,generate_intent_predictions,grade_intent_predictions}.py
+Failures: Codex dispatch failed (OpenAI usage limit, resets 2026-06-15); no repo impact. mood_examples_seed_v1_120.jsonl missing from cinematch-llama/ (stale docs) - dataset generated without it.
+Assumptions: committing generated jsonl is authorized by training/README.md after determinism+validation gate review (done, this entry is the evidence); owner manual-cleanup candidates reported: Llama-3.2-1B/original/ 2.36 GB, outputs/stage1_smoke_lora/ ~150 MB
+Commit: (this commit - "feat: intent dataset generator + LoRA adapter training run")
+Next safe action: owner decision on (1) authorizing a tier-2 Ollama baseline run on intent_v1 to adjudicate gate clause (b), and (2) manual disk cleanup; serving integration only after full gate PASS + Claude review

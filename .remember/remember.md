@@ -26,7 +26,7 @@ Mode: Human-approved single-approval autonomous run (plan: CINEMATCH_ULTRAPLAN.m
 
 ## Next safe action (owner PC)
 
-Dispatch the spec §7 ticket to Codex (lock first): (1) clean cinematch-llama/ per ticket keep/delete lists; (2) implement training/prompt_format.py + test exactly per spec §6.1; (3) implement training/build_intent_dataset.py; (4) deterministic dataset build ~3,600 pairs (two runs byte-identical); (5) train the ONE unified LoRA adapter on final_intent_train.jsonl (r=16, α=32, dropout 0.05, q/k/v/o, 2–3 epochs); (6) eval vs the §5 gate (--intent-v1) — adapter ships only if it beats the few-shot baseline without regressing mood slices; report, no serving changes without Claude gate review.
+LORA-TRAIN-1 DONE 2026-06-11 (Claude direct, SELF-REVIEWED; Codex STOPPED on usage limit until 2026-06-15, Gemini blocked no docker). Adapter trained (cinematch-llama/outputs/intent_lora/, eval_loss 0.0066) and evaluated: intent_v1 validity+mode_acc 1.0 all slices; F1 vs tier-1: film_mood_only 0→1.0, avoid 0.52→0.97, implicit 0→0.92, plot 0→0.60, hybrid 0→0.47, mood slices unregressed. Remaining for full §5 gate: clause (b) requires the TIER-2 few-shot Ollama baseline on intent_v1 (115 calls, needs owner authorization). Owner decisions pending: (1) authorize tier-2 baseline run; (2) manual disk cleanup (Llama-3.2-1B/original/ 2.36 GB, outputs/stage1_smoke_lora/ ~150 MB). Serving path untouched — adapter integration only after full gate PASS + review.
 
 ## Run notes
 
