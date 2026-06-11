@@ -11,9 +11,9 @@ from sqlalchemy.orm import Session
 from api.db import get_session
 from api.db_models import RecCache, SearchHistory
 from api.schemas import ParseIntentRequest, RecommendRequest
-from engine import movie_store, recommender
+from engine import intent_parser, movie_store, recommender
 from engine.intent_query_builder import build_query
-from engine.intent_schema import empty_intent, validate_intent
+from engine.intent_schema import validate_intent
 
 
 router = APIRouter(prefix="/api", tags=["search"])
@@ -56,7 +56,7 @@ def _default_explainer(query: str, movie: dict) -> str:
 
 @router.post("/parse-intent")
 def parse_intent(payload: ParseIntentRequest) -> dict:
-    intent = empty_intent(payload.text, payload.mode)
+    intent = intent_parser.parse(payload.text, payload.mode, use_llm=payload.use_llm)
     valid, errors = validate_intent(intent)
     if not valid:
         raise HTTPException(status_code=500, detail={"intent_errors": errors})
@@ -71,10 +71,10 @@ def recommend_movies(
 ) -> dict:
     intent = payload.intent
     if intent is None:
-        intent = empty_intent(payload.free_text or "", payload.mode)
+        intent = intent_parser.parse_tier1(payload.free_text or "", payload.mode)
     valid, _ = validate_intent(intent)
     if not valid:
-        intent = empty_intent(payload.free_text or "", payload.mode)
+        intent = intent_parser.parse_tier1(payload.free_text or "", payload.mode)
 
     query = build_query(intent)
     if payload.log_history:

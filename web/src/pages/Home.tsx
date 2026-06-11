@@ -81,14 +81,26 @@ export default function Home() {
     }
   }, [location.state, runSearch]);
 
-  const submitMood = () => {
+  const submitMood = async () => {
     if (selectedMoods.length === 0 && !text.trim()) {
       setError("Pick at least one mood chip, or tell us how you feel.");
       return;
     }
-    const intent = emptyIntent(text.trim(), "mood");
-    Object.assign(intent, moodsToIntentFields(selectedMoods));
-    intent.confidence = 1.0;
+    let intent: Intent;
+    if (selectedMoods.length === 0) {
+      // No chips: let the server's deterministic lexicon parser read the
+      // feeling words (it knows the full vocabulary, incl. body sensations).
+      try {
+        const parsed = await api.parseIntent(text.trim(), "mood");
+        intent = parsed.intent;
+      } catch {
+        intent = emptyIntent(text.trim(), "mood");
+      }
+    } else {
+      intent = emptyIntent(text.trim(), "mood");
+      Object.assign(intent, moodsToIntentFields(selectedMoods));
+      intent.confidence = 1.0;
+    }
     const label =
       selectedMoods.length > 0
         ? `feeling ${selectedMoods.length > 1 ? "a mix of things" : "something specific"}`

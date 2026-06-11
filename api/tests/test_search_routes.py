@@ -83,4 +83,8 @@ def test_parse_intent_returns_valid_intent_and_query(client):
     assert response.status_code == 200
     body = response.json()
     assert validate_intent(body["intent"]) == (True, [])
-    assert body["query"]["query_text"] == "something hopeful"
+    # "hopeful" is in the feeling vocabulary, so tier 1 resolves the mood
+    # fields and mood mode appends the desired film moods to the query text.
+    assert body["intent"]["user_moods"] == ["hopeful"]
+    assert body["intent"]["desired_film_moods"] == ["epic", "inspiring", "uplifting"]
+    assert body["query"]["query_text"].startswith("something hopeful")

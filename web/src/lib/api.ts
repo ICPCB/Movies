@@ -53,6 +53,12 @@ export const api = {
       body: JSON.stringify(body),
     }),
 
+  parseIntent: (text: string, mode: Mode = "content") =>
+    request<{ intent: Intent; query: unknown }>("/api/parse-intent", {
+      method: "POST",
+      body: JSON.stringify({ text, mode }),
+    }),
+
   explain: (cacheKey: string, movieKey: string) =>
     request<{ movie_key: string; explanation: string }>(
       `/api/explain/${encodeURIComponent(cacheKey)}/${encodeURIComponent(movieKey)}`,

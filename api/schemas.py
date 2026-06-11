@@ -26,6 +26,7 @@ class WatchlistPatch(StrictModel):
 class ParseIntentRequest(StrictModel):
     text: str
     mode: Mode = "content"
+    use_llm: bool = False
 
 
 class RecommendRequest(StrictModel):
