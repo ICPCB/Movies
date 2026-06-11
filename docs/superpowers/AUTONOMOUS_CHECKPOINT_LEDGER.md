@@ -2034,3 +2034,56 @@ Failures: none
 Assumptions: tier-2 Ollama eval (--tier2) intentionally not run during validation - keeps validation offline; tier-2 path is covered by stubbed tests (non-mood merge + ollama-down fallback) and any runtime failure falls back to tier 1 by design; LoRA training (plan section 14) deferred - few-shot baseline ships first per plan; prior session handoff cited a stale eval flag (--run) that the script never had
 Commit: c089913
 Next safe action: Phase 8 final docs (README.md + PROJECT_OVERVIEW.md), docs-only
+
+## 2026-06-11 - PHASE-8-FINAL-DOCS
+
+Ticket/Gate: PHASE-8 final docs (lead-implemented, ULTRAPLAN autonomous run; checkpoint written post-hoc — entry was omitted at commit time, repaired same day)
+Verdict: PASS
+Files changed: README.md, PROJECT_OVERVIEW.md
+Commands run: (post-hoc re-validation, Linux container equivalents of the venv commands) python3 -m pytest api/tests -q; npm run build --prefix web; python3 labels/validate_labels.py; python3 -m eval.scripts.intent_parser_eval (tier-1 only, offline); git diff f402156..HEAD --stat -- src/
+Test results: 24 passed (0.26s, no model/CSV/network); web build clean (tsc -b + vite, 263.54 kB js); labels OK; eval validity 1.0, mode_acc 0.98, F1 user_moods 0.8594 / desired_film_moods 0.8971 / avoid_film_moods 0.9681 — matches PHASE-7 baseline; src/ diff vs f402156 empty (no-regression gate holds)
+Artifacts: README.md + PROJECT_OVERVIEW.md at e48fda0; doc facts verified against code (27,762 = src/config.py DATASET_ROW_COUNT; 16 API routes = 9 decorators in api/routes_library.py + 7 in api/routes_search.py)
+Failures: none in validation. Process failures repaired by this entry: (1) PHASE-8 checkpoint was never written at commit time (rule 12 violation); (2) .remember/remember.md was found wiped to 0 bytes a second time and was restored from HEAD + updated
+Assumptions: validation re-run post-hoc on 2026-06-11 in a Linux container (python3 + fresh pip/npm installs), not the Windows venv — commands are container equivalents of the documented venv commands
+Commit: e48fda0
+Next safe action: owner-approved 2026-06-11 plan — agent pipeline doc, repo wipe, LoRA intent-parser scaffold (LoRA training is PENDING/active, not deferred; run not closed)
+
+## 2026-06-11 - AGENT-PIPELINE-ARCHITECTURE
+
+Ticket/Gate: Owner-approved rules-only ticket (2026-06-11 plan, single human approval): agent architecture pipeline
+Verdict: PASS
+Files changed: docs/AGENT_PIPELINE.md (new), AGENTS.md, CLAUDE.md, .agents/inbox/gemini/.gitkeep (new), .agents/outbox/gemini/.gitkeep (new)
+Commands run: file inspection; git diff review
+Test results: n/a (docs/governance only; no code changed)
+Artifacts: docs/AGENT_PIPELINE.md — Claude = head reviewer/planner/gatekeeper; Codex CLI + Gemini CLI = implementation coders (one per ticket); Kiro AI = additional terminal-callable agent; Copilot = shell/debug; pipeline stages, mailboxes incl. gemini/, locking, subagent cleanup protocol
+Failures: none
+Assumptions: direct owner request counts as a rules-only ticket for AGENTS.md/CLAUDE.md (AGENTS.md out-of-scope clause); stale accuracy-audit references (file map dirs that no longer exist, Phase 5 audit-track gates) scrubbed from both governance files as part of the same rules ticket
+Commit: (this commit — "docs: agent architecture pipeline")
+Next safe action: full wipe of unnecessary files per approved plan
+
+## 2026-06-11 - LEGACY-WIPE
+
+Ticket/Gate: Owner-approved wipe of unnecessary files (all four groups + thorough sweep; eval/ explicitly NOT fully deleted)
+Verdict: PASS
+Files changed (deleted): eval/runs/2026-05-19-1846-nogit/ (13 tracked files), eval/runs/2026-06-08-phase8-mood-nogit/, eval/runs/2026-06-08-phase8j-gated-nogit/ (old audit-track runs), docs/superpowers/specs/2026-05-19-accuracy-audit-design.md, docs/superpowers/MANUAL_REVIEW_QUEUE.md, app.py (legacy Gradio UI), eval/queries/v1.candidate.jsonl, eval/queries/v2.candidate.jsonl (superseded drafts), .agents/inbox/codex/current.md, .agents/outbox/codex/current_result.md (closed WEB-2A mailbox), eval/scripts/_diversity.py (orphaned — zero imports repo-wide, found by read-only discovery subagent)
+Files changed (edited): README.md (app.py rows + gradio dep removed), PROJECT_OVERVIEW.md (Gradio reference), docs/ARCHITECTURE.md (retirement banner — src/ internals doc kept as authoritative)
+Commands run: read-only discovery subagent usage audit (every eval/scripts module classified USED with citing references, except _diversity.py); grep for dangling references (clean); python3 -m pytest api/tests eval/tests -q; npm run build --prefix web
+Test results: 132 passed (24 api + 108 eval); web build clean
+Artifacts: kept on purpose — eval/runs/2026-06-07-combined-nogit/ (no-regression baseline + gold labels), eval/tests/ (11 modules), eval/queries/{v1,v2,all,mood_v1}.jsonl, all regression eval/scripts, labels/drafts/ (provenance trail), 01.clean_data.py, 02. Embed_BGEM3.py, scripts/
+Failures: none
+Assumptions: v2.jsonl kept although currently unloaded (final query file reserved for ablations); ledger/ULTRAPLAN historical mentions of deleted files kept (append-only history)
+Commit: (this commit — "chore: wipe legacy accuracy-audit artifacts, gradio ui, stale drafts")
+Next safe action: LoRA intent-parser track scaffold
+
+## 2026-06-11 - LLAMA-LORA-SCAFFOLD
+
+Ticket/Gate: LoRA intent-parser track scaffold (spec + eval set + dataset interface; Claude-authored per docs/AGENT_PIPELINE.md ownership — generator implementation is a Codex/Gemini ticket)
+Verdict: PASS
+Files changed: docs/superpowers/specs/2026-06-11-llama-intent-parser-lora.md (new), training/README.md (new), training/build_intent_dataset.py (new interface stub), eval/queries/intent_v1.jsonl (new, 84 records, 7 slices x 12), eval/scripts/intent_parser_eval.py (--intent-v1 per-slice harness), eval/README.md, .remember/remember.md
+Commands run: python3 -m eval.scripts.intent_parser_eval --intent-v1; python3 -m pytest api/tests eval/tests -q; generation-time assertions (schema validity on all 84 expected intents via validate_intent; single-category mood words verified against user_mood_vocab; implicit-slice no-literal-concept check; map-derived gold computed from labels/user_mood_map.json)
+Test results: 132 passed; intent_v1 tier-1 baseline recorded: validity 1.0 on all slices; strong mood slices (user_mood_only F1 user=0.96 desired=0.975 avoid=1.0); documented gaps the adapter must close: plot_elements F1 0.0 on plot/hybrid/implicit slices, film_mood_only desired F1 0.0 + mode_acc 0.0, avoid_preferences mode_acc 0.17 / avoid F1 0.52, genre FP "action-packed"->Action
+Artifacts: eval/runs/2026-06-11-intent-parser-nogit/report.json (untracked, intent_v1 section included); spec section 7 contains the ready-to-dispatch local training ticket (model-variant verification FIRST — ULTRAPLAN section 14 recorded base variant, owner expects Llama-3.2-1B-Instruct; then cinematch-llama/ local cleanup; then dataset build + LoRA training + gate eval)
+Failures: none
+Assumptions: gold is spec-derived (section 3 rules), not parser-derived — tier-1 misses on new slices are the measured baseline, not eval bugs; legacy mood_v1/content metrics unchanged (default harness behavior untouched)
+Commit: (this commit — "feat: llama lora intent-parser spec + training dataset scaffold")
+Next safe action: on the owner PC — dispatch the spec section 7 ticket to Codex or Gemini (verify model variant, clean cinematch-llama/, implement generator, train, eval vs gate)
