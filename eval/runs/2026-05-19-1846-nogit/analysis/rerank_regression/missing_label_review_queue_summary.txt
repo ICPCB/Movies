@@ -1,6 +1,0 @@
-total_rows=455
-counts_by_qid={"q01": 20, "q02": 23, "q03": 24, "q04": 26, "q05": 24, "q06": 21, "q07": 20, "q08": 21, "q09": 20, "q10": 19, "q11": 25, "q12": 21, "q13": 20, "q14": 25, "q15": 27, "q16": 23, "q17": 25, "q18": 23, "q19": 27, "q20": 21}
-counts_by_mode={"advanced": 356, "basic": 181, "hybrid": 357}
-counts_by_model={"alt": 359, "baseline": 325}
-rows_with_excerpt=455
-rows_without_excerpt=0

@@ -73,7 +73,7 @@ The production engine predates the web app and is treated as a read-only library
 5. **Cross-encoder rerank** — `BAAI/bge-reranker-v2-m3` scores the top 50 fused candidates against the deterministic intent query (never an LLM rewrite); the final score blends in a log-normalized vote-count prior (0.08) and the upstream fusion score (0.12).
 6. **Safety filter + dedup** — dark-genre candidates are demoted (not removed) for safety-sensitive mood intents; every stage dedups on a stable title+year movie key.
 
-Basic mode is semantic-only; Advanced adds HyDE (a synthetic overview embedded as a second semantic query). The Gradio app (`app.py`) exposes all three pipelines directly.
+Basic mode is semantic-only; Advanced adds HyDE (a synthetic overview embedded as a second semantic query). The web app serves the hybrid pipeline through `api/`.
 
 ## 4. The mood system (`labels/`)
 

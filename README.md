@@ -41,7 +41,6 @@ eval/     Eval harness — graded relevance metrics, intent-parser eval,
           latency benchmark, regression gates
 data/     movies_clean.csv (27,762 rows), chroma_bgem3/ vector index,
           cinematch.db app database (runtime-generated)
-app.py    Legacy Gradio UI for the bare retrieval engine (port 7860)
 ```
 
 The `engine/` layer treats `src/` strictly as a read-only library: mood logic is applied as post-retrieval filters and rank nudges, never by modifying the retrieval engine itself.
@@ -56,7 +55,7 @@ The `engine/` layer treats `src/` strictly as a read-only library: mood logic is
 Install backend dependencies into the venv:
 
 ```powershell
-pip install gradio pandas numpy torch sentence-transformers chromadb rank-bm25 langchain-ollama tqdm
+pip install pandas numpy torch sentence-transformers chromadb rank-bm25 langchain-ollama tqdm
 pip install -r requirements-api.txt
 ```
 
@@ -90,16 +89,6 @@ npm run dev --prefix web
 ```
 
 Open **http://localhost:5173** — the Vite dev server proxies `/api` to port 8000.
-
-### Legacy Gradio UI
-
-The original single-page engine UI still works:
-
-```powershell
-python app.py
-```
-
-It serves on http://127.0.0.1:7860 (note: it also opens a public Gradio share link) with Basic / Advanced / Hybrid pipeline modes.
 
 ## Rebuild the data
 

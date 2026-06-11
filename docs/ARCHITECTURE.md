@@ -2,6 +2,8 @@
 
 > Maintained by inspection of source files.
 > Last updated: 2026-05-19
+>
+> **2026-06-11 note:** the legacy Gradio UI (`app.py`, port 7860) described below has been **removed**. The serving entry points are now the FastAPI backend (`api/`) and the React web app (`web/`) — see `PROJECT_OVERVIEW.md`. The `src/` retrieval-engine internals documented here are unchanged and still authoritative; read `app.py` references as describing the retired UI layer only.
 
 ---
 
