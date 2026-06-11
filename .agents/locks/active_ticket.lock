@@ -1,22 +1,13 @@
-﻿ticket: LORA-TRAIN-1 (spec docs/superpowers/specs/2026-06-11-llama-intent-parser-lora.md section 7)
-agent: claude (direct implementation after Codex STOPPED - usage limit; ledger 2026-06-11)
-start: 2026-06-11 (after commit 59405c5)
-status: CLOSED (PASS - gate review pending tier-2 comparison; serving untouched)
+ticket: LORA-TRAIN-2d (reviewer-C round 2 fix: article agreement + genre head nouns)
+agent: codex
+start: 2026-06-12 (after e861fb6; 2c verified PASS by Claude, reviewer-C re-audit FAIL -> 2d)
+status: OPEN
 allowed files:
-  training/prompt_format.py
-  training/test_prompt_format.py
   training/build_intent_dataset.py
-  training/mood_user_only.jsonl
-  training/mood_film_only.jsonl
-  training/mood_user_and_film.jsonl
-  training/avoid_preferences.jsonl
-  training/plot_description.jsonl
-  training/hybrid_queries.jsonl
-  training/final_intent_train.jsonl
-  cinematch-llama/** (untracked, local only)
+  training/*.jsonl (rebuilt outputs)
+  cinematch-llama/scripts/audit_dataset_v2.py (new checks only)
 stop conditions:
-  - prompt template defined anywhere other than training/prompt_format.py
-  - ANY deletion (cleanup is owner-manual per ULTRAPLAN 14.3; inventory/report only)
-  - dataset validity < 0.99 or non-deterministic rebuild
-  - eval gate not met (report; do NOT wire adapter into serving)
-  - any src/* or engine/* or api/* or eval/* edit
+  - any edit outside allowed files (prompt_format.py is FROZEN)
+  - vocab value outside fixed vocabs
+  - determinism failure
+  - no training/eval/model/network/Ollama/deletions/commits

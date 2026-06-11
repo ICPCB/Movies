@@ -1,51 +1,11 @@
-# Current handoff — CineMatch web-app ULTRAPLAN run
-
-Updated: 2026-06-11 (restored AGAIN: file was found wiped to 0 bytes a second time at session start; rebuilt from HEAD version + ledger. Root cause of the wipes unknown — treat any 0-byte remember.md as an incident, restore from git, and note it here)
-Branch: main
-Mode: Human-approved single-approval autonomous run (plan: CINEMATCH_ULTRAPLAN.md, commit 8a4bc15; extended 2026-06-11 by owner-approved closeout/architecture/LoRA-scaffold plan)
+# Handoff
 
 ## State
+LoRA retrain pipeline mid-flight on main @ e861fb6 + uncommitted v2 dataset work. Ticket 2c VERIFIED PASS by Claude (audit clean, 6 banned strings gone, byte-identical double build, pytest 6/6). Gemini reviewer-C re-audit returned FAIL round 2 with NEW defects: 124 article errors ("a exciting"/"a epic"), bare genres ("a animated about", "a war about"), bad compounds ("an assassin war set in a casino") — all independently confirmed. Ticket LORA-TRAIN-2d DONE: Codex STOPPED on usage limit (resets 4:14 AM) after applying complete build-script fix; Claude verified + finished it (split FINITE/PARTICIPIAL subjectless implicit phrases, "something where" for finite subjectful, audit clause-grammar check). All validation green: audit all-zeros exit 0, byte-identical double build, pytest 6/6, 3600/600 counts. Ledger entry LORA-TRAIN-2d written. Gemini round-3 re-audit dispatched in background.
 
-- Phase 0 cleanup: DONE (f402156)
-- Phase 1 master plan: DONE (8a4bc15, CINEMATCH_ULTRAPLAN.md)
-- Phase 2 backend (api/, engine/, requirements-api.txt): DONE (83d5df4, Codex WEB-2A, lead-verified)
-- Phase 3 mood label layer (labels/, 27,758 movie labels): DONE (5af4ec0)
-- Phase 4 frontend (web/ React+Vite+Tailwind, verified live): DONE (d320b15)
-- Phase 5 speed pass (warm-up, async explanations, latency benchmark): DONE (0545010)
-- Phase 6 eval extension (mood_v1 queries + serving-path mood layer): DONE (11f5315)
-- Phase 7 intent parser (tier-1 lexicon + tier-2 Ollama few-shot): DONE (c089913) — 24 api tests pass, eval validity 1.0 / mode_acc 0.98 / F1 0.86-0.97, web build clean
-- Phase 8 final docs (README.md + PROJECT_OVERVIEW.md): DONE (e48fda0) — facts re-verified post-hoc 2026-06-11 (27,762 = src/config.py; 16 routes = 9+7 decorators; src/ diff vs f402156 empty)
-- LoRA intent-parser training (plan section 14): ACTIVE — spec+scaffold committed (f9a2801). Spec §7 criterion 1 RESOLVED 2026-06-11: local cinematch-llama/Llama-3.2-1B confirmed BASE variant (eos 128001, no chat_template, eos <|end_of_text|>, README model_id meta-llama/Llama-3.2-1B). Owner had been looking at the HF Instruct repo page — contradiction reported. **Owner decision: Option B** — train the local base weights with the fixed prompt format (spec §6.1, training/prompt_format.py = single source of truth); NO Instruct download (fallback only if §5 gate fails); owner explicitly accepted longer training time.
+## Next
+1. Read Gemini round-3 verdict (.agents/outbox/gemini/current_result.md) — need VERDICT: PASS. If FAIL, confirm findings, fix, loop.
+2. On PASS: commit dataset+spec+ledger, retrain (`cinematch-llama\.venv\Scripts\python.exe cinematch-llama\scripts\train_intent_lora.py`), generate (`generate_intent_predictions.py`), grade (`venv\Scripts\python.exe cinematch-llama\scripts\grade_intent_predictions.py`), re-gate vs tier-2 numbers in eval/runs/2026-06-11-intent-parser-nogit/report.json (gate clause (b): beat tier-2 plot_elements F1 on plot_description 0.9412, hybrid 0.7027, implicit_plot 0.0), ledger + close lock.
 
-## This session (2026-06-11, owner-approved plan) — DONE
-
-1. Governance repair: remember.md restored, PHASE-8 ledger entry added.
-2. Agent architecture pipeline: docs/AGENT_PIPELINE.md — Claude = head reviewer/planner; Codex CLI + Gemini CLI = implementation coders; Kiro AI = additional terminal-callable agent; AGENTS.md/CLAUDE.md role updates.
-3. Full wipe of unnecessary files (owner approved): old accuracy-audit artifacts (3 run dirs + 2 docs), legacy Gradio app.py (+doc scrubs), stale query drafts, stale codex mailbox, orphaned eval/scripts/_diversity.py. Kept: eval tests, final query files, 2026-06-07 baseline run, all regression scripts. 132 tests pass post-wipe.
-4. LoRA track scaffold: spec docs/superpowers/specs/2026-06-11-llama-intent-parser-lora.md (incl. ready-to-dispatch local training ticket in §7), training/ structure + generator interface stub, eval/queries/intent_v1.jsonl (84 records, 7 slices incl. implicit plot descriptions), intent_parser_eval.py --intent-v1 per-slice harness with tier-1 baseline recorded.
-
-## Next safe action (owner PC)
-
-LORA-TRAIN-1 DONE + GATE REVIEWED 2026-06-11. Adapter trained (cinematch-llama/outputs/intent_lora/, eval_loss 0.0066). **§5 GATE FAILED on clause (b)**: tier-2 few-shot (owner-authorized Ollama run) beats the adapter on plot_description (0.94 vs 0.60) and hybrid (0.70 vs 0.47); adapter wins implicit (0.92 vs 0.0) and crushes both tiers on film_mood_only (0→1.0) and avoid (0.52→0.97); clauses (a)/(c) pass. **Adapter does NOT ship; runtime stays tier-1 + tier-2 few-shot.** Owner notes: Codex is usable again (limit message was wrong/reset). Pending owner action: manual cleanup of cinematch-llama/Llama-3.2-1B/original/ (2.36 GB) + cinematch-llama/outputs/stage1_smoke_lora/ (~150 MB) — owner authorized, harness blocked Remove-Item; run manually. Optional next ticket: retrain with richer plot/hybrid data (multi-phrase gold, paraphrase variety) to close the plot gap, then re-gate.
-
-## Run notes
-
-- API MUST run under venv: venv\Scripts\python.exe -m uvicorn api.main:app --port 8000 (global python lacks rank_bm25)
-- Frontend dev: npm run dev --prefix web (port 5173, proxies /api to 8000)
-- Intent parser eval: python -m eval.scripts.intent_parser_eval [--tier2 calls Ollama 115x — only with authorization] [--out PATH]; writes eval/runs/<date>-intent-parser-nogit/report.json
-- engine/recommender.py serializes first pipeline call (ChromaDB cold-start fix)
-
-## Locks / tickets
-
-- .agents/locks/active_ticket.lock: WEB-2A CLOSED (PASS)
-- No active Codex/Gemini ticket.
-
-## Standing rules for this run
-
-- No src/* edits; engine reads src read-only (get_movie_key, lazy hybrid pipeline).
-- All local: Ollama llama3.2 for explanations + tier-2 intent parse; no external APIs.
-- Label provenance honest (human_provided / authored_static_table / deterministic_rules; never human_gold).
-- On any model rate/usage limit: wait and resume from this file + ledger; never abort.
-- cinematch-llama/, graphify-out/, archive/ stay untracked.
-
-
+## Context
+Owner constraints (binding, spec §3.8): fixed vocab only; user mood ≠ film mood; no keyword shortcuts; labels reviewed by 2-3 AIs before training. Two venvs: repo venv (pytest/eval/jsonschema, no torch) vs cinematch-llama/.venv (torch/peft, no jsonschema). Gemini sandbox needs docker (absent) — read-only plan mode only. Lock .agents/locks/active_ticket.lock = LORA-TRAIN-2d OPEN. Don't wire adapter into serving without full gate PASS. Session goal hook active: continue until model passes the gate.

@@ -60,6 +60,85 @@ The user-mood vs film-mood distinction is preserved exactly as in the serving pa
 | courtroom drama | a lawyer defending an innocent man at trial |
 | undercover cop | a detective living a double life inside a crime ring |
 
+### 3.8 Dataset-v2 rules (LORA-TRAIN-2; owner directives 2026-06-11)
+
+Root cause of the v1 gate failure (ledger LORA-GATE-REVIEW): v1 templates taught
+single-phrase extraction, never decomposition. v2 adds the rules below. Owner
+constraints, binding for every generated label:
+
+1. **Fixed vocab only**: `user_moods` from the 18 vocab categories;
+   `desired_film_moods`/`avoid_film_moods` from the 24-value film enum;
+   `genres_include` from the TMDB list. Any other value is a generation error.
+2. **User mood vs film mood are never interchangeable**: feeling clauses
+   ("I'm…", "feeling…", body sensations) produce ONLY `user_moods` (film moods
+   then come from the map); want/desire clauses produce ONLY film moods.
+   No template may put a film-mood enum word in a feeling clause or a
+   user-vocab feeling word in a want clause.
+3. **No keyword-matching shortcuts**: v2 adds implicit phrasings (3.9) whose
+   gold label word does NOT appear in the text — for film moods, user moods
+   (via body sensations), and plot concepts (3.7) alike.
+4. **Mood-tag caps**: explicitly stated film moods per query ≤ 3;
+   rule-derived unions (map ∪ explicit) keep whatever §3.3 produces (matches
+   intent_v1 gold). The movie-side 2–4-main-tags rule lives in `labels/` and
+   is untouched by this dataset.
+
+**Atomic plot decomposition (closes the v1 gap):**
+
+- Gold `plot_elements` are atomic noun phrases. Compounds in text are split:
+  "a boxing underdog story" → `["boxing", "underdog"]`, never
+  `["boxing underdog story"]`.
+- Generic words never appear in gold: story, movie, film, flick, stuff, thing.
+- Prepositional/setting structures must be covered by templates:
+  "{a} on a {b}", "{a} across the {b}", "{a} in {setting}", "{a} during {b}",
+  "{a} with {b}" — gold = both elements.
+- Genre words fused into compounds still resolve to `genres_include`:
+  "a courtroom drama", "time travel adventure", "animated movie about…" —
+  the genre word maps to its TMDB genre AND is dropped from `plot_elements`.
+- Settings are elements: winter, the rain, the desert → `["…", "winter"]`.
+- Plurals: gold keeps the surface form of the text ("pirates" → "pirates").
+
+### 3.9 Implicit phrasing tables (authored by Claude; review required by 2–3 AIs before training)
+
+Acceptance: dataset v2 ships only after at least two independent AI reviewers
+(not the generator's implementer) audit sampled records against 3.8 rules 1–4
+and the keyword-leak assertion, and the lead records their verdicts in the
+ledger.
+
+**Implicit film-mood phrasings** (gold = the named enum mood(s) in
+`desired_film_moods`, `mode: "mood"`; the mood word must NOT appear in text):
+
+| Mood | Implicit phrasings (examples; extend with same rule) |
+|---|---|
+| funny | something that will make me laugh out loud; a movie with jokes that actually land |
+| heartwarming | something that melts your heart; a story about people being quietly good to each other |
+| feel-good | a movie that leaves me smiling; something easy that puts me in a better headspace |
+| uplifting | something that makes me believe things get better; a film that raises my spirits |
+| hopeful | a story where things turn out okay in the end; something that says tomorrow can be better |
+| lighthearted | nothing heavy, just something breezy; something playful that doesn't take itself seriously |
+| romantic | a love story; two people slowly falling for each other |
+| inspiring | a story that makes me want to chase my dreams; people beating impossible odds that fires me up |
+| exciting | something with real adrenaline; a ride that never slows down |
+| thrilling | edge-of-my-seat stuff; something that gets my pulse racing |
+| suspenseful | something that keeps me guessing until the end; a slow build where you don't know who to trust |
+| tense | a knot-in-your-stomach atmosphere; white-knuckle the whole way through |
+| action-packed | wall-to-wall fights and chases; explosions and set pieces nonstop |
+| epic | a grand sweeping saga across years and continents; something huge in scope |
+| mind-bending | something that messes with my head; a film I'll need to rewatch to understand |
+| thought-provoking | something that leaves me with big questions; a film I'll be chewing on for days |
+| dark | morally murky and shadowy in tone; something grim with a black streak |
+| gritty | raw street-level realism; rough around the edges with no gloss |
+| bleak | no comfort and no easy answers; the kind of film where hope never shows up |
+| melancholic | something quiet and full of longing; a soft ache of a film |
+| scary | something that makes me sleep with the lights on; something to keep me checking behind the door |
+| disturbing | something that crawls under your skin and stays there; imagery I won't shake for days |
+| bittersweet | happy and sad at the same time; an ending that smiles through tears |
+
+**Implicit user-mood phrasings** use the `body_sensations` table in
+`labels/user_mood_vocab.json` (fixed vocab, one category per word) inside
+bodily templates ("my shoulders are {w} and I can't unwind", "everything in
+my chest feels {w}") — gold = the mapped category; the category name must not
+appear in the text.
+
 ## 4. Datasets (`training/`)
 
 Category files, merged into one training file for the single unified adapter:

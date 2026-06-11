@@ -2127,3 +2127,29 @@ Failures: none in execution; gate outcome is a finding, not an error
 Assumptions: owner authorized deletion of Llama-3.2-1B/original/ + outputs/stage1_smoke_lora/, but the harness permission layer blocked Remove-Item - cleanup handed back to owner as a manual command
 Commit: (this commit - "docs: LoRA gate review - tier-2 baseline beats adapter on plot slices")
 Next safe action: owner runs the cleanup command manually; optional follow-up ticket: retrain with richer plot_description/hybrid data (multi-phrase gold, paraphrase variety) to close the 0.60/0.47 vs 0.94/0.70 gap
+
+## 2026-06-12 - LORA-TRAIN-2c-VERIFY + REVIEWER-C-ROUND-2
+
+Ticket/Gate: LORA-TRAIN-2c verification (Claude lead) + final reviewer-C (Gemini) re-audit of dataset v2
+Verdict: 2c PASS (verified with direct evidence) / reviewer-C FAIL -> new ticket LORA-TRAIN-2d dispatched
+Files changed: .agents/inbox/codex/current.md (2d ticket), .agents/locks/active_ticket.lock (2c closed -> 2d OPEN), .agents/outbox/gemini/current_result.md (new FAIL report), docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md, .remember/remember.md
+Commands run: audit_dataset_v2.py (0 nonsense compositions, 0 token leaks, 180 implicit, 0 other-mood leaks); grep 6 banned 2b/2c strings (0 matches); double build + Get-FileHash (BYTE-IDENTICAL); pytest training -q (6 passed); gemini --approval-mode plan reviewer-C audit
+Test results: all 2c acceptance criteria met; reviewer-C found NEW defect classes not covered by 2c: 124 article errors ("a exciting", "a epic", "a action-packed"), bare-genre constructions ("want a animated about", "a war about"), bad topic-genre compounds ("an assassin war set in a casino", "a robot action set in high school") - all independently confirmed by Claude via Select-String counts before authoring 2d
+Artifacts: .agents/outbox/gemini/current_result.md (VERDICT: FAIL with 5 verbatim records); .agents/inbox/codex/current.md (2d ticket: _an() article helper, MOVIE_REQUIRED_GENRES head-noun rule, 3 new audit regexes)
+Failures: none in execution; reviewer FAIL is a finding
+Assumptions: 3-AI review loop continues until reviewer-C PASS per spec section 3.8 owner constraint; retrain only after that
+Commit: none (uncommitted work continues on main)
+Next safe action: verify Codex 2d result, rerun audit + determinism + pytest, then rerun Gemini reviewer-C; on PASS commit dataset+spec and start retrain
+
+## 2026-06-12 - LORA-TRAIN-2d
+
+Ticket/Gate: reviewer-C round-2 fix (article agreement + genre head nouns + implicit clause grammar). Codex STOPPED mid-ticket on OpenAI usage limit (resets 4:14 AM per error; ~73k tokens used) AFTER applying a complete, correct build-script diff + audit regexes; Claude verified the partial work and completed the ticket directly per CLAUDE.md failure protocol. SELF-REVIEWED pending Gemini round-3.
+Verdict: PASS (local validation)
+Files changed: training/build_intent_dataset.py (Codex: _an() helper, MOVIE_REQUIRED_GENRES={animated,action,sci-fi,crime,war,horror}, pre-articled {ag}/{agm} templates, removed broken "an {g}" variant, " movie" head noun in both fused templates; Claude: split SUBJECTLESS_CONCEPT_PHRASES into FINITE/PARTICIPIAL sets with grammar-compatible template lists, SUBJECTFUL "something about"->"something where"), training/*.jsonl x7 (rebuilt), cinematch-llama/scripts/audit_dataset_v2.py (untracked sidecar; Codex added 3 regex checks, Claude added implicit-clause-grammar check + tightened false positive "turns thirteen")
+Commands run: build_intent_dataset.py twice + Get-FileHash (BYTE-IDENTICAL); audit_dataset_v2.py (all checks 0: article, reverse-article, bare-genre, implicit-clause, nonsense compositions, token leaks, other-mood leaks; 180 implicit film-mood; exit 0); pytest training -q (6 passed)
+Test results: 3,600 records, 600/category, 540/30/30, ratios assertions pass; samples now read "a robot action movie set in high school", "an animated movie about...", "a movie where someone is pulling off one last big job", "something where machines turn against their creators"
+Artifacts: .agents/outbox/codex/current_result.md NOT written (Codex died before final report; partial transcript in task log); audit output above is the evidence
+Failures: Codex usage limit (second occurrence; first was LORA-TRAIN-1)
+Assumptions: Claude finishing a Codex-STOPPED ticket inside the same ticket scope is authorized by CLAUDE.md orchestrator failure protocol
+Commit: none yet (commit after Gemini round-3 PASS)
+Next safe action: read Gemini round-3 verdict; on PASS commit dataset+spec+ledger and start retrain; on FAIL iterate
