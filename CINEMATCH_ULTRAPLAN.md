@@ -175,6 +175,8 @@ React + Vite + Tailwind. Dark cinematic theme: near-black `#0b0d12` base, warm g
 
 **Local weights CONFIRMED (2026-06-10):** `cinematch-llama/Llama-3.2-1B/` (model.safetensors 2.36 GB, **base** variant — single EOS 128001, no chat template; fine for LoRA structured-output training). The folder also contains a reusable prior smoke run: `scripts/train_stage1.py` + `test_stage1.py`, `config/stage1_smoke.yaml`, `mood_examples_seed_v1_120.jsonl` (120 mood seed examples), `stage1/data/` train/val/test splits, and `outputs/stage1_smoke_lora/` adapters (checkpoints 20/30 + test report). Phase 7 builds on this instead of starting cold. Folder is gitignored (`cinematch-llama/`) — weights/adapters are never committed.
 
+**Owner decision (2026-06-11):** base variant re-verified (eos 128001, no chat template, eos token `<|end_of_text|>`); train the local **base** weights with the fixed prompt-format contract (spec §6.1, `training/prompt_format.py`). Downloading Llama-3.2-1B-Instruct is the fallback only if the spec §5 eval gate fails.
+
 1. PEFT LoRA on the local base weights: r=16, α=32, dropout 0.05, target q/k/v/o projections; 3,600-pair dataset (§8, seeded from the existing 120 mood examples); 2–3 epochs; metric = JSON validity + field-F1 on held-out test.
 2. Runtime stays few-shot Ollama llama3.2 until the adapter beats the few-shot baseline on field-F1; baseline ships first regardless.
 3. Optional manual disk cleanup (owner's call, not automated): `Llama-3.2-1B/original/` (2.36 GB duplicate `.pth` format, only needed for llama-stack) and `outputs/stage1_smoke_lora/checkpoint-20/` (~80 MB superseded by checkpoint-30).

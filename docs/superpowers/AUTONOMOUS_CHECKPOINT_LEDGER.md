@@ -2087,3 +2087,16 @@ Failures: none
 Assumptions: gold is spec-derived (section 3 rules), not parser-derived — tier-1 misses on new slices are the measured baseline, not eval bugs; legacy mood_v1/content metrics unchanged (default harness behavior untouched)
 Commit: (this commit — "feat: llama lora intent-parser spec + training dataset scaffold")
 Next safe action: on the owner PC — dispatch the spec section 7 ticket to Codex or Gemini (verify model variant, clean cinematch-llama/, implement generator, train, eval vs gate)
+
+## 2026-06-11 - LORA-VARIANT-DECISION
+
+Ticket/Gate: Spec section 7 criterion 1 (model verification stop condition) - resolution + owner decision
+Verdict: PASS
+Files changed: docs/superpowers/specs/2026-06-11-llama-intent-parser-lora.md (criterion 1 resolved; section 6.1 fixed prompt-format contract added; training/prompt_format.py + test added to ticket scope; stop conditions updated), CINEMATCH_ULTRAPLAN.md (section 14 owner-decision note), .remember/remember.md
+Commands run: read cinematch-llama/Llama-3.2-1B/{config.json,generation_config.json,special_tokens_map.json}; grep chat_template tokenizer_config.json (0 matches); Select-String README.md (model_id = meta-llama/Llama-3.2-1B)
+Test results: n/a (docs-only change; no code touched)
+Artifacts: evidence - config.json eos_token_id=128001 (843 bytes), tokenizer_config.json 50,500 bytes no chat_template, special_tokens_map eos <|end_of_text|>, README model_id meta-llama/Llama-3.2-1B. Owner initially believed weights were Instruct (HF Instruct repo page preview: config 877 B, tokenizer_config 54.5 kB) - local sizes/contents prove BASE; contradiction reported to owner before proceeding.
+Failures: none
+Assumptions: owner statement "training longer ... is fine" = explicit authorization for the long local LoRA training run on the owner PC (ticket section 7 authorizes the job)
+Commit: (this commit - "docs: record base-variant decision + fixed prompt-format contract")
+Next safe action: dispatch spec section 7 ticket to Codex (cleanup, prompt_format.py, generator, dataset, LoRA train, gate eval)

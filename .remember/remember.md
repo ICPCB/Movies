@@ -15,7 +15,7 @@ Mode: Human-approved single-approval autonomous run (plan: CINEMATCH_ULTRAPLAN.m
 - Phase 6 eval extension (mood_v1 queries + serving-path mood layer): DONE (11f5315)
 - Phase 7 intent parser (tier-1 lexicon + tier-2 Ollama few-shot): DONE (c089913) — 24 api tests pass, eval validity 1.0 / mode_acc 0.98 / F1 0.86-0.97, web build clean
 - Phase 8 final docs (README.md + PROJECT_OVERVIEW.md): DONE (e48fda0) — facts re-verified post-hoc 2026-06-11 (27,762 = src/config.py; 16 routes = 9+7 decorators; src/ diff vs f402156 empty)
-- LoRA intent-parser training (plan section 14): PENDING — ACTIVE NEXT TRACK (owner directive 2026-06-11: not deferred; run is NOT closed until the adapter track is delivered). Spec + dataset scaffold land this session; training runs on the owner PC.
+- LoRA intent-parser training (plan section 14): ACTIVE — spec+scaffold committed (f9a2801). Spec §7 criterion 1 RESOLVED 2026-06-11: local cinematch-llama/Llama-3.2-1B confirmed BASE variant (eos 128001, no chat_template, eos <|end_of_text|>, README model_id meta-llama/Llama-3.2-1B). Owner had been looking at the HF Instruct repo page — contradiction reported. **Owner decision: Option B** — train the local base weights with the fixed prompt format (spec §6.1, training/prompt_format.py = single source of truth); NO Instruct download (fallback only if §5 gate fails); owner explicitly accepted longer training time.
 
 ## This session (2026-06-11, owner-approved plan) — DONE
 
@@ -26,7 +26,7 @@ Mode: Human-approved single-approval autonomous run (plan: CINEMATCH_ULTRAPLAN.m
 
 ## Next safe action (owner PC)
 
-Dispatch the spec §7 ticket to Codex or Gemini: (1) verify D:\...\cinematch-llama\Llama-3.2-1B is the Instruct variant (ULTRAPLAN §14 recorded BASE — stop and report if so); (2) clean cinematch-llama/ per ticket keep/delete lists; (3) implement training/build_intent_dataset.py; (4) train the ONE unified LoRA adapter on final_intent_train.jsonl; (5) eval vs the §5 gate (--intent-v1) — adapter ships only if it beats the few-shot baseline without regressing mood slices.
+Dispatch the spec §7 ticket to Codex (lock first): (1) clean cinematch-llama/ per ticket keep/delete lists; (2) implement training/prompt_format.py + test exactly per spec §6.1; (3) implement training/build_intent_dataset.py; (4) deterministic dataset build ~3,600 pairs (two runs byte-identical); (5) train the ONE unified LoRA adapter on final_intent_train.jsonl (r=16, α=32, dropout 0.05, q/k/v/o, 2–3 epochs); (6) eval vs the §5 gate (--intent-v1) — adapter ships only if it beats the few-shot baseline without regressing mood slices; report, no serving changes without Claude gate review.
 
 ## Run notes
 
@@ -48,6 +48,4 @@ Dispatch the spec §7 ticket to Codex or Gemini: (1) verify D:\...\cinematch-lla
 - On any model rate/usage limit: wait and resume from this file + ledger; never abort.
 - cinematch-llama/, graphify-out/, archive/ stay untracked.
 
-## Untracked locals never to commit
 
-- data/cinematch.db(+shm/wal), .playwright-mcp/, home-*.png, results-grid.png, root package-lock.json, .agents inbox/outbox transcripts

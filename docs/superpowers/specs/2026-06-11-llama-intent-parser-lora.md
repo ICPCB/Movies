@@ -89,11 +89,45 @@ Eval records are **held out**: the generator must exclude any training pair whos
 
 ## 6. Training configuration (ULTRAPLAN §14)
 
-- Base: local Llama 3.2 1B weights at `cinematch-llama/Llama-3.2-1B/` (see verification step in §7 — variant must be confirmed before training).
+- Base: local Llama 3.2 1B weights at `cinematch-llama/Llama-3.2-1B/` — **verified 2026-06-11: BASE variant** (`config.json` `eos_token_id=128001`; no `chat_template` in `tokenizer_config.json`; `special_tokens_map.json` eos = `<|end_of_text|>`). **Owner decision 2026-06-11: Option B** — train these base weights with the fixed prompt format in §6.1. Do not download Llama-3.2-1B-Instruct; that is the fallback only if the §5 gate fails after training.
 - PEFT LoRA: r=16, α=32, dropout 0.05, target q/k/v/o projections; 2–3 epochs.
 - Metric: JSON validity + per-field F1 on the held-out test split and intent_v1.
 - Weights/adapters are never committed (`cinematch-llama/` is gitignored).
 - Explanations remain on Ollama llama3.2 — the adapter is for parsing only.
+
+### 6.1 Fixed prompt format (Claude-owned contract; base model has no chat template)
+
+Single source of truth: `training/prompt_format.py`. The dataset generator, the training script, and the eval adapter path must all import from it. No inline copies of the template anywhere — train/inference format drift is the primary failure mode of training a base model, and centralizing the template is the mitigation.
+
+Required module surface:
+
+```python
+PROMPT_TEMPLATE = (
+    "### Task: Parse the movie request into CineMatch intent JSON.\n"
+    "### Request:\n{text}\n"
+    "### Intent:\n"
+)
+
+def canonical_json(intent: dict) -> str:
+    # json.dumps(intent, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    ...
+
+def build_prompt(text: str) -> str:
+    # PROMPT_TEMPLATE.format(text=text) — ends exactly at "### Intent:\n"
+    ...
+
+def build_example(text: str, intent: dict) -> str:
+    # build_prompt(text) + canonical_json(intent)  (EOS appended by tokenizer)
+    ...
+```
+
+Conventions:
+
+- BOS `<|begin_of_text|>` (128000) is added by the tokenizer, never written into the template.
+- EOS/stop = `<|end_of_text|>` (128001), appended after the JSON during tokenization; generation stops at EOS with `max_new_tokens=256` headroom.
+- Training loss is masked over the prompt tokens; loss is computed only on the completion (canonical JSON + EOS).
+- Eval/inference decoding is greedy (`do_sample=False`); the generated text up to EOS is parsed with `json.loads` and then `validate_intent`.
+- `canonical_json` is the only serializer used for training targets, so reruns stay byte-identical (§4 determinism rule).
 
 ## 7. Local training ticket (ready to dispatch — Codex or Gemini)
 
@@ -102,6 +136,8 @@ Goal: Verify local Llama base weights, clean cinematch-llama/, implement the
   dataset generator, build the dataset, train the unified LoRA adapter, and
   eval it against intent_v1 per spec sections 3-6.
 Files to change:
+  training/prompt_format.py (new; implement exactly per spec section 6.1)
+  training/test_prompt_format.py (new; round-trip + determinism tests)
   training/build_intent_dataset.py (implement per interface stub)
   training/mood_user_only.jsonl, training/mood_film_only.jsonl,
   training/mood_user_and_film.jsonl, training/avoid_preferences.jsonl,
@@ -114,14 +150,13 @@ Files to read but not change:
   labels/user_mood_map.json, labels/user_mood_vocab.json, labels/film_mood_vocab.json
   eval/queries/intent_v1.jsonl, eval/scripts/intent_parser_eval.py
 Acceptance criteria:
-  1. MODEL VERIFICATION FIRST: confirm
-     D:\ICPCB\OneDrive\Documents\Code\Project\Movies\cinematch-llama\Llama-3.2-1B
-     holds meta-llama/Llama-3.2-1B-Instruct. ULTRAPLAN section 14 recorded these
-     weights as the BASE variant (single EOS 128001, no chat template). Check
-     config.json eos_token_id, tokenizer_config.json chat_template (present =
-     Instruct), generation_config.json. If it is the base variant: STOP and
-     report - the owner decides between downloading Instruct or training the
-     base model with a fixed prompt format. No training until confirmed.
+  1. MODEL VERIFICATION RESOLVED (2026-06-11): Claude confirmed the local
+     weights are the BASE variant (config.json eos_token_id=128001, no
+     chat_template in tokenizer_config.json, special_tokens_map eos
+     <|end_of_text|>). Owner chose Option B: train the base model with the
+     fixed prompt format in spec section 6.1. Do NOT download Instruct. All
+     prompt construction must go through training/prompt_format.py; inline
+     prompt strings anywhere else are a stop condition.
   2. cinematch-llama/ cleanup AFTER verification. Keep: Llama-3.2-1B/
      safetensors weights + tokenizer/config files, mood_examples_seed_v1_120.jsonl,
      any train/test script being reused. Delete (exact paths, report before
@@ -140,12 +175,13 @@ Acceptance criteria:
      baseline) and the adapter-backed run; report per-slice F1 side by side
      against the section 5 gate.
 Validation commands:
-  python -m pytest api/tests eval/tests -q
+  python -m pytest api/tests eval/tests training -q
   python training/build_intent_dataset.py (twice; diff outputs)
   python -m eval.scripts.intent_parser_eval --intent-v1
 Dependencies: local GPU PC; venv with torch+peft+transformers; spec sections 3-6.
 Risk level: medium (model training; no production src/ or serving changes).
 Reviewer: Claude (gate review per docs/AGENT_PIPELINE.md before any serving change).
-Stop conditions: base-variant mismatch (criterion 1); any ambiguous deletion;
-  validity < 0.99; gate not met (report, do not wire the adapter in).
+Stop conditions: prompt template defined anywhere other than
+  training/prompt_format.py; any ambiguous deletion; validity < 0.99;
+  gate not met (report, do not wire the adapter in).
 ```
