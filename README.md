@@ -1,149 +1,166 @@
 # CineMatch
 
-CineMatch is a Python movie recommendation app built on the TMDB dataset. It lets a user describe the kind of movie they want in natural language, then returns ranked movie recommendations through a Gradio web UI.
+CineMatch is a local-first movie recommendation app. Tell it how you **feel** ("lonely but want something warm, not depressing"), what you **want to watch** ("a spy betrayed by his organization"), or both — and it returns real, explainable movie picks from a 27,762-movie TMDB index, with a cinematic dark web UI for browsing, favoriting, and tracking what you've watched.
 
-The project combines dense semantic search, BM25 keyword retrieval, reciprocal rank fusion, cross-encoder reranking, and optional local LLM explanations through Ollama.
+Everything runs on your machine: local BGE models, local ChromaDB, local SQLite, and a local Ollama LLM for the optional pieces. The only network touch is the TMDB image CDN for posters (no API key; placeholder fallback when offline).
 
-## Features
-
-- Gradio web interface for interactive movie search.
-- Three recommendation modes:
-  - Basic: BGE-M3 semantic search only.
-  - Advanced: query expansion, semantic search, BM25, RRF fusion, reranking, and optional explanations.
-  - Hybrid: semantic search plus BM25, RRF fusion, reranking, and optional explanations.
-- TMDB movie posters and metadata in the result cards.
-- English TMDB dataset cleaning pipeline.
-- Persistent ChromaDB vector index using `BAAI/bge-m3`.
-- Optional local LLM support using `llama3.2` through Ollama.
-
-## Project Structure
+The core principle is non-negotiable:
 
 ```text
-.
-|-- app.py                         # Gradio UI entry point
-|-- 01.clean_data.py               # Cleans the raw TMDB CSV
-|-- 02. Embed_BGEM3.py             # Builds the ChromaDB embedding index
-|-- recommend_bgem3.py             # Legacy wrapper for the advanced pipeline
-|-- hybrid_recommend.py            # Legacy wrapper for the hybrid pipeline
-|-- data/
-|   |-- TMDB_movie_dataset_v11.csv # Raw TMDB dataset
-|   |-- movies_clean.csv           # Cleaned dataset
-|   `-- chroma_bgem3/              # Persisted ChromaDB vector store
-|-- docs/
-|   `-- ARCHITECTURE.md            # Detailed architecture notes
-|-- scripts/
-|   `-- quality_smoke_test.py      # Pipeline smoke test and benchmark script
-`-- src/
-    |-- config.py                  # Shared paths, model names, and retrieval settings
-    |-- models.py                  # Lazy model loaders
-    |-- llm/                       # Ollama and prompt helpers
-    |-- pipelines/                 # Basic, advanced, and hybrid pipelines
-    |-- retrieval/                 # Semantic, BM25, fusion, reranking, filters
-    `-- utils/                     # Deduplication and debug helpers
+AI parses user intent into structured JSON.
+Movie database stores real movies.
+Recommendation engine searches, filters, scores, and reranks real movies.
+The model never invents a movie recommendation.
 ```
+
+See [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md) for the full architecture, data provenance, and evaluation story.
+
+## Search modes
+
+| Mode | Input | Engine path |
+|---|---|---|
+| Mood | feeling words / 18 mood chips | user-mood lexicon → film-mood filters and rank boosts over retrieval |
+| Movie Description | plot/content text | BGE-M3 semantic + BM25 hybrid retrieval with cross-encoder reranking |
+| Hybrid | feeling + plot | plot drives retrieval, mood filters/boosts the ranking |
+| Category | genre / era picks | metadata browse, no models involved |
+| Random | one click | quality-floored weighted random (200+ votes, rating ≥ 6.0) |
+
+## How it's put together
+
+```text
+web/      React 19 + Vite + Tailwind v4 dark cinematic UI (port 5173)
+api/      FastAPI backend — 16 routes, SQLite (favorites, watchlist,
+          history, result cache, mood labels), model warm-up (port 8000)
+engine/   Intent layer — two-tier intent parser, intent schema + query
+          builder, movie store, recommender adapter, mood-label lookup
+src/      Production retrieval engine (protected) — BGE-M3 semantic +
+          field-boosted BM25 → RRF fusion → cross-encoder rerank
+labels/   Mood vocabularies, mapping tables, and 27,758 deterministic
+          per-movie film-mood labels — all with honest provenance
+eval/     Eval harness — graded relevance metrics, intent-parser eval,
+          latency benchmark, regression gates
+data/     movies_clean.csv (27,762 rows), chroma_bgem3/ vector index,
+          cinematch.db app database (runtime-generated)
+app.py    Legacy Gradio UI for the bare retrieval engine (port 7860)
+```
+
+The `engine/` layer treats `src/` strictly as a read-only library: mood logic is applied as post-retrieval filters and rank nudges, never by modifying the retrieval engine itself.
 
 ## Requirements
 
-- Python 3.10 or newer
-- A working `data/movies_clean.csv`
-- A working `data/chroma_bgem3/` vector index
-- Optional: Ollama with the `llama3.2` model for LLM query expansion and explanations
+- Python 3.10+ with a project venv (the API must run under it — see below)
+- Node 18+ for the web frontend
+- `data/movies_clean.csv` and the `data/chroma_bgem3/` vector index (ship with the project or rebuild below)
+- Optional: [Ollama](https://ollama.com) with `llama3.2` for explanations, LLM query expansion, and tier-2 intent parsing — everything degrades gracefully without it
 
-Install the main Python packages:
+Install backend dependencies into the venv:
 
-```bash
+```powershell
 pip install gradio pandas numpy torch sentence-transformers chromadb rank-bm25 langchain-ollama tqdm
+pip install -r requirements-api.txt
 ```
 
-If you want LLM features, install Ollama separately and pull the configured model:
+Optional LLM features:
 
-```bash
+```powershell
 ollama pull llama3.2
 ```
 
-## Quick Start
+Frontend:
 
-From the project root:
+```powershell
+npm install --prefix web
+```
 
-```bash
+## Quick start (web app)
+
+From the repo root, start the API under the venv (global Python lacks the engine deps):
+
+```powershell
+$env:CINEMATCH_WARM = "1"
+venv\Scripts\python.exe -m uvicorn api.main:app --port 8000
+```
+
+`CINEMATCH_WARM=1` pre-loads the embedding and reranker models in the background; `GET /api/health` reports `model_warm: true` when ready. Without it, the first search pays the model-loading cost.
+
+In a second terminal, start the frontend:
+
+```powershell
+npm run dev --prefix web
+```
+
+Open **http://localhost:5173** — the Vite dev server proxies `/api` to port 8000.
+
+### Legacy Gradio UI
+
+The original single-page engine UI still works:
+
+```powershell
 python app.py
 ```
 
-The app starts a Gradio server on:
+It serves on http://127.0.0.1:7860 (note: it also opens a public Gradio share link) with Basic / Advanced / Hybrid pipeline modes.
 
-```text
-http://127.0.0.1:7860
-```
+## Rebuild the data
 
-In the UI, enter a movie description, choose a pipeline, set the number of results, and click Search Movies.
+Skip this if `data/movies_clean.csv` and `data/chroma_bgem3/` already exist.
 
-## Rebuild the Data
-
-If the cleaned CSV and vector index already exist, you can skip this section.
-
-Start with the raw TMDB file at:
-
-```text
-data/TMDB_movie_dataset_v11.csv
-```
-
-Clean the dataset:
-
-```bash
+```powershell
+# 1. Clean the raw Kaggle TMDB dump (data/TMDB_movie_dataset_v11.csv)
 python 01.clean_data.py
-```
 
-Build the BGE-M3 ChromaDB index:
-
-```bash
+# 2. Build the BGE-M3 ChromaDB index (refuses a non-empty collection;
+#    delete data/chroma_bgem3/ first to rebuild from scratch)
 python "02. Embed_BGEM3.py"
+
+# 3. Regenerate the deterministic per-movie mood labels and validate
+python labels/build_movie_mood_labels.py
+python labels/validate_labels.py --movie-labels
+
+# 4. Confirm the DATASET_* constants still match the live CSV
+python scripts/print_dataset_stats.py
 ```
 
-Note: the embedding script refuses to add vectors to a non-empty Chroma collection. If you intentionally want to rebuild embeddings from scratch, remove the existing `data/chroma_bgem3/` directory first.
-
-## Pipeline Modes
-
-| Mode | Description | Best for |
-| --- | --- | --- |
-| Basic | Semantic search with BGE-M3 only | Fast searches |
-| Advanced | Query expansion, semantic search, BM25, RRF fusion, reranking, optional explanations | Accurate semantic and keyword matching |
-| Hybrid | Semantic search, BM25, RRF fusion, reranking, optional explanations | Best overall ranking quality |
-
-## Smoke Test
-
-Run the benchmark smoke test from the project root:
-
-```bash
-python scripts/quality_smoke_test.py
-```
-
-Useful options:
-
-```bash
-python scripts/quality_smoke_test.py --modes Basic Hybrid
-python scripts/quality_smoke_test.py --top-k 5 --no-llm
-```
+`data/cinematch.db` (favorites, watchlist, history, result cache) is created automatically on API startup.
 
 ## Configuration
 
-Main settings live in `src/config.py`, including:
+Engine settings live in `src/config.py`: data paths, `BAAI/bge-m3` embedding model, `BAAI/bge-reranker-v2-m3` reranker, candidate pool sizes, BM25 field weights, RRF fusion constants, and LLM timeouts.
 
-- Data paths
-- ChromaDB collection name
-- Embedding model
-- Reranker model
-- Ollama model
-- Candidate pool sizes
-- Dataset stats and ingest-scope constants
-- BM25 field weights
-- Hybrid fusion weights
-- LLM timeout and explanation limits
+The API process layers its own runtime knobs on top via environment variables (the protected `src/` defaults are untouched for eval reproducibility):
 
-Run `python scripts/print_dataset_stats.py` after rebuilding data to confirm the `DATASET_*` constants still match the live CSV.
+| Env var | Default | Effect |
+|---|---|---|
+| `CINEMATCH_WARM` | off | `1` = pre-load models in the background at startup |
+| `CINEMATCH_RERANK_POOL` | `100` | fused-candidate pool entering the rerank stage (eval keeps 800) |
+| `CINEMATCH_LLM_EXPANSION` | off | `1` = enable Ollama query expansion on the serve path |
+| `CINEMATCH_DB_URL` | `sqlite:///data/cinematch.db` | SQLAlchemy database URL (tests use in-memory) |
 
-## Notes
+## Tests and evaluation
 
-- The app is optimized for English TMDB metadata.
-- The first search can be slow because embedding and reranking models are loaded lazily.
-- LLM features are optional. If `langchain-ollama` or Ollama is unavailable, the recommender still works without generated explanations.
-- More detailed internals are documented in `docs/ARCHITECTURE.md`.
+```powershell
+# API + engine unit tests (24 tests, hermetic — no models, CSV, or network)
+venv\Scripts\python.exe -m pytest api/tests -q
+
+# Eval-harness unit tests (model-free)
+python -m unittest discover -s eval/tests -t .
+
+# Intent-parser eval (tier 1, deterministic, offline)
+python -m eval.scripts.intent_parser_eval
+
+# Latency benchmark + retrieval smoke test (need a running, warm API)
+python eval/scripts/latency_benchmark.py
+python scripts/quality_smoke_test.py --no-llm
+```
+
+The full graded-relevance eval pipeline (`eval/scripts/run_pipelines.py` → `llm_pregrade.py` → `compute_metrics.py`) computes Hit@K, strict-Hit@K, MRR@K, strict-MRR@K, and NDCG@K (K = 5/10/15) with bootstrap confidence intervals — see [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md#evaluation) and `eval/README.md`.
+
+## Attribution
+
+This product uses TMDB data (Kaggle TMDB movie dataset v11) and the TMDB image CDN. **Powered by TMDB** — not endorsed or certified by TMDB.
+
+## More documentation
+
+- [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md) — architecture, mood system, data provenance, evaluation results, development history
+- `docs/ARCHITECTURE.md` — detailed engine internals (some pool-size numbers predate the May 2026 retuning; `src/config.py` is authoritative)
+- `CINEMATCH_ULTRAPLAN.md` — the master plan this app was built from
