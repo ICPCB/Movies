@@ -13,8 +13,15 @@ With --tier2, each query also goes through the few-shot Ollama extractor and
 we report its JSON-validity rate (target >=99%: tier-2 failures fall back to
 tier 1, so end-to-end validity stays 100% by design).
 
+With --intent-v1, the 7-slice intent_v1 set (user mood only / film mood only /
+user+film mood / plot description / hybrid / avoid preferences / implicit plot
+descriptions) is also evaluated with per-slice micro P/R/F1 — the acceptance
+gate for the LoRA adapter (spec: docs/superpowers/specs/
+2026-06-11-llama-intent-parser-lora.md §5). Tier-1 is expected to miss the
+plot/implicit slices entirely; the per-slice report measures the gap.
+
 Usage:
-    python eval/scripts/intent_parser_eval.py [--tier2] [--out PATH]
+    python eval/scripts/intent_parser_eval.py [--tier2] [--intent-v1] [--out PATH]
 """
 
 from __future__ import annotations
@@ -34,6 +41,15 @@ from engine.intent_schema import validate_intent  # noqa: E402
 
 MOOD_QUERIES = ROOT / "eval" / "queries" / "mood_v1.jsonl"
 CONTENT_QUERIES = ROOT / "eval" / "queries" / "all.jsonl"
+INTENT_V1_QUERIES = ROOT / "eval" / "queries" / "intent_v1.jsonl"
+
+INTENT_V1_FIELDS = (
+    "user_moods",
+    "desired_film_moods",
+    "avoid_film_moods",
+    "plot_elements",
+    "genres_include",
+)
 
 
 def _read_jsonl(path: Path) -> list[dict]:
@@ -62,9 +78,67 @@ def _prf(tp: int, fp: int, fn: int) -> dict:
     }
 
 
+def _eval_intent_v1(parse_fn) -> dict:
+    """Per-slice schema validity, mode accuracy, and micro P/R/F1.
+
+    `parse_fn(query) -> intent` lets the same harness grade tier 1, the
+    tier-2 few-shot baseline, or a future LoRA-adapter-backed parser on
+    identical slices.
+    """
+    rows = _read_jsonl(INTENT_V1_QUERIES)
+    slices: dict[str, dict] = {}
+    for row in rows:
+        bucket = slices.setdefault(
+            row["slice"],
+            {
+                "queries": 0,
+                "valid": 0,
+                "mode_correct": 0,
+                "counts": {f: {"tp": 0, "fp": 0, "fn": 0} for f in INTENT_V1_FIELDS},
+                "mismatches": [],
+            },
+        )
+        bucket["queries"] += 1
+        intent = parse_fn(row["query"])
+        if validate_intent(intent)[0]:
+            bucket["valid"] += 1
+        expected = row["expected"]
+        if intent["mode"] == expected["mode"]:
+            bucket["mode_correct"] += 1
+        miss = {}
+        for field in INTENT_V1_FIELDS:
+            predicted = {str(v).lower() for v in intent[field]}
+            gold = {str(v).lower() for v in expected[field]}
+            bucket["counts"][field]["tp"] += len(predicted & gold)
+            bucket["counts"][field]["fp"] += len(predicted - gold)
+            bucket["counts"][field]["fn"] += len(gold - predicted)
+            if predicted != gold:
+                miss[field] = {"predicted": sorted(predicted), "gold": sorted(gold)}
+        if miss:
+            bucket["mismatches"].append({"qid": row["qid"], "query": row["query"], **miss})
+    report = {}
+    for name, bucket in sorted(slices.items()):
+        report[name] = {
+            "queries": bucket["queries"],
+            "schema_validity_rate": round(bucket["valid"] / bucket["queries"], 4),
+            "mode_accuracy": round(bucket["mode_correct"] / bucket["queries"], 4),
+            "fields": {
+                field: _prf(c["tp"], c["fp"], c["fn"])
+                for field, c in bucket["counts"].items()
+            },
+            "queries_with_field_mismatch": bucket["mismatches"],
+        }
+    return report
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--tier2", action="store_true", help="also eval the Ollama extractor")
+    parser.add_argument(
+        "--intent-v1",
+        action="store_true",
+        help="also eval the 7-slice intent_v1 set (LoRA acceptance gate)",
+    )
     parser.add_argument("--out", default=None)
     args = parser.parse_args()
 
@@ -139,6 +213,13 @@ def main() -> int:
         },
     }
 
+    if args.intent_v1:
+        report["intent_v1"] = {"tier1": _eval_intent_v1(intent_parser.parse_tier1)}
+        if args.tier2:
+            report["intent_v1"]["tier2_few_shot"] = _eval_intent_v1(
+                lambda query: intent_parser.parse(query, use_llm=True)
+            )
+
     if args.tier2:
         tier2_valid = 0
         tier2_total = 0
@@ -185,6 +266,18 @@ def main() -> int:
     )
     if args.tier2:
         print(f"tier2: json_validity={report['tier2']['json_validity_rate']}")
+    if args.intent_v1:
+        for tier_name, tier_report in report["intent_v1"].items():
+            print(f"intent_v1 {tier_name}:")
+            for slice_name, stats in tier_report.items():
+                fields_f1 = " ".join(
+                    f"{field}={stats['fields'][field]['f1']}"
+                    for field in INTENT_V1_FIELDS
+                )
+                print(
+                    f"  {slice_name}: validity={stats['schema_validity_rate']} "
+                    f"mode_acc={stats['mode_accuracy']} {fields_f1}"
+                )
     print(f"wrote {out_path}")
     return 0
 

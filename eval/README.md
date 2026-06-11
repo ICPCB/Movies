@@ -10,7 +10,9 @@ retrieval, ranking, embedding, reranking, or LLM behavior.
 eval/
   README.md
   queries/
-    v1.jsonl
+    v1.jsonl        graded-relevance queries (v2.jsonl, all.jsonl, mood_v1.jsonl alongside)
+    intent_v1.jsonl 7-slice intent-parser gold set — LoRA acceptance gate
+                    (run: python -m eval.scripts.intent_parser_eval --intent-v1)
   runs/
     <run_id>/
       run_manifest.json
