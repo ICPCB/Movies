@@ -1,15 +1,14 @@
-You are reviewer C (read-only) auditing a generated LoRA training dataset before training. Repo root: current directory. Do NOT modify any file; inspection only.
+You are reviewer C (read-only) auditing dataset v6 of a LoRA training dataset before training. Repo root: current directory. Do NOT modify any file; inspection only.
 
-Authoritative rules: docs/superpowers/specs/2026-06-11-llama-intent-parser-lora.md sections 3 (gold rules), 3.7 (concept table), 3.8 (v2 rules), 3.9 (implicit phrasing tables). Fixed vocabularies: labels/user_mood_vocab.json (18 user-feeling categories), labels/film_mood_vocab.json (24 film moods), labels/user_mood_map.json (the only user->film bridge).
+Authoritative rules: docs/superpowers/specs/2026-06-11-llama-intent-parser-lora.md sections 3.8 (v2 gold rules), 3.11 (trope/adjective/adjunct conventions; 3.11.1 sanctions "falls in love" as a lexicalized trope element kept verbatim in gold).
 
-Dataset: training/final_intent_train.jsonl (3,600 records; also split per category in training/*.jsonl). Record shape: {"text", "intent", "category", "provenance", "split"}.
+Context: dataset v5 (3,600 records) passed a 2-AI panel and trained adapter v5, which missed the gate by one query (iv38 "animated movie about a robot who falls in love in space"). Dataset v6 changes ONLY the plot_description category: 30 quota-guaranteed "falls in love" trope records (in training/plot_description.jsonl, texts matching "falls in love"), adding three new shapes: (a) object-less clause with trailing setting ("a mermaid who falls in love in the deep sea" -> gold [mermaid, falls in love, deep sea]), (b) bare-start genre prefix ("animated movie about a puppet who falls in love in a circus" -> gold [puppet, falls in love, circus] + genres [Animation]), (c) the same for the existing with-object records. The implicit-plot quota dropped 180 -> 150 to fund the 30 slots; other categories regenerate under the same rules as v5 (only sampling/shuffle changed).
 
-Two prior AI reviewers already audited: reviewer A passed vocabulary compliance, user/film mood separation, map-derivation, and caps; reviewer B's findings led to a regeneration that fixed ungrammatical template compositions and body-word leaks. You are the final independent reviewer.
-
-Your audit (sample-based, aim ~80 records across all six categories):
-1. Read 3.8/3.9, then sample records from each category file and judge: is the gold intent the one a careful human annotator would produce from the text under the spec rules? Pay special attention to (a) user mood vs desired film mood confusion, (b) implicit records — the label keyword must not appear in the text, (c) plot_elements must be atomic noun phrases actually grounded in the text, with genre words extracted to genres_include instead.
-2. Text quality: flag any record whose text is not natural English a real user might type.
-3. Report up to 10 concrete problem records verbatim (text + gold) if found.
+Your audit:
+1. Read spec 3.8 and 3.11. Extract all 30 records containing "falls in love" from training/plot_description.jsonl and judge each gold against the spec: subject NP verbatim, "falls in love" verbatim (never gerund), trailing setting as its own element, genre word -> genres_include only (never in plot_elements), no eval-query text copied (the held-out query is "animated movie about a robot who falls in love in space" - confirm no training text equals it).
+2. Sample ~20 other plot_description records and ~10 from one other category to confirm no regression in gold quality.
+3. Flag any record whose text is not natural English a real user might type.
+4. Report up to 10 concrete problem records verbatim (text + gold) if found.
 
 End your reply with exactly one line:
 VERDICT: PASS

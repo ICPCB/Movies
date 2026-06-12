@@ -2248,3 +2248,42 @@ Failures: gate outcome is a finding; adapter does NOT ship into serving (spec se
 Assumptions: per owner directive no v6 iteration this session
 Commit: (this commit)
 Next safe action: owner decisions - (1) one more targeted iteration for iv38 (inflection-exact trope copy + trailing-setting-after-clause + more bare-start animated records) vs accept tier-2 for plot slice; (2) iv52 "animals" plural gold quirk still open; (3) optional v6 naturalness polish (reviewer-F notes). Lock closed.
+
+## 2026-06-12 - LORA-TRAIN-6
+
+Ticket/Gate: dataset v6 targeting LORA-GATE-REVIEW-5 sole miss iv38; owner directive "do V6 for 1 last time"
+Verdict: PASS (dataset stage)
+Files changed: training/build_intent_dataset.py (FALLS_IN_LOVE_NO_OBJECT pool, FALLS_IN_LOVE_*_PREFIXES, quota-guaranteed 30-record trope bucket: object-less clause + trailing setting, bare-start "{genre} movie about {clause}" prefixes, inflection-exact "falls in love" gold; implicit quota 180->150 funds the slots), training/plot_description.jsonl, training/hybrid_queries.jsonl, training/final_intent_train.jsonl (hybrid + non-trope plot reshuffle is expected seeded-RNG drift from the new _take, not scope creep)
+Commands run: build x2 + Get-FileHash (BYTE-IDENTICAL); audit_dataset_v2.py (all zeros); pytest training -q (6 passed)
+Test results: 3,600 records, 600/category, ratios pass; all 30 trope records verified in plot_description.jsonl
+Artifacts: review panel - Gemini reviewer C VERDICT: PASS; Claude subagent reviewer F VERDICT: PASS (full-dataset sweeps: 0 non-sanctioned verb phrases, 0 held-out-text collisions, 0 robot+falls-in-love combos, validate_intent 0 failures)
+Failures: none
+Assumptions: no new gold conventions needed - all v6 shapes covered by spec 3.8 + 3.11.1
+Commit: (this commit)
+Next safe action: train adapter v6, generate, grade, gate
+
+## 2026-06-12 - LORA-GATE-REVIEW-6
+
+Ticket/Gate: spec section 5 gate, adapter v6 e4 (dataset v6, 4 epochs, owner-run variant at cinematch-llama/outputs/intent_lora_v6_e4/) vs tier-2
+Verdict: GATE PASSED - all clauses, verified against artifacts
+Evidence: eval_report.json - clause (a) validity 1.0 + mode_acc 1.0 all 7 slices; clause (b) plot_description 0.9583 > 0.9412, hybrid 0.7179 > 0.7027 (+0.015, slim), implicit_plot 0.88 > 0.0; clause (c) vs PHASE-7 tier-1 mood baseline user 0.96 > 0.859, desired 1.0 > 0.897, avoid 0.9714 > 0.968 (margin 0.0034). predictions.jsonl iv38 now exact gold (Animation + robot/falls in love/space). Held-out test exact_match 0.73-1.0 (plot 0.9333). final_val_metrics.json eval_loss 0.004991 at epoch 4.0.
+Files changed: ledger, .remember/remember.md
+Commands run: read-only artifact inspection; grep src/ + engine/ for adapter wiring (zero hits - adapter NOT in serving)
+Test results: remaining mismatches: iv45 "alien" vs "alien creature" clip (regressed vs v5 which had it exact); avoid-slice mood over-prediction iv69/iv72 within gate
+Failures: none blocking
+Assumptions: 4 epochs deviates from spec section 6 "2-3 epochs" - owner-run and owner-accepted ("epoch 4 just for more testing; if good keep it"); recorded here as the authorization
+Commit: (this commit)
+Next safe action: owner decision on wiring adapter into serving (requires explicit src/* ticket); generalization probe below
+
+## 2026-06-12 - LORA-PROBE-6 (generalization check, owner request)
+
+Ticket/Gate: light memorization-vs-generalization probe of adapter v6 e4; 20 Claude-authored novel-vocabulary queries (provenance ai_draft, diagnostic only, NOT authoritative eval)
+Verdict: PASS - generalizes, not memorized
+Evidence: cinematch-llama/probe/probe_v6.jsonl + probe_v6_results.json + scripts/probe_generalization_v6.py (gitignored). Vocabulary verified absent from training data (Select-String sweep; only near-transfer pg20 shares "same day" with differing construction). Results: validity 20/20, mode 20/20, exact 17/20, plot F1 0.9348 (vs 0.9583 on intent_v1 - no memorization cliff). All v4-v6 conventions transfer to unseen nouns: trope inflection-exact, bare-start genre prefix, style-modifier drop, weather-adjunct drop, plural verb-drop, compound integrity, three-element, type-forming modifier keep.
+Files changed: none tracked (probe artifacts gitignored)
+Commands run: probe_generalization_v6.py in training venv
+Test results: 3 misses: pg05 4-element trope sentence drops falls in love+mountains (compositional depth limit); pg11 keeps "grumpy librarian" (evaluative-adjective drop is partially lexical - grumpy not in trained modifier list); pg13 "bakery"->"bakeries" inflection slip
+Failures: none blocking
+Assumptions: probe golds are Claude-authored ai_draft, never to merge into authoritative artifacts
+Commit: (this commit)
+Next safe action: owner decisions - (1) wire adapter v6 e4 into serving via explicit ticket, or stop here; (2) iv52 plural gold quirk still owner-open

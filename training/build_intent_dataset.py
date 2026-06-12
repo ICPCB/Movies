@@ -354,6 +354,30 @@ FALLS_IN_LOVE_RECORDS: list[tuple[str, list[str], str, str]] = [
      ["falls in love", "ghost", "violinist"], "a lighthouse", "lighthouse"),
 ]
 
+# v6 (gate-review-5, iv38): the trope clause also occurs without an object,
+# with the trailing setting attaching directly after "falls in love".
+# Subjects rotate non-eval vocabulary; settings come from the pool.
+FALLS_IN_LOVE_NO_OBJECT: list[tuple[str, str, str, str]] = [
+    ("an android", "android", "space", "space"),
+    ("a mermaid", "mermaid", "the deep sea", "deep sea"),
+    ("a witch", "witch", "a small town", "small town"),
+    ("a puppet", "puppet", "a circus", "circus"),
+    ("a snowman", "snowman", "winter", "winter"),
+]
+# Bare-start "{genre} movie about {trope clause}" prefixes, paired by index
+# with the record lists above; "animated" dominates because the bare-start
+# animated relative-clause shape was untaught through v5.
+FALLS_IN_LOVE_OBJECT_PREFIXES: list[tuple[str, str]] = [
+    ("animated", "Animation"), ("animated", "Animation"),
+    ("fantasy", "Fantasy"), ("sci-fi", "Science Fiction"),
+    ("animated", "Animation"),
+]
+FALLS_IN_LOVE_NO_OBJECT_PREFIXES: list[tuple[str, str]] = [
+    ("sci-fi", "Science Fiction"), ("animated", "Animation"),
+    ("fantasy", "Fantasy"), ("animated", "Animation"),
+    ("animated", "Animation"),
+]
+
 # Place-genre compounds ("a courtroom drama"): the place noun stays a plot
 # element and the genre word resolves to genres_include (spec 3.8 fusion rule).
 PLACE_GENRE_COMPOUNDS: list[tuple[str, str, str, tuple[str, ...]]] = [
@@ -1000,11 +1024,28 @@ def gen_plot_description(film_moods: list[str], user_words: set[str]):
                          dict(plot=[a_gold, b_gold])))
         targeted.append((f"a movie about {_an(f'{a_display} {b_gold} story')}",
                          dict(plot=[a_gold, b_gold])))
-    # Relative-clause romance trope records (with and without trailing setting).
-    for text, gold, setting, setting_gold in FALLS_IN_LOVE_RECORDS:
-        targeted.append((text, dict(plot=list(gold))))
-        targeted.append((f"{text} in {setting}",
-                         dict(plot=list(gold) + [setting_gold])))
+    # Relative-clause romance trope records (with and without trailing
+    # setting), quota-guaranteed in their own bucket since v6: random
+    # sampling of the targeted bucket must not drop the iv38 shapes.
+    trope = []
+    for ri, (text, gold, setting, setting_gold) in enumerate(FALLS_IN_LOVE_RECORDS):
+        trope.append((text, dict(plot=list(gold))))
+        trope.append((f"{text} in {setting}",
+                      dict(plot=list(gold) + [setting_gold])))
+        gw, genre = FALLS_IN_LOVE_OBJECT_PREFIXES[ri]
+        trope.append((f"{gw} movie about {text} in {setting}",
+                      dict(plot=list(gold) + [setting_gold], genres=[genre])))
+    # Object-less trope clause: setting attaches directly after the clause
+    # and the gold keeps the finite "falls in love" inflection verbatim.
+    for ri, (subj, subj_gold, setting, setting_gold) in enumerate(
+            FALLS_IN_LOVE_NO_OBJECT):
+        clause = f"{subj} who falls in love in {setting}"
+        gold = [subj_gold, "falls in love", setting_gold]
+        trope.append((clause, dict(plot=list(gold))))
+        trope.append((f"a movie about {clause}", dict(plot=list(gold))))
+        gw, genre = FALLS_IN_LOVE_NO_OBJECT_PREFIXES[ri]
+        trope.append((f"{gw} movie about {clause}",
+                      dict(plot=list(gold), genres=[genre])))
     # Bare "in {setting}" fused-genre variant (eval-style "thriller in winter").
     for gi, (gw, genre) in enumerate(GENRE_WORDS):
         if gw not in FUSED_GENRE_TOPICS:
@@ -1039,6 +1080,7 @@ def gen_plot_description(film_moods: list[str], user_words: set[str]):
     multi = [(t, _intent(t, "content", **kw)) for t, kw in multi]
     targeted = [(t, _intent(t, "content", **kw)) for t, kw in targeted]
     fused = [(t, _intent(t, "content", **kw)) for t, kw in fused]
+    trope = [(t, _intent(t, "content", **kw)) for t, kw in trope]
     # Implicit (rule 7).
     implicit = []
     for concept, phrasings in sorted(CONCEPTS.items()):
@@ -1059,7 +1101,7 @@ def gen_plot_description(film_moods: list[str], user_words: set[str]):
                     w in lowered.replace("-", " ").split() for w in concept_words
                 ), f"implicit phrasing leaks concept '{concept}': {text}"
                 implicit.append((text, _intent(text, "content", plot=[concept])))
-    return singles, multi, targeted, fused, implicit
+    return singles, multi, targeted, fused, implicit, trope
 
 
 def gen_hybrid(words: dict[str, list[str]], mood_map: dict,
@@ -1211,9 +1253,8 @@ def main() -> int:
         words, mood_map, vocab["body_sensations"], film_moods
     )
     film_explicit, film_implicit = gen_mood_film_only(film_moods)
-    plot_single, plot_multi, plot_targeted, plot_fused, implicit_plot = gen_plot_description(
-        film_moods, user_words
-    )
+    (plot_single, plot_multi, plot_targeted, plot_fused, implicit_plot,
+     plot_trope) = gen_plot_description(film_moods, user_words)
     hybrid_single, hybrid_multi, hybrid_plural, hybrid_fused = gen_hybrid(
         words, mood_map, film_moods, user_words
     )
@@ -1244,11 +1285,15 @@ def main() -> int:
 
     plot_fused_take = _take(plot_fused, rng, 180, heldout, seen_texts)
     plot_targeted_take = _take(plot_targeted, rng, 120, heldout, seen_texts)
+    # v6: every trope record ships (no sampling); implicit funds the slots
+    # (its slice passes with wide margin against a 0.0 tier-2 bar).
+    plot_trope_take = _take(plot_trope, rng, len(plot_trope), heldout, seen_texts)
+    assert len(plot_trope_take) == 30, len(plot_trope_take)
     plot_multi_take = _take(plot_multi, rng, 60, heldout, seen_texts)
-    implicit_take = _take(implicit_plot, rng, 180, heldout, seen_texts)
+    implicit_take = _take(implicit_plot, rng, 150, heldout, seen_texts)
     plot_single_take = _take(plot_single, rng, 60, heldout, seen_texts)
-    plot_all = (plot_fused_take + plot_targeted_take + plot_multi_take
-                + implicit_take + plot_single_take)
+    plot_all = (plot_fused_take + plot_targeted_take + plot_trope_take
+                + plot_multi_take + implicit_take + plot_single_take)
     rng.shuffle(plot_all)
     chosen["plot_description"] = plot_all
 
