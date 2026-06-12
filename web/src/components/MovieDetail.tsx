@@ -93,17 +93,36 @@ export default function MovieDetail({ movie, cacheKey, onClose }: MovieDetailPro
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div ref={backdropLayer} className="absolute inset-0 will-change-transform" style={{ transform: "scale(1.08)" }}>
           {backdrop ? (
-            <img
-              src={backdrop}
-              alt=""
-              className={`h-full w-full object-cover ${ambientBackdrop ? "scale-110 blur-2xl saturate-125 opacity-80" : ""}`}
-            />
+            ambientBackdrop ? (
+              <>
+                {/* Ambient color wash from the poster itself */}
+                <img
+                  src={backdrop}
+                  alt=""
+                  className="h-full w-full scale-110 object-cover opacity-70 blur-3xl saturate-150"
+                />
+                {/* The poster, blown up huge and sharp, melting into the dark on its left edge */}
+                <img
+                  src={posterUrl(movie.poster_path, "w780") ?? backdrop}
+                  alt=""
+                  className="animate-kenburns absolute right-[-6%] top-1/2 h-[124%] max-w-none -translate-y-1/2 rounded-3xl object-cover opacity-95 shadow-[0_0_120px_rgba(0,0,0,0.9)]"
+                  style={{
+                    maskImage:
+                      "linear-gradient(to left, black 45%, rgba(0,0,0,0.55) 72%, transparent 98%)",
+                    WebkitMaskImage:
+                      "linear-gradient(to left, black 45%, rgba(0,0,0,0.55) 72%, transparent 98%)",
+                  }}
+                />
+              </>
+            ) : (
+              <img src={backdrop} alt="" className="h-full w-full object-cover" />
+            )
           ) : (
             <div className="h-full w-full bg-[radial-gradient(800px_500px_at_60%_0%,rgb(143_29_44/0.35),transparent_60%)]" />
           )}
         </div>
         <div className="vignette" />
-        <div className="absolute inset-0 bg-night-950/35" />
+        <div className="absolute inset-0 bg-night-950/25" />
       </div>
 
       <button
@@ -115,11 +134,11 @@ export default function MovieDetail({ movie, cacheKey, onClose }: MovieDetailPro
         ✕
       </button>
 
-      {/* Content column rises over the parallax layer */}
-      <div className="relative z-10 mx-auto flex min-h-full max-w-5xl flex-col justify-end px-5 pb-16 pt-[34vh] sm:px-8">
-        <div className="flex flex-col gap-8 md:flex-row md:items-end">
+      {/* Content rises over the parallax layer, vertically centered */}
+      <div className="relative z-10 mx-auto flex min-h-full max-w-6xl flex-col justify-center px-5 py-24 sm:px-8">
+        <div className="flex flex-col gap-10 md:flex-row md:items-center">
           {poster && (
-            <div className="perspective-card hidden w-52 shrink-0 md:block">
+            <div className="perspective-card hidden w-60 shrink-0 md:block lg:w-72">
               <div
                 ref={tilt.ref}
                 onPointerMove={tilt.onPointerMove}
@@ -139,7 +158,7 @@ export default function MovieDetail({ movie, cacheKey, onClose }: MovieDetailPro
                 .join("  ·  ")}
             </p>
             <h1
-              className="animate-rise mt-2 font-display text-5xl font-bold leading-[0.95] tracking-tight text-snow drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)] sm:text-7xl"
+              className="animate-rise mt-2 font-display text-4xl font-bold leading-[0.98] tracking-tight text-snow drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)] sm:text-6xl"
               style={{ animationDelay: "70ms" }}
             >
               {movie.title}
@@ -235,7 +254,7 @@ export default function MovieDetail({ movie, cacheKey, onClose }: MovieDetailPro
 
         {/* Story + AI reasoning panel */}
         <div
-          className="animate-rise mt-10 max-w-3xl rounded-3xl bg-night-900/75 p-6 ring-1 ring-night-600/60 backdrop-blur-md sm:p-8"
+          className="animate-rise mt-10 rounded-3xl bg-night-900/75 p-6 ring-1 ring-night-600/60 backdrop-blur-md sm:p-8 md:mr-24"
           style={{ animationDelay: "310ms" }}
         >
           {movie.match_reason && (

@@ -22,6 +22,16 @@ interface ReelOverlayProps {
 export default function ReelOverlay({ pool, result, onDone, onCancel }: ReelOverlayProps) {
   const [phase, setPhase] = useState<"spinning" | "landed">("spinning");
 
+  // Escape cancels; stray clicks must NOT (easy to fire one right after
+  // pressing Spin, which used to silently swallow the whole roll).
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onCancel();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onCancel]);
+
   const strip = useMemo(() => {
     const posters = pool
       .map((movie) => ({ key: movie.movie_key ?? movie.title, url: posterUrl(movie.poster_path) }))
@@ -63,7 +73,6 @@ export default function ReelOverlay({ pool, result, onDone, onCancel }: ReelOver
       role="dialog"
       aria-modal="true"
       aria-label="Spinning the reel"
-      onClick={phase === "spinning" ? onCancel : undefined}
     >
       <p className="mb-6 animate-pulse text-xs font-medium uppercase tracking-[0.4em] text-gold-400">
         {phase === "spinning" ? "spinning the reel" : "tonight's pick"}

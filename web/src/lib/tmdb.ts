@@ -1,6 +1,6 @@
 const IMAGE_BASE = "https://image.tmdb.org/t/p";
 
-export function posterUrl(posterPath: string | undefined, size: "w342" | "w500" = "w342"): string | null {
+export function posterUrl(posterPath: string | undefined, size: "w342" | "w500" | "w780" = "w342"): string | null {
   if (!posterPath) return null;
   const path = posterPath.startsWith("/") ? posterPath : `/${posterPath}`;
   return `${IMAGE_BASE}/${size}${path}`;

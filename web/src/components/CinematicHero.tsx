@@ -20,6 +20,7 @@ export default function CinematicHero({ onOpen, children }: CinematicHeroProps) 
   const [featured, setFeatured] = useState<Movie[]>([]);
   const [active, setActive] = useState(0);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -48,8 +49,10 @@ export default function CinematicHero({ onOpen, children }: CinematicHeroProps) 
     };
   }, []);
 
+  // Rotation pauses while the pointer hovers the credit block so the
+  // featured film cannot swap out from under a click.
   useEffect(() => {
-    if (featured.length < 2) return;
+    if (featured.length < 2 || paused) return;
     timer.current = setInterval(
       () => setActive((index) => (index + 1) % featured.length),
       ROTATE_MS,
@@ -57,7 +60,7 @@ export default function CinematicHero({ onOpen, children }: CinematicHeroProps) 
     return () => {
       if (timer.current) clearInterval(timer.current);
     };
-  }, [featured.length]);
+  }, [featured.length, paused]);
 
   const movie = featured[active];
   const genres = movie ? asList(movie.genres).slice(0, 3) : [];
@@ -97,17 +100,27 @@ export default function CinematicHero({ onOpen, children }: CinematicHeroProps) 
         <div className="vignette" />
       </div>
 
-      {/* Featured movie credit, bottom-left like a one-sheet */}
+      {/* Featured movie credit, bottom-left like a one-sheet.
+          The whole block is one big click target and pauses rotation on hover
+          so the film can't swap out from under the cursor. */}
       {movie && (
         <div
           key={movie.movie_key ?? movie.title}
-          className="pointer-events-none absolute bottom-6 left-4 z-10 hidden max-w-md items-end gap-4 sm:left-8 md:flex"
+          role="button"
+          tabIndex={0}
+          onClick={() => onOpen(movie)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") onOpen(movie);
+          }}
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+          className="group/credit absolute bottom-6 left-4 z-10 hidden max-w-md cursor-pointer items-end gap-4 rounded-2xl p-2 transition hover:bg-night-950/40 hover:ring-1 hover:ring-snow/15 hover:backdrop-blur-sm sm:left-8 md:flex"
         >
           {posterUrl(movie.poster_path) && (
             <img
               src={posterUrl(movie.poster_path)!}
               alt=""
-              className="animate-rise w-24 shrink-0 rounded-xl shadow-card ring-1 ring-snow/20"
+              className="animate-rise w-24 shrink-0 rounded-xl shadow-card ring-1 ring-snow/20 transition-transform duration-300 group-hover/credit:scale-105"
             />
           )}
           <div>
@@ -128,14 +141,12 @@ export default function CinematicHero({ onOpen, children }: CinematicHeroProps) 
               .filter(Boolean)
               .join("  ·  ")}
           </p>
-          <button
-            type="button"
-            onClick={() => onOpen(movie)}
-            className="animate-rise pointer-events-auto mt-3 rounded-full bg-snow/10 px-4 py-1.5 text-xs font-medium text-snow ring-1 ring-snow/25 backdrop-blur transition hover:bg-gold-500 hover:text-night-950"
+          <span
+            className="animate-rise mt-3 inline-block rounded-full bg-snow/10 px-4 py-1.5 text-xs font-medium text-snow ring-1 ring-snow/25 backdrop-blur transition group-hover/credit:bg-gold-500 group-hover/credit:text-night-950"
             style={{ animationDelay: "200ms" }}
           >
             View details →
-          </button>
+          </span>
           </div>
         </div>
       )}
