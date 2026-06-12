@@ -251,6 +251,7 @@ PLOT_POOL: list[tuple[str, str]] = [
     ("a corrupt mayor", "corrupt mayor"), ("a custody battle", "custody battle"),
     ("a wildfire", "wildfire"), ("wrestling", "wrestling"),
     ("surfing", "surfing"), ("an underdog", "underdog"),
+    ("winter", "winter"), ("a found family", "found family"),
 ]
 
 # Plural-subject action clauses: gold keeps the plural surface subject and the
@@ -266,12 +267,67 @@ PLURAL_SUBJECT_ACTIONS: list[tuple[str, str, str]] = [
     ("teenagers", "running an underground radio station", "radio station"),
     ("climbers", "racing a blizzard down a deadly peak", "blizzard"),
     ("rebels", "plotting against a ruthless emperor", "ruthless emperor"),
+    ("officers", "chasing a getaway driver in the rain", "getaway driver"),
+    ("guards", "patrolling a museum at night", "museum"),
 ]
 PLURAL_SUBJECT_TEMPLATES = [
     "{s} {act}",
     "a movie about {s} {act}",
     "something with {s} {act}",
     "a film about {s} {act}",
+]
+
+# Singular subject + gerund clause: gold = subject NP + object NP, verb drops.
+# Display subjects reuse pool articles; an optional evaluative adjective is
+# inserted in half the records and always drops from gold (it is neither a
+# mood enum value nor a type-forming modifier).
+SINGULAR_SUBJECT_ACTIONS: list[tuple[str, str, str, str]] = [
+    ("a wizard", "wizard", "mentoring an orphan", "orphan"),
+    ("a dog", "dog", "guiding a blind veteran", "blind veteran"),
+    ("a nun", "nun", "sheltering a runaway", "runaway"),
+    ("a hacker", "hacker", "protecting a witness", "witness"),
+    ("a ghost", "ghost", "haunting a lighthouse keeper", "lighthouse keeper"),
+    ("a dragon", "dragon", "guarding a hidden city", "hidden city"),
+    ("a chef", "chef", "training an apprentice", "apprentice"),
+    ("a cowboy", "cowboy", "defending a frontier town", "frontier town"),
+]
+SINGULAR_SUBJECT_TEMPLATES = [
+    "{s} {act}",
+    "a movie about {s} {act}",
+    "a story about {s} {act}",
+]
+EVALUATIVE_MODIFIERS = ["kind", "gentle", "quiet", "elderly", "little", "scrappy"]
+
+# "{setting} {genre} with {NP}" compounds: setting and NP are elements, the
+# genre word resolves to genres_include.
+SETTING_GENRE_WITH: list[tuple[str, str, str, str, str]] = [
+    ("deep sea", "horror", "Horror", "a sea creature", "sea creature"),
+    ("desert", "western", "Western", "a treasure hunt", "treasure hunt"),
+    ("arctic", "thriller", "Thriller", "a research station", "research station"),
+    ("jungle", "adventure", "Adventure", "a lost temple", "lost temple"),
+    ("high school", "comedy", "Comedy", "a chess prodigy", "chess prodigy"),
+]
+
+# "{a} {b} story" compounds: both concepts are elements, "story" is generic
+# and never appears in gold; no genre is grounded.
+STORY_COMPOUNDS: list[tuple[str, str]] = [
+    ("wrestling", "underdog"),
+    ("surfing", "underdog"),
+    ("street racing", "underdog"),
+    ("shipwreck", "survival"),
+    ("plane crash", "survival"),
+]
+
+# Relative-clause romance trope (spec 3.11.1): "falls in love" is a
+# lexicalized trope element kept verbatim alongside the subject/object NPs.
+# Each record carries a semantically compatible trailing setting.
+FALLS_IN_LOVE_RECORDS: list[tuple[str, list[str], str, str]] = [
+    ("a vampire who falls in love with a mortal",
+     ["falls in love", "mortal", "vampire"], "a small town", "small town"),
+    ("a pirate who falls in love with a mermaid",
+     ["falls in love", "mermaid", "pirate"], "the deep sea", "deep sea"),
+    ("a knight who falls in love with a duchess",
+     ["falls in love", "duchess", "knight"], "the countryside", "countryside"),
 ]
 
 # Place-genre compounds ("a courtroom drama"): the place noun stays a plot
@@ -880,6 +936,46 @@ def gen_plot_description(film_moods: list[str], user_words: set[str]):
             obj_display = TOPIC_BY_GOLD[obj_gold][0]
             targeted.append((f"{_an(f'{place} {gw}')} about {obj_display}",
                              dict(plot=[place, obj_gold], genres=[genre])))
+    # Singular subject + gerund clause; evaluative adjectives drop from gold.
+    for si, (display, subj_gold, act, obj_gold) in enumerate(SINGULAR_SUBJECT_ACTIONS):
+        _assert_separation(want_text=f"{display} {act}", film_moods=film_moods,
+                           user_words=user_words)
+        for ti, template in enumerate(SINGULAR_SUBJECT_TEMPLATES):
+            if (si + ti) % 2:
+                adj = EVALUATIVE_MODIFIERS[(si + ti) % len(EVALUATIVE_MODIFIERS)]
+                subj_shown = _an(f"{adj} {_bare(display)}")
+            else:
+                subj_shown = display
+            targeted.append((template.format(s=subj_shown, act=act),
+                             dict(plot=[subj_gold, obj_gold])))
+    # "{setting} {genre} with {NP}" compounds.
+    for setting_bare, gw, genre, np_display, np_gold in SETTING_GENRE_WITH:
+        head = f"{gw} movie" if gw in MOVIE_REQUIRED_GENRES else gw
+        targeted.append((f"{_an(f'{setting_bare} {head}')} with {np_display}",
+                         dict(plot=[setting_bare, np_gold], genres=[genre])))
+    # "{a} {b} story" compounds: generic "story" drops, no genre grounded.
+    for a_gold, b_gold in STORY_COMPOUNDS:
+        a_display = _bare(TOPIC_BY_GOLD[a_gold][0]) if a_gold in TOPIC_BY_GOLD else a_gold
+        targeted.append((_an(f"{a_display} {b_gold} story"),
+                         dict(plot=[a_gold, b_gold])))
+        targeted.append((f"a movie about {_an(f'{a_display} {b_gold} story')}",
+                         dict(plot=[a_gold, b_gold])))
+    # Relative-clause romance trope records (with and without trailing setting).
+    for text, gold, setting, setting_gold in FALLS_IN_LOVE_RECORDS:
+        targeted.append((text, dict(plot=list(gold))))
+        targeted.append((f"{text} in {setting}",
+                         dict(plot=list(gold) + [setting_gold])))
+    # Bare "in {setting}" fused-genre variant (eval-style "thriller in winter").
+    for gi, (gw, genre) in enumerate(GENRE_WORDS):
+        if gw not in FUSED_GENRE_TOPICS:
+            continue
+        topic_display, topic_gold = FUSED_GENRE_TOPICS[gw][gi % len(FUSED_GENRE_TOPICS[gw])]
+        setting, setting_gold = NATURAL_SET_IN_SETTINGS[
+            (gi * 2) % len(NATURAL_SET_IN_SETTINGS)
+        ]
+        head = f"{gw} movie" if gw in MOVIE_REQUIRED_GENRES else gw
+        targeted.append((f"{_compound_topic(topic_display)} {head} in {setting}",
+                         dict(plot=[topic_gold, setting_gold], genres=[genre])))
     # Explicit with genre word.
     for gi, (gw, genre) in enumerate(GENRE_WORDS):
         for display, gold in TOPICS[gi::3]:
@@ -1107,8 +1203,8 @@ def main() -> int:
     rng.shuffle(chosen["mood_film_only"])
 
     plot_fused_take = _take(plot_fused, rng, 180, heldout, seen_texts)
-    plot_targeted_take = _take(plot_targeted, rng, 60, heldout, seen_texts)
-    plot_multi_take = _take(plot_multi, rng, 90, heldout, seen_texts)
+    plot_targeted_take = _take(plot_targeted, rng, 90, heldout, seen_texts)
+    plot_multi_take = _take(plot_multi, rng, 60, heldout, seen_texts)
     implicit_take = _take(implicit_plot, rng, 180, heldout, seen_texts)
     plot_single_take = _take(plot_single, rng, 90, heldout, seen_texts)
     plot_all = (plot_fused_take + plot_targeted_take + plot_multi_take

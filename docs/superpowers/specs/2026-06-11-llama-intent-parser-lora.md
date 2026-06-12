@@ -94,7 +94,12 @@ constraints, binding for every generated label:
 - Genre words fused into compounds still resolve to `genres_include`:
   "a courtroom drama", "time travel adventure", "animated movie about…" —
   the genre word maps to its TMDB genre AND is dropped from `plot_elements`.
-- Settings are elements: winter, the rain, the desert → `["…", "winter"]`.
+- Settings are elements when they are places, seasons, or locales: winter,
+  the desert, space → `["…", "winter"]`. Transient weather or manner
+  adjuncts ("in the rain", "through the snow", "at night") are NOT
+  elements and drop (3.11.3; matches intent_v1 iv47). An earlier revision
+  of this line listed "the rain" as a setting — that was inconsistent with
+  the eval gold and is superseded.
 - Plurals: gold keeps the surface form of the text ("pirates" → "pirates").
 
 ### 3.9 Implicit phrasing tables (authored by Claude; review required by 2–3 AIs before training)
@@ -179,6 +184,35 @@ iv52 gold "animals" pluralizes the surface form "animal" against the
 surface-form rule; iv38 gold "falls in love" is a verb phrase although 3.8
 requires noun phrases. Training data must follow the spec, not the eval
 quirks; no training pair may copy an intent_v1 query text.
+
+### 3.11 Dataset-v4 rules (LORA-TRAIN-4; gate-failure analysis LORA-GATE-REVIEW-3)
+
+Targets the adapter-v3 misses. New gold conventions, codified here so
+generator, graders, and reviewers share one written rule:
+
+1. **Lexicalized trope elements.** A small closed list of fixed expressions
+   counts as atomic elements even when verb-derived, because users and the
+   eval gold treat them as tropes: `falls in love`, `found family`,
+   `time loop`, `body swap`, `coming of age`. This supersedes the 3.10 note
+   that flagged iv38's "falls in love" as a quirk — it is now a sanctioned
+   trope element. No other verb phrase may appear in gold.
+2. **Evaluative-adjective drop vs type-forming modifier keep.** Subjective
+   quality adjectives (kind, gentle, quiet, elderly, little, scrappy, cozy)
+   drop from gold: "a kind wizard mentoring an orphan" →
+   `["orphan", "wizard"]`. Type-forming modifiers that change what the
+   thing IS stay inside the compound: "wounded bear", "blind veteran",
+   "masked vigilante", "alien creature", "corrupt mayor". Contrast:
+   "an elderly hacker" → `["hacker"]` but "a rookie cop" → `["rookie cop"]`
+   (rookie defines the role).
+3. **Weather/manner adjuncts drop** (amends the 3.8 settings line):
+   "in the rain", "through the snow", "at night" are not elements;
+   place/season/locale settings (winter, space, the desert) are.
+4. **New v4 shapes** (all plot_description targeted-bucket):
+   singular-subject gerund clauses; "{setting} {genre} with {NP}";
+   "{a} {b} story" compounds (genres stay empty — "story" grounds no
+   genre); bare "in {setting}" fused variants ("a heist thriller in
+   winter"-shaped); plural-subject records with explicit weather-adjunct
+   drops; "winter" joins the setting pool.
 
 ## 4. Datasets (`training/`)
 
