@@ -33,7 +33,10 @@ LLM_MODEL = "llama3.2"
 # quality gate — this just gives it more diverse candidates to choose from.
 CANDIDATE_POOL = 1500
 RERANK_POOL = 800
-RERANK_TOP_K = 50
+# RERANK_TOP_K caps the servable result pool (UI pages = pool / page size).
+# Raised 50 -> 100 on 2026-06-12 for deeper pagination in the web app; the
+# documented eval baselines were measured at 50.
+RERANK_TOP_K = 100
 FINAL_TOP_K = 5
 EXPLAIN_TOP_K = 3
 
