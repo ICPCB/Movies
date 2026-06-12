@@ -91,8 +91,8 @@ export default function Home() {
     }
     let intent: Intent;
     if (selectedMoods.length === 0) {
-      // No chips: let the server's deterministic lexicon parser read the
-      // feeling words (it knows the full vocabulary, incl. body sensations).
+      // No chips: let the server's LoRA parser read the full request. The API
+      // falls back to the deterministic lexicon if the local model is down.
       try {
         const parsed = await api.parseIntent(text.trim(), "mood");
         intent = parsed.intent;
@@ -111,15 +111,23 @@ export default function Home() {
     void runSearch(intent, 1, `Films for tonight — ${label}`);
   };
 
-  const submitContent = () => {
+  const submitContent = async () => {
     if (!text.trim()) {
       setError("Describe the movie you're looking for first.");
       return;
     }
     const mode = selectedMoods.length > 0 ? "hybrid" : "content";
-    const intent = emptyIntent(text.trim(), mode);
-    if (mode === "hybrid") Object.assign(intent, moodsToIntentFields(selectedMoods));
-    intent.confidence = 1.0;
+    let intent: Intent;
+    try {
+      const parsed = await api.parseIntent(text.trim(), mode);
+      intent = parsed.intent;
+    } catch {
+      intent = emptyIntent(text.trim(), mode);
+    }
+    if (mode === "hybrid") {
+      Object.assign(intent, moodsToIntentFields(selectedMoods));
+      intent.mode = "hybrid";
+    }
     void runSearch(intent, 1, `“${text.trim()}”`);
   };
 

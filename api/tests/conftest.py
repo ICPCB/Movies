@@ -8,6 +8,7 @@ import pytest
 
 os.environ["CINEMATCH_DB_URL"] = "sqlite+pysqlite:///:memory:"
 os.environ.pop("CINEMATCH_WARM", None)
+os.environ["CINEMATCH_LORA_ENABLED"] = "0"
 
 from fastapi.testclient import TestClient
 from sqlalchemy import delete

@@ -1,6 +1,6 @@
 # Llama Intent Parser — LoRA training spec
 
-Owner: Claude (label/dataset spec + review). Implementation coder: Codex or Gemini per ticket. Status: ACTIVE (CINEMATCH_ULTRAPLAN.md §14 track; owner directive 2026-06-11 — this is the run's pending final track, not deferred).
+Owner: Claude (label/dataset spec + review). Implementation coder: Codex or Gemini per ticket. Status: DEPLOYED (V6 E4 gate passed and local serving integration completed 2026-06-12).
 
 ## 1. Goal
 
@@ -240,12 +240,14 @@ Generator: `training/build_intent_dataset.py` (interface stub in repo; implement
 
 Eval records are **held out**: the generator must exclude any training pair whose text matches an intent_v1 query.
 
-**Gate:** the adapter ships into the serving path only if, on intent_v1, it (a) keeps schema validity ≥ 0.99, (b) beats the current few-shot tier-2 baseline on field-F1 for the plot/hybrid/implicit slices, and (c) does not regress the tier-1 mood-slice F1 (PHASE-7 baseline on mood_v1: validity 1.0, mode_acc 0.98, F1 user 0.859 / desired 0.897 / avoid 0.968). Until the gate passes, runtime stays tier-1 lexicon + tier-2 few-shot Ollama. Known tier-1 gaps the adapter must close (measured 2026-06-11): film-mood-only requests parse to nothing, want-clause film moods are not merged into `desired_film_moods`, explicit "nothing scary" avoids are ignored, and `plot_elements` is tier-2-only.
+**Gate:** the adapter ships into the serving path only if, on intent_v1, it (a) keeps schema validity ≥ 0.99, (b) beats the current few-shot tier-2 baseline on field-F1 for the plot/hybrid/implicit slices, and (c) does not regress the tier-1 mood-slice F1 (PHASE-7 baseline on mood_v1: validity 1.0, mode_acc 0.98, F1 user 0.859 / desired 0.897 / avoid 0.968).
+
+**Final result (2026-06-12): PASS.** V6 E4 reached validity/mode accuracy 1.0 on all slices; plot 0.9583 > 0.9412, hybrid 0.7179 > 0.7027, implicit 0.8800 > 0.0, and mood requirements passed. Serving uses the adapter as the primary free-text parser through `engine/lora.py` + `scripts/lora_server.py`, with deterministic Tier 1 fallback. Ollama remains optional for fallback parsing, query expansion, and explanations.
 
 ## 6. Training configuration (ULTRAPLAN §14)
 
 - Base: local Llama 3.2 1B weights at `cinematch-llama/Llama-3.2-1B/` — **verified 2026-06-11: BASE variant** (`config.json` `eos_token_id=128001`; no `chat_template` in `tokenizer_config.json`; `special_tokens_map.json` eos = `<|end_of_text|>`). **Owner decision 2026-06-11: Option B** — train these base weights with the fixed prompt format in §6.1. Do not download Llama-3.2-1B-Instruct; that is the fallback only if the §5 gate fails after training.
-- PEFT LoRA: r=16, α=32, dropout 0.05, target q/k/v/o projections; 2–3 epochs.
+- PEFT LoRA: r=16, α=32, dropout 0.05, target q/k/v/o projections; final deployed run used 4 epochs.
 - Metric: JSON validity + per-field F1 on the held-out test split and intent_v1.
 - Weights/adapters are never committed (`cinematch-llama/` is gitignored).
 - Explanations remain on Ollama llama3.2 — the adapter is for parsing only.
@@ -300,7 +302,7 @@ Files to change:
   training/final_intent_train.jsonl (generated)
   cinematch-llama/** (local only, untracked: training scripts/outputs)
 Files to read but not change:
-  docs/superpowers/specs/2026-06-11-llama-intent-parser-lora.md
+  docs/intent-lora-spec.md
   engine/intent_schema.py, engine/intent_parser.py
   labels/user_mood_map.json, labels/user_mood_vocab.json, labels/film_mood_vocab.json
   eval/queries/intent_v1.jsonl, eval/scripts/intent_parser_eval.py

@@ -3,7 +3,7 @@
 > Maintained by inspection of source files.
 > Last updated: 2026-06-12 (project finalization)
 >
-> **2026-06-11 note:** the legacy Gradio UI (`app.py`, port 7860) described in sections 4–20 has been **removed**, along with the legacy wrappers `recommend_bgem3.py` and `hybrid_recommend.py`. The serving entry points are the FastAPI backend (`api/`) and the React web app (`web/`) — see `PROJECT_OVERVIEW.md`. The `src/` retrieval-engine internals documented below are unchanged and still authoritative; read `app.py` references as describing the retired UI layer only.
+> **2026-06-11 note:** the legacy Gradio UI (`app.py`, port 7860) and standalone recommendation wrappers have been **removed**. The serving entry points are the FastAPI backend (`api/`) and the React web app (`web/`) — see `PROJECT_OVERVIEW.md`. The `src/` retrieval-engine internals documented below are unchanged and still authoritative; read historical `app.py` references as describing the retired UI layer only.
 >
 > **2026-06-12 note:** section 1 (tree) and section 1b (serving + intent architecture) below reflect the final project state, including the `engine/`, `api/`, `web/`, `training/`, and `labels/` layers added after the original document was written.
 
@@ -27,7 +27,8 @@ Movies/
 │   └── db.py, db_models.py       ← SQLite (data/cinematch.db) via SQLAlchemy
 │
 ├── engine/                       ← Intent layer between api/ and src/ (src/ is read-only to it)
-│   ├── intent_parser.py          ← Two-tier parser: tier-1 lexicon, tier-2 few-shot Ollama
+│   ├── lora.py                   ← Client/lifecycle for the local LoRA parser
+│   ├── intent_parser.py          ← Tier-1 lexicon + optional tier-2 Ollama fallback
 │   ├── intent_schema.py          ← Intent JSON contract + validation
 │   ├── intent_query_builder.py   ← Intent → retrieval query / filters / boosts
 │   ├── mood_labels.py            ← Per-movie film-mood label lookup
@@ -105,7 +106,7 @@ web/ (React)  →  api/ (FastAPI)  →  engine/ (intent + mood)  →  src/ (retr
 4. **Mood application** (`engine/recommender.py`): film-mood filters and rank
    nudges are applied post-retrieval; `src/` is never modified.
 
-**Intent-LoRA pipeline** (offline, local-only): `training/build_intent_dataset.py`
+**Intent-LoRA pipeline**: `training/build_intent_dataset.py`
 deterministically generates 3,600 records (seeded, byte-identical on rebuild,
 held-out filter against `eval/queries/intent_v1.jsonl`) →
 `cinematch-llama/scripts/train_intent_lora.py` trains a LoRA adapter on local
@@ -114,9 +115,10 @@ Llama-3.2-1B base weights using the fixed prompt contract in
 `grade_intent_predictions.py` grade against intent_v1 and the held-out test
 split. Status 2026-06-12: adapter v6 e4 **passed** the spec §5 acceptance gate
 (plot F1 0.9583 > 0.9412 tier-2 bar; validity and mode accuracy 1.0 on all
-7 slices; 20-query novel-vocabulary probe 17/20 exact) but is **not wired into
-serving** — runtime intent parsing remains tier-1 lexicon + tier-2 few-shot
-Ollama until an explicit serving ticket lands. Spec:
+7 slices; 20-query novel-vocabulary probe 17/20 exact) and now serves as the
+primary free-text parser. FastAPI starts `scripts/lora_server.py` with the
+training venv; `engine/lora.py` validates responses and falls back to Tier 1
+when the sidecar is unavailable. Spec:
 `docs/intent-lora-spec.md`.
 
 ---
@@ -143,7 +145,7 @@ Dataset row counts and ingest filter values live in `src/config.py` as `DATASET_
 - Reranker: `BAAI/bge-reranker-v2-m3` (CrossEncoder) — used in Advanced and Hybrid modes.
 - LLM: `llama3.2` via Ollama (optional, used for query expansion in Advanced/Hybrid when enabled and for explanations in Advanced/Hybrid).
 
-**Main user flow:** User types a query in the Gradio UI → selects a pipeline mode → hits Search → `app.py` calls the chosen pipeline → pipeline returns a list of scored movie dicts → `app.py` renders them as HTML cards with poster, title, genres, year, TMDB rating, match score, rerank score, and AI explanation.
+**Main user flow (current runtime):** User types a query in the React web UI (`web/`) → `api/` FastAPI parses intent via `engine/` (LoRA primary, deterministic fallback) → `engine/recommender.py` calls the `src/` pipeline → scored movie dicts are cached, paginated, and rendered as movie cards with poster, title, genres, year, TMDB rating, and lazy AI explanation. (The retired Gradio `app.py` followed the same pipeline dispatch directly.)
 
 **Final output per movie card:** rank badge · poster image · year · TMDB star rating · `final_score` ("match") pill · `rerank_score` pill (if present) · title · genres · overview excerpt · AI Match Reason box (if LLM explanation present).
 
@@ -152,11 +154,11 @@ Dataset row counts and ingest filter values live in `src/config.py` as `DATASET_
 ## 3. End-to-End Data Flow
 
 ```
-User types query in Gradio UI
+User submits free text in the React web UI (web/)
 │
-▼  app.py :: recommend_ui()
-   Reads: query, top_k, use_llm, pipeline_mode
-   Calls the matching pipeline run() function
+▼  api/routes_search.py :: parse_intent / recommend_movies
+   engine/lora.py (LoRA V6 E4, primary) → tier-1 lexicon fallback
+   engine/recommender.py calls the matching src/ pipeline run() function
 │
 ▼  src/retrieval/query_processor.py :: normalize_query()
    Input:  raw query string
@@ -198,14 +200,14 @@ User types query in Gradio UI
 │                                                                        │
 │  src/retrieval/fusion.py :: rrf_fusion()                               │
 │  Input:  semantic list + BM25 list, top_k=RERANK_POOL                 │
-│  Formula: rrf_score += weight / (RRF_K + rank + 1), RRF_K=60         │
+│  Formula: rrf_score += weight / (RRF_K + rank + 1), RRF_K=15         │
 │  Output: merged list sorted by rrf_score desc, final_score=rrf_score  │
 │  Dedup:  deduplicate_movies() called on fused output                  │
 └────────────────────────────────────────────────────────────────────── ┤
 │
 ├─[Advanced + Hybrid]──────────────────────────────────────────────────── ┐
 │  src/retrieval/reranker.py :: rerank()                                 │
-│  Input:  query + candidate list (up to RERANK_TOP_K=50 after dedup)   │
+│  Input:  query + candidate list (up to RERANK_TOP_K=100 after dedup)  │
 │  Builds: document string per movie (title, year, genres, overview,     │
 │          keywords) via build_movie_document()                          │
 │  Calls:  src/models.py :: get_reranker() — BGE CrossEncoder           │
@@ -225,10 +227,9 @@ User types query in Gradio UI
 │  Remaining movies: _fallback_explanation() deterministic text         │
 └────────────────────────────────────────────────────────────────────── ┤
 │
-▼  app.py :: recommend_ui()
-   Final safety dedup: deduplicate_movies(movies, prefer_score="final_score")[:top_k]
-   Calls:  render_movie_cards()
-   Output: HTML string — movie cards rendered into gr.HTML component
+▼  api/routes_search.py :: recommend_movies
+   Mood filters/nudges applied post-retrieval (engine/recommender.py),
+   results cached + paginated; web/ renders MovieGrid/MovieCard
 ```
 
 ---
@@ -278,17 +279,17 @@ User query
 → expand_query() [LLM rewrite via Ollama llama3.2; falls back to original on failure]
 → expand_retrieval_query() [deterministic metadata terms for recall]
 → parse_filters()
-→ semantic_search(top_k=CANDIDATE_POOL=300)
+→ semantic_search(top_k=CANDIDATE_POOL=1500)
     → BGE-M3 encode → ChromaDB → semantic_score, semantic_rank
     → deduplicate (internal)
 → optional hyde_generate() when USE_HYDE_IN_ADVANCED and LLM_RETRIEVAL_ENABLED are true
-    → semantic_search(hyde, top_k=CANDIDATE_POOL=300)
+    → semantic_search(hyde, top_k=CANDIDATE_POOL=1500)
     → _rrf_two_semantic() fuses expanded-query and HyDE semantic lists
-→ bm25_search(top_k=CANDIDATE_POOL=300)
+→ bm25_search(top_k=CANDIDATE_POOL=1500)
     → field-aware BM25 over title/overview/genres/keywords/tagline
-→ rrf_fusion(semantic_candidates, bm25_candidates, top_k=RERANK_POOL=80)
+→ rrf_fusion(semantic_candidates, bm25_candidates, top_k=RERANK_POOL=800)
 → deduplicate_movies(prefer_score="rrf_score")   [pipeline-level]
-→ rerank(expand_retrieval_query(normalized_query), candidates, top_k=top_k, rerank_pool=RERANK_TOP_K=50)
+→ rerank(expand_retrieval_query(normalized_query), candidates, top_k=top_k, rerank_pool=RERANK_TOP_K=100)
     → deduplicate_movies (before scoring)
     → build_movie_document() per candidate
     → CrossEncoder.predict() → rerank_score, final_score = rerank_score + quality/upstream priors
@@ -304,8 +305,8 @@ User query
 
 | Property | Value |
 |---|---|
-| Semantic search | YES (CANDIDATE_POOL=300) |
-| BM25 | YES (CANDIDATE_POOL=300) |
+| Semantic search | YES (CANDIDATE_POOL=1500) |
+| BM25 | YES (CANDIDATE_POOL=1500) |
 | RRF | YES (semantic + BM25 fusion) |
 | Reranker | YES (BGE bge-reranker-v2-m3) |
 | LLM expansion | YES (expand_query before semantic search) |
@@ -332,36 +333,36 @@ User query
 → normalize_query()
 │
 ├──────────────────────────────────────────────────────────────────────
-│  semantic_search(top_k=CANDIDATE_POOL=300)
+│  semantic_search(top_k=CANDIDATE_POOL=1500)
 │      semantic_score, semantic_rank, final_score=semantic_score
 │      deduplicate internally
-│      → sem [list of ~100 movies]
+│      → sem [deduplicated semantic candidate list]
 │
-│  bm25_search(top_k=CANDIDATE_POOL=300)
+│  bm25_search(top_k=CANDIDATE_POOL=1500)
 │      weighted BM25 over 5 fields (title×1.0, overview×2.5, genres×1.0,
 │      keywords×1.0, tagline×0.5)
 │      bm25_score, bm25_rank, final_score=bm25_score
 │      deduplicate internally
-│      → bm [list of ~100 movies]
+│      → bm [deduplicated BM25 candidate list]
 │  (semantic and BM25 run sequentially; could be parallelized in future)
 ├──────────────────────────────────────────────────────────────────────
 │
 → deduplicate sem (prefer_score="semantic_score")
 → deduplicate bm  (prefer_score="bm25_score")
 │
-→ rrf_fusion(sem, bm, top_k=RERANK_POOL=80)
+→ rrf_fusion(sem, bm, top_k=RERANK_POOL=800)
 │      key: movie_key (stable title+year or movie_id)
-│      rrf_score += weight / (RRF_K=60 + rank + 1)
+│      rrf_score += weight / (RRF_K=15 + rank + 1)
 │      SEMANTIC_WEIGHT=1.0, BM25_WEIGHT=1.0
 │      movies appearing in both lists → single fused entry
 │      preserves semantic_score, semantic_rank, bm25_score, bm25_rank
 │      final_score = rrf_score
 │      deduplicate on fused output
-│      sorted by rrf_score desc, trimmed to top 50
+│      sorted by rrf_score desc, trimmed to RERANK_POOL
 │
 → deduplicate fused (prefer_score="rrf_score")
 │
-→ rerank(expand_retrieval_query(normalized_query), fused, top_k=top_k, rerank_pool=RERANK_TOP_K=50)
+→ rerank(expand_retrieval_query(normalized_query), fused, top_k=top_k, rerank_pool=RERANK_TOP_K=100)
 │      deduplicate before scoring
 │      build_movie_document() → title + year + genres + overview[:600] + keywords[:200]
 │      CrossEncoder.predict()
@@ -381,10 +382,10 @@ User query
 
 | Property | Value |
 |---|---|
-| Semantic search | YES (CANDIDATE_POOL=300) |
-| BM25 | YES (CANDIDATE_POOL=300, 5-field weighted) |
-| RRF | YES (K=60, symmetric 1.0/1.0 weights) |
-| Reranker | YES (BGE bge-reranker-v2-m3, RERANK_TOP_K=50) |
+| Semantic search | YES (CANDIDATE_POOL=1500) |
+| BM25 | YES (CANDIDATE_POOL=1500, 5-field weighted) |
+| RRF | YES (K=15, symmetric 1.0/1.0 weights) |
+| Reranker | YES (BGE bge-reranker-v2-m3, RERANK_TOP_K=100) |
 | LLM expansion | YES when `HYBRID_USE_LLM_EXPANSION=True`; safe fallback when Ollama is down |
 | LLM explanation | YES (after final selection, top 3) |
 | `final_score` | = `rrf_score` before reranking, then calibrated reranker score after |
@@ -437,7 +438,7 @@ User query
 ```
 rrf_score[movie_key] += weight / (RRF_K + rank + 1)
 ```
-where `RRF_K = 60`, `SEMANTIC_WEIGHT = 1.0`, `BM25_WEIGHT = 1.0`.
+where `RRF_K = 15`, `SEMANTIC_WEIGHT = 1.0`, `BM25_WEIGHT = 1.0`.
 
 **Key used:** `movie_key` from `src/utils/dedup.get_movie_key()` — not list index, not raw id.
 
@@ -472,7 +473,7 @@ Overview is intentionally the longest component (600 chars) so the cross-encoder
 
 **Process:**
 1. `deduplicate_movies(candidates, prefer_score="final_score")` — ensures no duplicate enters the cross-encoder.
-2. Take `pool = deduped[:rerank_pool]` (max 50 candidates by default).
+2. Take `pool = deduped[:rerank_pool]` (max `RERANK_TOP_K = 100` candidates by default; the API serve path separately trims the fused pool entering this stage to 100 via `CINEMATCH_RERANK_POOL`).
 3. Build `[[query, doc] for doc in pool]`.
 4. `CrossEncoder.predict(pairs)` → one float score per pair.
 5. Stamp `rerank_score = float(s)` and calibrated `final_score` on each candidate.
@@ -509,7 +510,7 @@ Title normalization: lowercase → strip non-alphanumeric → collapse whitespac
 | Before reranking | `reranker.py` | `"final_score"` |
 | After reranking | `reranker.py` | `"rerank_score"` |
 | After pipeline result in basic/advanced/hybrid | pipeline files | `"semantic_score"` / `"rerank_score"` |
-| Final safety net in `app.py` | `app.py` | `"final_score"` |
+| Serving layer | `engine/recommender.py` / `api/routes_search.py` | stable movie keys before caching/pagination (the retired Gradio `app.py` had an equivalent final dedup) |
 
 ### Merge on collision
 
@@ -534,7 +535,7 @@ When two candidates share the same `movie_key`, the stronger one (by `prefer_sco
 | `rerank_score` | `reranker.py` | CrossEncoder logit (can be negative; higher = better match) | Advanced, Hybrid | Yes (final sort) | Yes — purple pill labeled "🎯 {score}" |
 | `final_score` | Set by each pipeline | Authoritative ordering score for that pipeline: Basic=semantic, post-RRF=rrf, post-rerank=rerank | All | Yes — always used for final sort | Yes — cyan pill labeled "{score} match" |
 
-**What the UI "match" score shows:** `final_score` — always the score the pipeline actually ordered by. If `final_score` is absent, `app.py` falls back to `rerank_score → rrf_score → semantic_score` in that order (this is a display-only fallback; pipelines always set `final_score`).
+**What the UI "match" score shows:** `final_score` — always the score the pipeline actually ordered by (pipelines always set `final_score`; display layers may fall back to `rerank_score → rrf_score → semantic_score` if it were ever absent).
 
 **What the UI "🎯" rerank pill shows:** `rerank_score` — only visible when Advanced or Hybrid mode was used (where the reranker ran).
 
@@ -608,12 +609,12 @@ Confirmed: no LLM call in `semantic.py`, `bm25.py`, `fusion.py`, or `reranker.py
 | `EMBEDDING_MODEL` | `"BAAI/bge-m3"` | BGE-M3 embedding model |
 | `RERANKER_MODEL` | `"BAAI/bge-reranker-v2-m3"` | BGE CrossEncoder |
 | `LLM_MODEL` | `"llama3.2"` | Ollama model for expansion + explanation |
-| `CANDIDATE_POOL` | `300` | Semantic and BM25 each retrieve this many |
-| `RERANK_POOL` | `80` | RRF top-k fed into reranker pipeline |
-| `RERANK_TOP_K` | `50` | Actual cross-encoder candidate count |
-| `RERANK_VOTE_COUNT_WEIGHT` | `0.20` | Light vote-count prior after reranking |
+| `CANDIDATE_POOL` | `1500` | Semantic and BM25 each retrieve this many |
+| `RERANK_POOL` | `800` | RRF top-k fed into reranker pipeline (the API serve path overrides this to `100` via `CINEMATCH_RERANK_POOL`; eval keeps 800) |
+| `RERANK_TOP_K` | `100` | Cross-encoder candidate count / servable result pool |
+| `RERANK_VOTE_COUNT_WEIGHT` | `0.08` | Light vote-count prior after reranking |
 | `RERANK_UPSTREAM_WEIGHT` | `0.12` | Preserves RRF/source retrieval strength after reranking |
-| `RERANK_SOURCE_AGREEMENT_BONUS` | `0.05` | Small bonus when semantic and BM25 both found the candidate |
+| `RERANK_SOURCE_AGREEMENT_BONUS` | `0.00` | Source-agreement bonus zeroed — it penalized single-retrieval gold targets |
 | `FINAL_TOP_K` | `5` | Default UI output size |
 | `EXPLAIN_TOP_K` | `3` | Max LLM explanations per query |
 | `INITIAL_TOP_K` | `= CANDIDATE_POOL` | Backward-compat alias |
@@ -622,7 +623,7 @@ Confirmed: no LLM call in `semantic.py`, `bm25.py`, `fusion.py`, or `reranker.py
 | `BM25_GENRES_BOOST` | `1.0` | BM25 genres field weight |
 | `BM25_KEYWORDS_BOOST` | `1.0` | BM25 keywords field weight |
 | `BM25_TAGLINE_BOOST` | `0.5` | BM25 tagline field weight (lowest) |
-| `RRF_K` | `60` | Standard RRF smoothing constant |
+| `RRF_K` | `15` | RRF smoothing constant (lowered from the standard 60 to amplify deep semantic matches) |
 | `SEMANTIC_WEIGHT` | `1.0` | RRF semantic side weight |
 | `BM25_WEIGHT` | `1.0` | RRF BM25 side weight |
 | `HYBRID_USE_LLM_EXPANSION` | `True` | Lets Hybrid use LLM query expansion before deterministic expansion |
@@ -637,31 +638,20 @@ Confirmed: no LLM call in `semantic.py`, `bm25.py`, `fusion.py`, or `reranker.py
 
 ---
 
-## 14. UI / App Behavior (`app.py`)
+## 14. UI / App Behavior
 
-**Entry point:** `app.py` — run with `python app.py` → Gradio on `127.0.0.1:7860`.
+**Entry points:** `api/main.py` runs FastAPI on port 8000; `web/` runs the
+React/Vite frontend on port 5173.
 
-**Gradio components:**
-- `gr.Textbox` — query input (3-line)
-- `gr.Dropdown` — pipeline mode selector (Basic / Advanced / Hybrid)
-- `gr.Slider` — `top_k` (1–20, default 6)
-- `gr.Checkbox` — `use_llm` toggle for LLM expansion/HyDE and explanations
-- `gr.Button` — "Search Movies"
-- `gr.HTML` — results output area
-- `gr.Examples` — pre-set English example queries
+`web/src/pages/Home.tsx` handles mood, description, category, era, and random
+flows. Free-text mood and description requests call `/api/parse-intent`; the
+API uses LoRA first and falls back to the deterministic parser. The resulting
+intent is sent to `/api/recommend`, cached, paginated, and rendered through
+`MovieGrid`/`MovieCard`. Movie details and explanations load lazily.
 
-**Handler:** `recommend_ui(query, top_k, use_llm, pipeline_mode)` sets the runtime LLM retrieval gate from the checkbox, dispatches to the correct pipeline `run()` function based on the dropdown string value, then calls `render_movie_cards()`.
-
-**Final safety dedup:** `deduplicate_movies(movies, prefer_score="final_score")[:top_k]` runs on every result before rendering — this is the last line of defence against any duplicate that escaped the pipeline.
-
-**Movie card rendering** (`render_movie_cards`): produces an HTML `<article>` per movie with:
-- Rank badge (`#1`, `#2`, …)
-- Poster image (from `TMDB_IMAGE_BASE + poster_path`) or placeholder
-- Year pill, ⭐ TMDB rating pill, match score pill (cyan), rerank score pill (purple, only if present)
-- Title (h3), genres (pink), overview text
-- "AI Match Reason" box if `explanation` is non-empty
-
-**Business logic in app.py:** Minimal. The only logic is: query validation (empty check), pipeline dispatch, the final dedup call, and HTML rendering. All retrieval, ranking, and explanation logic lives in `src/`.
+The UI contains no retrieval or ranking implementation. Production retrieval
+remains in `src/`, while `engine/` owns intent parsing, query construction,
+post-retrieval mood adjustments, and the adapter between API and engine.
 
 ---
 
@@ -669,12 +659,10 @@ Confirmed: no LLM call in `semantic.py`, `bm25.py`, `fusion.py`, or `reranker.py
 
 | File | Still used? | Delegates to | Notes |
 |---|---|---|---|
-| `recommend_bgem3.py` | Potentially (external callers) | `src/pipelines/advanced.py` | Thin wrapper with `recommend()` function; parameters `use_expansion`, `use_rerank`, `verbose` are accepted but ignored (Advanced always does them). Safe to keep for compatibility. Do not add new logic here. |
-| `hybrid_recommend.py` | Potentially (external callers) | `src/pipelines/hybrid.py` | Thin wrapper with `hybrid_recommend()` function; `verbose` parameter accepted but ignored; `with_explanation` forced to `False`. Safe to keep. Do not add new logic here. |
 | `01.clean_data.py` | Only to regenerate dataset | None | One-shot preprocessing. Run once when re-cleaning TMDB_movie_dataset_v11.csv. Not imported at runtime. |
 | `02. Embed_BGEM3.py` | Only to rebuild ChromaDB | None | One-shot embedding ingestion. Run once to populate `data/chroma_bgem3/`. Not imported at runtime. Resume-safe (checks `already_done` count). |
 
-**For new code:** Always use the `src/` structure. Never add retrieval or pipeline logic to the legacy wrappers.
+The standalone recommendation wrappers were removed during submission cleanup. Production runtime code uses the unified `src/` modules; the remaining scripts are one-shot data preparation artifacts and are not imported by the app.
 
 ---
 
@@ -698,7 +686,7 @@ python scripts/quality_smoke_test.py --top-k 5 --no-llm
 python scripts/quality_smoke_test.py --queries "movie about artificial intelligence"
 ```
 
-**Benchmark queries (from AGENTS.md):**
+**Benchmark queries from the historical regression set:**
 1. "a stranded astronaut trying to survive on Mars"
 2. "a mind-bending movie about dreams, memory, and reality"
 3. "a dark revenge thriller where someone hunts down the people who wronged them"
@@ -719,8 +707,8 @@ python scripts/quality_smoke_test.py --queries "movie about artificial intellige
 
 **Compile check (syntax validation):**
 ```bash
-python -m compileall app.py src scripts
-python -m compileall recommend_bgem3.py hybrid_recommend.py
+python -m compileall api engine src scripts
+npm run build --prefix web
 ```
 
 ---
@@ -733,16 +721,16 @@ python -m compileall recommend_bgem3.py hybrid_recommend.py
 | `BAAI/bge-m3` is used | PASS | `src/config.py` line 10. | |
 | ChromaDB path is preserved | PASS | `config.py::CHROMA_DIR = str(DATA_DIR / "chroma_bgem3")`. `semantic.py` uses `CHROMA_DIR`. `02. Embed_BGEM3.py` uses same literal string. | |
 | Dataset path is consistent | PASS | `config.py::MOVIES_CSV`. `bm25.py` imports `MOVIES_CSV`. `01.clean_data.py` writes `"data/movies_clean.csv"` (script-local hardcode, acceptable for one-shot). | |
-| `app.py` is mostly UI | PASS | `app.py` contains only HTML helpers, a dispatcher, a final dedup call, and CSS. No retrieval logic. | |
+| UI and API are separated | PASS | React code lives in `web/`; FastAPI routes live in `api/`; retrieval stays in `src/`. | |
 | Retrieval logic is in `src/retrieval/` | PASS | `semantic.py`, `bm25.py`, `fusion.py`, `reranker.py`, `filters.py`, `query_processor.py` all in `src/retrieval/`. | |
 | Pipeline logic is in `src/pipelines/` | PASS | `basic.py`, `advanced.py`, `hybrid.py` in `src/pipelines/`. | |
 | LLM logic is in `src/llm/` | PASS | `langchain_ollama.py`, `prompts.py` in `src/llm/`. | |
-| Shared model loading is centralized | PASS | `src/models.py` provides `get_embedder()` and `get_reranker()` as lazy singletons. | Uses global `_embedder`/`_reranker` vars, not `lru_cache`. Functionally equivalent to AGENTS.md recommendation. |
+| Shared model loading is centralized | PASS | `src/models.py` provides `get_embedder()` and `get_reranker()` as lazy singletons. | Uses global `_embedder`/`_reranker` vars rather than `lru_cache`; both provide lazy singleton behavior. |
 | Basic mode does not use LLM | PASS | `src/pipelines/basic.py` has no LLM import or call. `explanation = ""` for all results. | |
 | LLM is not called inside retrieval/reranker loops | PASS | No LLM import in `semantic.py`, `bm25.py`, `fusion.py`, `reranker.py`. | |
 | Advanced uses semantic + BM25 + RRF + reranker | PASS | `advanced.py` calls `semantic_search`, `bm25_search`, `rrf_fusion`, `rerank`. | |
 | Hybrid uses semantic + BM25 + RRF + reranker | PASS | `hybrid.py` calls `semantic_search`, `bm25_search`, `rrf_fusion`, `rerank`. | |
-| Final results are deduplicated | PASS | Dedup at each stage + final safety net in `app.py`. | |
+| Final results are deduplicated | PASS | Retrieval and recommender stages use stable movie keys before API pagination. | |
 | Score fields are separated | PASS | `semantic_score`, `bm25_score`, `rrf_score`, `rerank_score`, `final_score` are distinct dict keys; none overwrite each other except `final_score` which is intentionally updated through the pipeline. | |
 | ChromaDB metadata contains keywords | WARNING | `02. Embed_BGEM3.py` stored only 6 metadata fields; `keywords` was not included. `semantic.py` returns `keywords: meta.get("keywords", "")` which will be `""` for ChromaDB-sourced candidates. Keywords are available when BM25 merges them in via fusion. | Advanced and Hybrid now both benefit from BM25 metadata merge for fused candidates, but semantic-only candidates can still have empty keywords. |
 
@@ -767,7 +755,7 @@ python -m compileall recommend_bgem3.py hybrid_recommend.py
 - **`vote_count` absent from ChromaDB metadata:** `semantic.py` returns `vote_count: int(meta.get("vote_count", 0))` — but `vote_count` was not stored in ChromaDB metadata by `02. Embed_BGEM3.py`. This always returns 0 for semantic-only candidates. The UI shows TMDB star rating (`vote_average`) correctly but `vote_count` is lost.
 - **`genres_clean` vs `genres` inconsistency:** ChromaDB stores `genres` (raw TMDB format); BM25 reads `genres_clean`. The `genres` field shown in movie cards comes from ChromaDB's raw value for semantic results and from `genres_clean` for BM25 results. After RRF merge, BM25 fills in missing fields — but the displayed genres may differ slightly between modes.
 - **Sequential LLM expansion + explanation:** In Advanced and Hybrid (when `HYBRID_USE_LLM_EXPANSION` is enabled), `expand_query` is called before retrieval and `explain_movies_batch` after. If Ollama is slow this can add 25 + 25 = 50 seconds of latency before timeout kicks in.
-- **`RERANK_TOP_K=50` vs `RERANK_POOL=80`:** In `reranker.py`, the `rerank_pool` parameter defaults to `RERANK_TOP_K=50`, but `hybrid.py` and `advanced.py` pass `rerank_pool=RERANK_TOP_K`. The config `RERANK_POOL=80` is used as `top_k` in `rrf_fusion`. This is correct but the two constants (`RERANK_POOL` and `RERANK_TOP_K`) have similar names and different roles — easy to confuse.
+- **`RERANK_TOP_K=100` vs `RERANK_POOL=800`:** In `reranker.py`, the `rerank_pool` parameter defaults to `RERANK_TOP_K=100`, but `hybrid.py` and `advanced.py` pass `rerank_pool=RERANK_TOP_K`. The config `RERANK_POOL=800` is used as `top_k` in `rrf_fusion`. This is correct but the two constants (`RERANK_POOL` and `RERANK_TOP_K`) have similar names and different roles — easy to confuse.
 - **No GPU guarantee:** `src/models.py` falls back to CPU automatically. On CPU, the BGE-M3 embedder and the CrossEncoder can be slow for large candidate pools.
 - **BM25 index rebuilt on first call:** The BM25 index is not persisted; it is rebuilt in memory every process start from the CSV. With the current cleaned CSV size (see `DATASET_ROW_COUNT`) this takes a few seconds. Not a latency problem for long-running servers, but relevant for smoke tests.
 - **`DEBUG_RETRIEVAL=False` unused:** The config has a debug flag but no code currently checks it — debug prints use unconditional `print()` calls instead. Verbose logs always appear in the console.
@@ -787,7 +775,7 @@ python -m compileall recommend_bgem3.py hybrid_recommend.py
 - Document the `DEBUG_RETRIEVAL` flag: either remove it (since it is unused) or wire it to suppress the `print()` calls in `bm25.py` and `models.py`.
 - Rename `RERANK_POOL` to `RRF_OUTPUT_POOL` or `FUSION_TOP_K` to distinguish it clearly from `RERANK_TOP_K` (the cross-encoder pool size). Currently both names suggest reranking.
 - Add `vote_count` and `keywords` (and optionally `tagline`) to the ChromaDB metadata schema documentation so future ingestion scripts know what fields to include.
-- The `AGENTS.md` target structure lists `src/utils/formatting.py` and `src/utils/cache.py` as future files — currently neither exists. `_fallback_explanation` lives in `langchain_ollama.py` (AGENTS.md suggested `prompts.py` or `formatting.py`). Not a bug but worth noting.
+- Formatting and cache helpers can remain in their current modules until their scope is large enough to justify dedicated utility files.
 
 ### Later latency optimization
 
@@ -804,27 +792,27 @@ python -m compileall recommend_bgem3.py hybrid_recommend.py
 
 ### What is the current architecture?
 
-CineMatch is a modular Python recommendation system with a Gradio UI (`app.py`) that delegates to three pipeline variants (`src/pipelines/`). The retrieval layer (`src/retrieval/`) implements BGE-M3 semantic search via ChromaDB, field-aware BM25 over a pandas DataFrame, RRF fusion, and CrossEncoder reranking. The LLM layer (`src/llm/`) handles optional query expansion and metadata-grounded explanations via Ollama. A shared deduplication utility (`src/utils/dedup.py`) uses a stable `title+year` key to prevent duplicate movies at every stage. Configuration is centralized in `src/config.py` and model loading is centralized in `src/models.py`.
+CineMatch is a modular local application with a React/Vite web UI and FastAPI backend. Free-text intent parsing uses the V6 E4 LoRA adapter with deterministic fallback; retrieval uses BGE-M3 semantic search, field-aware BM25, RRF fusion, and CrossEncoder reranking. Ollama handles optional query expansion, explanations, and fallback parsing. A shared deduplication utility uses a stable `title+year` key throughout the ranking path.
 
 ### Which pipeline should I trust for best quality?
 
-**Hybrid** — it combines the semantic depth of BGE-M3 with the keyword precision of BM25, fuses them fairly via RRF, and applies the CrossEncoder reranker as a final quality gate. It is the most accurate pipeline for general queries and is set as the default in `app.py`.
+**Hybrid** — it combines the semantic depth of BGE-M3 with the keyword precision of BM25, fuses them fairly via RRF, and applies the CrossEncoder reranker as a final quality gate. It is the production pipeline served through `api/` to the React web app.
 
 ### Which files should I read first as a developer?
 
-1. `AGENTS.md` — project rules, constraints, and pipeline specs
-2. `src/config.py` — all constants and paths
-3. `src/pipelines/hybrid.py` — most complete pipeline; understand this first
-4. `src/utils/dedup.py` — deduplication is central to correctness
-5. `src/retrieval/fusion.py` — RRF logic, metadata merge strategy
-6. `src/retrieval/reranker.py` — cross-encoder input construction
-7. `app.py` — UI structure and final safety net
+1. `README.md` and `docs/PROJECT_OVERVIEW.md` — setup and end-to-end flow
+2. `src/config.py` — engine constants and paths
+3. `engine/lora.py` and `scripts/lora_server.py` — intent model serving
+4. `src/pipelines/hybrid.py` — production retrieval pipeline
+5. `src/utils/dedup.py` — deduplication rules
+6. `src/retrieval/fusion.py` and `reranker.py` — ranking stages
+7. `api/main.py`, `api/routes_search.py`, and `web/src/pages/Home.tsx` — serving and UI flow
 
 ### Which commands should I run to validate the project?
 
 ```bash
 # Syntax check all runtime modules
-python -m compileall app.py src scripts
+python -m compileall api engine src scripts
 
 # Quality smoke test — all modes, deterministic only (fast)
 python scripts/quality_smoke_test.py --no-llm
@@ -832,9 +820,6 @@ python scripts/quality_smoke_test.py --no-llm
 # Full smoke test with LLM explanations (slower, requires Ollama running)
 python scripts/quality_smoke_test.py
 
-# Legacy wrapper syntax check
-python -m compileall recommend_bgem3.py hybrid_recommend.py
-
-# Start the app
-python app.py
+# Start the API, then run `npm run dev --prefix web` in another terminal
+venv\Scripts\python.exe -m uvicorn api.main:app --port 8000
 ```

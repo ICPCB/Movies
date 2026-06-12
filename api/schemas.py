@@ -27,6 +27,7 @@ class ParseIntentRequest(StrictModel):
     text: str
     mode: Mode = "content"
     use_llm: bool = False
+    use_lora: bool = True
 
 
 class RecommendRequest(StrictModel):

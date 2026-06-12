@@ -19,7 +19,7 @@ See [PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md) for the full architecture, d
 
 | Mode | Input | Engine path |
 |---|---|---|
-| Mood | feeling words / 18 mood chips | user-mood lexicon → film-mood filters and rank boosts over retrieval |
+| Mood | feeling words / 18 mood chips | LoRA intent parser / mood chips → user/film-mood fields → filters and rank boosts over retrieval |
 | Movie Description | plot/content text | BGE-M3 semantic + BM25 hybrid retrieval with cross-encoder reranking |
 | Hybrid | feeling + plot | plot drives retrieval, mood filters/boosts the ranking |
 | Category | genre / era picks | metadata browse, no models involved |
@@ -31,8 +31,8 @@ See [PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md) for the full architecture, d
 web/      React 19 + Vite + Tailwind v4 dark cinematic UI (port 5173)
 api/      FastAPI backend — 16 routes, SQLite (favorites, watchlist,
           history, result cache, mood labels), model warm-up (port 8000)
-engine/   Intent layer — two-tier intent parser, intent schema + query
-          builder, movie store, recommender adapter, mood-label lookup
+engine/   Intent layer — LoRA parser with deterministic/Ollama fallbacks,
+          intent schema + query builder, movie store, recommender adapter
 src/      Production retrieval engine (protected) — BGE-M3 semantic +
           field-boosted BM25 → RRF fusion → cross-encoder rerank
 labels/   Mood vocabularies, mapping tables, and 27,758 deterministic
@@ -40,9 +40,8 @@ labels/   Mood vocabularies, mapping tables, and 27,758 deterministic
 eval/     Eval harness — graded relevance metrics, intent-parser eval,
           latency benchmark, regression gates
 training/ Intent-LoRA dataset pipeline — deterministic 3,600-record
-          generator + fixed prompt contract (adapter gate-passed, not
-          yet wired into serving; weights live in gitignored
-          cinematch-llama/)
+          generator + fixed prompt contract; the gate-passed V6 E4 adapter
+          serves locally from the gitignored cinematch-llama/ directory
 data/     movies_clean.csv (27,762 rows), chroma_bgem3/ vector index,
           cinematch.db app database (runtime-generated)
 ```
@@ -52,6 +51,8 @@ The `engine/` layer treats `src/` strictly as a read-only library: mood logic is
 ## Requirements
 
 - Python 3.10+ with a project venv (the API must run under it — see below)
+- `cinematch-llama/.venv` with PyTorch, Transformers, and PEFT for the local
+  intent-LoRA sidecar
 - Node 18+ for the web frontend
 - `data/movies_clean.csv` and the `data/chroma_bgem3/` vector index (ship with the project or rebuild below from the [Kaggle TMDB dataset](https://www.kaggle.com/datasets/asaniczka/tmdb-movies-dataset-2023-930k-movies))
 - Optional: [Ollama](https://ollama.com) with `llama3.2` for explanations, LLM query expansion, and tier-2 intent parsing — everything degrades gracefully without it
@@ -85,6 +86,12 @@ venv\Scripts\python.exe -m uvicorn api.main:app --port 8000
 ```
 
 `CINEMATCH_WARM=1` pre-loads the embedding and reranker models in the background; `GET /api/health` reports `model_warm: true` when ready. Without it, the first search pays the model-loading cost.
+
+The API automatically starts `scripts/lora_server.py` with
+`cinematch-llama/.venv`. `GET /api/health` reports
+`intent_lora_ready: true` when the V6 E4 adapter is ready. If the local model
+or training venv is missing, intent parsing falls back to the deterministic
+Tier-1 parser instead of breaking the web app.
 
 In a second terminal, start the frontend:
 
@@ -129,12 +136,15 @@ The API process layers its own runtime knobs on top via environment variables (t
 | `CINEMATCH_WARM` | off | `1` = pre-load models in the background at startup |
 | `CINEMATCH_RERANK_POOL` | `100` | fused-candidate pool entering the rerank stage (eval keeps 800) |
 | `CINEMATCH_LLM_EXPANSION` | off | `1` = enable Ollama query expansion on the serve path |
+| `CINEMATCH_LORA_ENABLED` | `1` | `0` = disable the local LoRA parser and use the fallback parser |
+| `CINEMATCH_LORA_URL` | `http://127.0.0.1:8765` | local LoRA sidecar address |
+| `CINEMATCH_LORA_TIMEOUT` | `30` | per-request LoRA timeout in seconds |
 | `CINEMATCH_DB_URL` | `sqlite:///data/cinematch.db` | SQLAlchemy database URL (tests use in-memory) |
 
 ## Tests and evaluation
 
 ```powershell
-# API + engine unit tests (24 tests, hermetic — no models, CSV, or network)
+# API + engine unit tests (28 tests, hermetic — no models, CSV, or network)
 venv\Scripts\python.exe -m pytest api/tests -q
 
 # Eval-harness unit tests (model-free)
@@ -160,5 +170,5 @@ This product uses TMDB data ([Kaggle TMDB movie dataset v11](https://www.kaggle.
 ## More documentation
 
 - [PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md) — architecture, mood system, data provenance, evaluation results, development history
-- `docs/ARCHITECTURE.md` — detailed engine internals (some pool-size numbers predate the May 2026 retuning; `src/config.py` is authoritative)
+- `docs/ARCHITECTURE.md` — detailed engine internals and current serving/retrieval constants
 - `docs/intent-lora-spec.md` — dataset spec and acceptance gate for the intent-parser LoRA

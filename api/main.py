@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.db import create_all
 from api.routes_library import router as library_router
 from api.routes_search import router as search_router
+from engine import lora
 
 # Interactive hot-path overrides (plan section 10). The API process trims the
 # cross-encoder pool from the eval default of 800 to 100, and keeps LLM query
@@ -41,6 +42,8 @@ def _warm_models() -> None:
 async def lifespan(app: FastAPI):
     create_all()
     app.state.model_warm = False
+    app.state.intent_lora_process = lora.start_local_sidecar()
+    app.state.intent_lora_ready = await asyncio.to_thread(lora.wait_until_ready)
     if os.getenv("CINEMATCH_WARM") == "1":
         async def warm() -> None:
             await asyncio.to_thread(_warm_models)
@@ -48,6 +51,8 @@ async def lifespan(app: FastAPI):
 
         asyncio.create_task(warm())
     yield
+    intent_lora_process = app.state.intent_lora_process
+    await asyncio.to_thread(lora.stop_local_sidecar, intent_lora_process)
 
 
 app = FastAPI(title="CineMatch API", lifespan=lifespan)

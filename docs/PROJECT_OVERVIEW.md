@@ -19,8 +19,9 @@ LLMs are confined to three jobs — extracting structure from user text, optiona
 user text / mood chips                       (web/ React UI)
         │
         ▼
-intent JSON  ─ tier-1 lexicon parser (always, <5 ms, deterministic)
-             ─ tier-2 Ollama few-shot (optional, non-mood fields only)
+intent JSON  ─ V6 E4 LoRA parser (primary free-text path, local GPU)
+             ─ tier-1 lexicon fallback (<5 ms, deterministic)
+             ─ tier-2 Ollama few-shot (optional fallback)
         │                                    (engine/intent_parser.py)
         ▼
 query text + filters + boosts                (engine/intent_query_builder.py)
@@ -29,7 +30,7 @@ query text + filters + boosts                (engine/intent_query_builder.py)
 hybrid retrieval over 27,762 movies          (src/ — protected engine)
   BGE-M3 semantic (pool 1500)  +  field-boosted BM25 (pool 1500)
         → RRF fusion (K=15, pool cap 800; API trims to 100)
-        → cross-encoder rerank (BAAI/bge-reranker-v2-m3, top 50)
+        → cross-encoder rerank (BAAI/bge-reranker-v2-m3, up to 100 candidates)
         → blend with vote-count and upstream priors → safety filter → dedup
         │
         ▼
@@ -47,9 +48,15 @@ cached, paginated results                    (api/routes_search.py)
 
 One JSON schema (draft 2020-12, `additionalProperties: false`) serves all five modes — mood, content, hybrid, category, random. The key design decision: **`user_moods` (how the user feels) and film moods (what the film should be) are separate closed vocabularies**, bridged only by a fixed 18-entry mapping table. A lonely user gets warm films, not lonely ones — and no LLM ever decides that mapping.
 
-**Tier 1 — deterministic lexicon (always runs, <5 ms).** Feeling words and multi-word phrases from a 205-word vocabulary (plus 72 body sensations) map to 18 feeling categories; greedy set cover picks the fewest categories explaining every matched word. Regexes extract era ("90s", "before 1999", "2000 to 2010"), 19 TMDB genres (with sci-fi synonyms), and minimum-rating constraints. Two guards keep it honest: feeling words count as *user* moods only when the text reads like a feeling ("I'm…", "feeling…") or the caller asked for mood mode — so "a tense thriller" never inverts into avoid-tense; and everything after a desire marker ("want", "in the mood for") describes the *film*, so those words become desired film moods, never user moods.
+**LoRA — primary free-text parser.** The gate-passed V6 E4 adapter runs on the
+local Llama-3.2-1B base model through a persistent sidecar. The FastAPI process
+starts that sidecar with `cinematch-llama/.venv`, validates every returned
+intent against the serving schema, and reports readiness through `/api/health`.
+The React mood-text and movie-description forms both use this path.
 
-**Tier 2 — Ollama few-shot (optional).** When asked (`use_llm`), local `llama3.2` extracts only the non-mood fields — plot elements (max 8) and genres validated against the closed list. Mood fields always come from tier 1. Any failure — Ollama down, malformed JSON, schema violation — silently falls back to the tier-1 intent, so end-to-end schema validity is 100% by construction.
+**Tier 1 — deterministic fallback (<5 ms).** Feeling words and multi-word phrases from a 205-word vocabulary (plus 72 body sensations) map to 18 feeling categories; greedy set cover picks the fewest categories explaining every matched word. Regexes extract era ("90s", "before 1999", "2000 to 2010"), 19 TMDB genres (with sci-fi synonyms), and minimum-rating constraints. If the LoRA sidecar is unavailable or returns invalid output, this parser keeps the web app schema-valid and usable.
+
+**Tier 2 — Ollama few-shot (optional fallback).** Explicit API clients may still request `use_llm`; local `llama3.2` then extracts non-mood fields if LoRA is disabled or unavailable. Ollama remains the explanation/query-expansion model and is not required for normal LoRA intent parsing.
 
 Measured on the 2026-06-11 eval (tier 1, deterministic):
 
@@ -60,7 +67,7 @@ Measured on the 2026-06-11 eval (tier 1, deterministic):
 | F1: user_moods / desired / avoid | 0.86 / 0.90 / 0.97 | — |
 | Mood false-positive rate | — | 7.7% (5 queries, all genuinely mood-phrased) |
 
-A LoRA-tuned local parser (Llama-3.2-1B, weights and a prior smoke run in the gitignored `cinematch-llama/`) is planned but deferred: the few-shot baseline ships first, and the adapter replaces it only if it wins on field-F1.
+The deployed V6 E4 adapter passed the acceptance gate: schema validity and mode accuracy are 1.0 on all seven slices; plot-description F1 is 0.9583 versus the tier-2 bar of 0.9412, hybrid is 0.7179 versus 0.7027, and implicit plot is 0.8800 versus 0.0. Its local weights remain gitignored under `cinematch-llama/outputs/intent_lora_v6_e4/`.
 
 ## 3. The retrieval engine (`src/` — protected)
 
@@ -70,7 +77,7 @@ The production engine predates the web app and is treated as a read-only library
 2. **Semantic search** — `BAAI/bge-m3` sentence embeddings over ChromaDB (cosine, pool 1500).
 3. **BM25** — five field-specific indexes with boosts: overview 2.5, title/genres/keywords 1.0, tagline 0.5; deterministic synonym expansion.
 4. **RRF fusion** — reciprocal-rank fusion with K=15 (deliberately low to amplify deep semantic hits), equal source weights, fused pool capped at `RERANK_POOL` (800 for eval; the API trims to 100 for interactivity).
-5. **Cross-encoder rerank** — `BAAI/bge-reranker-v2-m3` scores the top 50 fused candidates against the deterministic intent query (never an LLM rewrite); the final score blends in a log-normalized vote-count prior (0.08) and the upstream fusion score (0.12).
+5. **Cross-encoder rerank** — `BAAI/bge-reranker-v2-m3` scores up to `RERANK_TOP_K=100` fused candidates against the deterministic intent query (never an LLM rewrite); the final score blends in a log-normalized vote-count prior (0.08) and the upstream fusion score (0.12).
 6. **Safety filter + dedup** — dark-genre candidates are demoted (not removed) for safety-sensitive mood intents; every stage dedups on a stable title+year movie key.
 
 Basic mode is semantic-only; Advanced adds HyDE (a synthetic overview embedded as a second semantic query). The web app serves the hybrid pipeline through `api/`.
@@ -112,7 +119,7 @@ Measured latency (8-query benchmark against a warm local server, indicative): un
 
 React 19 + TypeScript + Vite 6 + Tailwind v4. A dark cinematic theme — near-black `#0b0d12` base, warm gold `#e8b34b` accent, deep crimson washes, film-grain overlay, Outfit display type over Inter body — across three pages:
 
-- **Discover (Home):** hero search with four tabs — Mood (18 chips generated from the label files; free text goes to the server's lexicon parser), Movie Description (hybrid mode if chips are also selected), Category (genres + six era buckets), Random ("Spin the reel"). Results render in a responsive 2–6 column poster grid with rating badges, mood pills, hover match reasons, pagination, and a Reroll button that advances through the cached pool.
+- **Discover (Home):** hero search with four tabs — Mood (18 chips generated from the label files; free text goes to the server's LoRA parser with lexicon fallback), Movie Description (hybrid mode if chips are also selected), Category (genres + six era buckets), Random ("Spin the reel"). Results render in a responsive 2–6 column poster grid with rating badges, mood pills, hover match reasons, pagination, and a Reroll button that advances through the cached pool.
 - **Detail modal:** backdrop hero, metadata, mood tags, match reason, lazy-loaded explanation, and favorite / watchlist / watched actions.
 - **Library & History:** server-backed favorites and watchlist (watched/unwatched filters), and re-runnable search history.
 
@@ -132,7 +139,7 @@ Eval runs live in `eval/runs/` with manifest, config snapshot, candidates, label
 
 ## 9. How it was built
 
-The repo is run under a multi-agent governance protocol (`AGENTS.md`, `CLAUDE.md`): Claude Code as planner/reviewer/lead, Codex CLI for bounded implementation tickets, one write-capable agent at a time, exact-path file scopes, validation commands per ticket, and a checkpoint ledger (`docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md`) recording evidence for every gate. Production retrieval code (`src/`) cannot be touched without an explicit ticket, and no gate passes on verbal report alone.
+The project was developed under a multi-agent review workflow with bounded implementation tickets, exact-path scopes, validation commands, and evidence-backed checkpoints. Internal agent instructions and checkpoint ledgers were removed during submission cleanup (`2fabc27`); the retained documentation and Git history are the current evidence trail.
 
 The web app shipped as eight phases on `main`, each validated and checkpointed:
 
@@ -145,15 +152,18 @@ The web app shipped as eight phases on `main`, each validated and checkpointed:
 | 4 | React frontend | `d320b15` |
 | 5 | Speed pass — warm-up, hot-path config, async explanations, latency benchmark | `0545010` |
 | 6 | Eval extension — mood_v1 queries + serving-path mood layer | `11f5315` |
-| 7 | Two-tier intent parser + eval | `c089913` |
-| 8 | Final documentation (this document) | — |
+| 7 | Tier-1/Tier-2 intent parser + eval baseline | `c089913` |
+| 8 | V6 E4 LoRA gate pass and serving integration | local adapter + current runtime |
+| 9 | Submission cleanup and final documentation | `2fabc27` + current docs |
 
 ## 10. Known limitations and deferred work
 
 - **Latency:** warm uncached searches land at ~1.8 s p50, above the 800 ms target; the remaining cost is inside the protected engine (see §6).
-- **LoRA intent parser** (plan §14): dataset design and a smoke-tested training setup exist; deferred until it can beat the few-shot baseline on field-F1.
+- **LoRA portability:** the adapter and Llama base weights are intentionally
+  gitignored, so another machine must supply `cinematch-llama/Llama-3.2-1B/`,
+  `outputs/intent_lora_v6_e4/`, and the training venv before LoRA can start.
 - **mood_v1 relevance labels:** the 50 mood queries have deterministic gold *intent* fields but no graded relevance labels yet — that needs a labeling ticket with honest provenance.
 - **Chroma metadata gap:** keywords and vote_count aren't in ChromaDB metadata (BM25 supplies them post-fusion); re-ingesting is a protected long job, deferred.
 - **Tier-1 genre negation:** "no horror please" still lexicon-matches Horror into `genres_include`; tier 2 compensates by setting `genres_exclude` when used.
 - **Timestamps** in the app database are local time, not UTC.
-- **Naming trap:** `RERANK_POOL` caps the *fused pool entering* the rerank stage; the cross-encoder itself scores `RERANK_TOP_K=50` candidates. `docs/ARCHITECTURE.md` predates the May 2026 retuning — `src/config.py` is authoritative for all pool sizes.
+- **Naming trap:** `RERANK_POOL` caps the *fused pool entering* the rerank stage; the cross-encoder itself scores up to `RERANK_TOP_K=100` candidates. `src/config.py` is authoritative for all pool sizes.

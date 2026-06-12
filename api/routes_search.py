@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from api.db import get_session
 from api.db_models import RecCache, SearchHistory
 from api.schemas import ParseIntentRequest, RecommendRequest
-from engine import intent_parser, movie_store, recommender
+from engine import intent_parser, lora, movie_store, recommender
 from engine.intent_query_builder import build_query
 from engine.intent_schema import validate_intent
 
@@ -56,11 +56,22 @@ def _default_explainer(query: str, movie: dict) -> str:
 
 @router.post("/parse-intent")
 def parse_intent(payload: ParseIntentRequest) -> dict:
-    intent = intent_parser.parse(payload.text, payload.mode, use_llm=payload.use_llm)
+    parser = "tier1"
+    intent = None
+    if payload.use_lora:
+        try:
+            intent = lora.parse(payload.text)
+            parser = "lora_v6_e4"
+        except Exception:
+            pass
+    if intent is None:
+        intent = intent_parser.parse(payload.text, payload.mode, use_llm=payload.use_llm)
+        if payload.use_llm:
+            parser = "tier2_or_tier1_fallback"
     valid, errors = validate_intent(intent)
     if not valid:
         raise HTTPException(status_code=500, detail={"intent_errors": errors})
-    return {"intent": intent, "query": build_query(intent)}
+    return {"intent": intent, "query": build_query(intent), "parser": parser}
 
 
 @router.post("/recommend")
@@ -71,7 +82,11 @@ def recommend_movies(
 ) -> dict:
     intent = payload.intent
     if intent is None:
-        intent = intent_parser.parse_tier1(payload.free_text or "", payload.mode)
+        text = payload.free_text or ""
+        try:
+            intent = lora.parse(text)
+        except Exception:
+            intent = intent_parser.parse_tier1(text, payload.mode)
     valid, _ = validate_intent(intent)
     if not valid:
         intent = intent_parser.parse_tier1(payload.free_text or "", payload.mode)
@@ -184,4 +199,5 @@ def health(request: Request) -> dict:
     return {
         "status": "ok",
         "model_warm": bool(getattr(request.app.state, "model_warm", False)),
+        "intent_lora_ready": lora.is_ready(),
     }

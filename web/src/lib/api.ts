@@ -54,9 +54,9 @@ export const api = {
     }),
 
   parseIntent: (text: string, mode: Mode = "content") =>
-    request<{ intent: Intent; query: unknown }>("/api/parse-intent", {
+    request<{ intent: Intent; query: unknown; parser: string }>("/api/parse-intent", {
       method: "POST",
-      body: JSON.stringify({ text, mode }),
+      body: JSON.stringify({ text, mode, use_lora: true }),
     }),
 
   explain: (cacheKey: string, movieKey: string) =>

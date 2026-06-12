@@ -88,3 +88,40 @@ def test_parse_intent_returns_valid_intent_and_query(client):
     assert body["intent"]["user_moods"] == ["hopeful"]
     assert body["intent"]["desired_film_moods"] == ["epic", "inspiring", "uplifting"]
     assert body["query"]["query_text"].startswith("something hopeful")
+
+
+def test_parse_intent_uses_lora_when_available(client, monkeypatch):
+    from api import routes_search
+    from engine.intent_schema import empty_intent
+
+    intent = empty_intent("animated robot in space", "content")
+    intent["genres_include"] = ["Animation"]
+    intent["plot_elements"] = ["robot", "space"]
+    intent["confidence"] = 0.95
+    monkeypatch.setattr(routes_search.lora, "parse", lambda text: intent)
+
+    response = client.post(
+        "/api/parse-intent",
+        json={"text": "animated robot in space", "mode": "content", "use_lora": True},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["parser"] == "lora_v6_e4"
+    assert response.json()["intent"]["plot_elements"] == ["robot", "space"]
+
+
+def test_parse_intent_falls_back_when_lora_fails(client, monkeypatch):
+    from api import routes_search
+
+    def fail(_text: str) -> dict:
+        raise ConnectionError("sidecar unavailable")
+
+    monkeypatch.setattr(routes_search.lora, "parse", fail)
+    response = client.post(
+        "/api/parse-intent",
+        json={"text": "something hopeful", "mode": "mood", "use_lora": True},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["parser"] == "tier1"
+    assert response.json()["intent"]["user_moods"] == ["hopeful"]
