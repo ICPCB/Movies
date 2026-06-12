@@ -1,13 +1,1 @@
-ticket: LORA-TRAIN-2 (retrain stage; dataset gates 2b/2c/2d CLOSED with 3-AI PASS @ 320bfbf)
-agent: claude (Codex usage-limited; Claude executing per failure protocol)
-start: 2026-06-12
-status: OPEN - training run in progress
-allowed files:
-  cinematch-llama/outputs/intent_lora/** (untracked artifacts)
-  eval/runs/2026-06-11-intent-parser-nogit/** (untracked eval artifacts)
-  docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md
-  .remember/remember.md
-stop conditions:
-  - no serving/src changes; adapter must NOT be wired into serving without full gate PASS
-  - no new network/model downloads (local Llama-3.2-1B base + local adapter only)
-  - gate clause (b): beat tier-2 plot_elements F1 on plot_description 0.9412, hybrid 0.7027, implicit_plot 0.0
+﻿status: CLOSED (LORA-TRAIN-5 + LORA-GATE-REVIEW-5 complete 2026-06-12; gate FAILED by 0.005 on plot_description; adapter not shipped; awaiting owner decision)
