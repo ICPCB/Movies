@@ -1,7 +1,6 @@
 """Deterministic intent-parser training-dataset generator.
 
-Implements the interface stub contract (spec docs/superpowers/specs/
-2026-06-11-llama-intent-parser-lora.md sections 3-4):
+Implements the interface stub contract (spec docs/intent-lora-spec.md sections 3-4):
 - Deterministic: same arguments -> byte-identical output across runs
   (sorted iteration + fixed seed, like eval/scripts/build_mood_queries.py).
 - Seeds: labels/user_mood_map.json, labels/user_mood_vocab.json,

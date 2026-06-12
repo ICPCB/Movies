@@ -13,7 +13,7 @@ Recommendation engine searches, filters, scores, and reranks real movies.
 The model never invents a movie recommendation.
 ```
 
-See [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md) for the full architecture, data provenance, and evaluation story.
+See [PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md) for the full architecture, data provenance, and evaluation story.
 
 ## Search modes
 
@@ -149,7 +149,7 @@ python eval/scripts/latency_benchmark.py
 python scripts/quality_smoke_test.py --no-llm
 ```
 
-The full graded-relevance eval pipeline (`eval/scripts/run_pipelines.py` → `llm_pregrade.py` → `compute_metrics.py`) computes Hit@K, strict-Hit@K, MRR@K, strict-MRR@K, and NDCG@K (K = 5/10/15) with bootstrap confidence intervals — see [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md#evaluation) and `eval/README.md`.
+The full graded-relevance eval pipeline (`eval/scripts/run_pipelines.py` → `llm_pregrade.py` → `compute_metrics.py`) computes Hit@K, strict-Hit@K, MRR@K, strict-MRR@K, and NDCG@K (K = 5/10/15) with bootstrap confidence intervals — see [PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md#evaluation) and `eval/README.md`.
 
 ## Attribution
 
@@ -157,6 +157,6 @@ This product uses TMDB data (Kaggle TMDB movie dataset v11) and the TMDB image C
 
 ## More documentation
 
-- [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md) — architecture, mood system, data provenance, evaluation results, development history
+- [PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md) — architecture, mood system, data provenance, evaluation results, development history
 - `docs/ARCHITECTURE.md` — detailed engine internals (some pool-size numbers predate the May 2026 retuning; `src/config.py` is authoritative)
-- `CINEMATCH_ULTRAPLAN.md` — the master plan this app was built from
+- `docs/CINEMATCH_ULTRAPLAN.md` — the master plan this app was built from

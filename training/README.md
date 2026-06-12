@@ -1,7 +1,7 @@
 # training/ — Llama intent-parser LoRA datasets
 
 Dataset home for the unified LoRA intent-parser adapter.
-Spec (authoritative): `docs/superpowers/specs/2026-06-11-llama-intent-parser-lora.md`.
+Spec (authoritative): `docs/intent-lora-spec.md`.
 
 ## Layout
 

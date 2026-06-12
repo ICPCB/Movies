@@ -1,7 +1,6 @@
 """Fixed prompt format for the Llama-3.2-1B BASE intent adapter.
 
-Single source of truth (spec docs/superpowers/specs/
-2026-06-11-llama-intent-parser-lora.md section 6.1): the dataset generator,
+Single source of truth (spec docs/intent-lora-spec.md section 6.1): the dataset generator,
 the training script, and the eval adapter glue must all import from this
 module. The template must not be copied anywhere else — the base model has
 no chat template, so any train/inference drift in this exact string silently

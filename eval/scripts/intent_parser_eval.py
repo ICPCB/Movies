@@ -16,8 +16,8 @@ tier 1, so end-to-end validity stays 100% by design).
 With --intent-v1, the 7-slice intent_v1 set (user mood only / film mood only /
 user+film mood / plot description / hybrid / avoid preferences / implicit plot
 descriptions) is also evaluated with per-slice micro P/R/F1 — the acceptance
-gate for the LoRA adapter (spec: docs/superpowers/specs/
-2026-06-11-llama-intent-parser-lora.md §5). Tier-1 is expected to miss the
+gate for the LoRA adapter (spec: docs/intent-lora-spec.md §5).
+Tier-1 is expected to miss the
 plot/implicit slices entirely; the per-slice report measures the gap.
 
 Usage:
