@@ -18,7 +18,6 @@ Movies/
 ├── 02. Embed_BGEM3.py            ← One-shot ChromaDB ingestion script (BGE-M3 index build)
 ├── README.md                     ← Setup, run, and test commands (root overview)
 ├── docs/PROJECT_OVERVIEW.md      ← Architecture, mood system, data provenance, eval results
-├── docs/CINEMATCH_ULTRAPLAN.md   ← Master plan the app was built from
 │
 ├── web/                          ← React 19 + Vite + Tailwind v4 UI (port 5173, proxies /api)
 ├── api/                          ← FastAPI backend (port 8000)
@@ -56,8 +55,8 @@ Movies/
 │   └── runs/                     ← Run artifacts (gitignored except tracked gold/metrics)
 │
 ├── scripts/                      ← quality_smoke_test.py, print_dataset_stats.py
-├── docs/                         ← All project documentation (this file, overview, ultraplan,
-│                                   intent-lora-spec.md, CHECKPOINT_LEDGER.md)
+├── docs/                         ← All project documentation (this file, PROJECT_OVERVIEW.md,
+│                                   intent-lora-spec.md)
 ├── data/                         ← TMDB raw CSV, movies_clean.csv, chroma_bgem3/, cinematch.db
 └── cinematch-llama/              ← (gitignored, local-only) Llama-3.2-1B base weights, training
                                     venv, LoRA adapters, probe artifacts
@@ -117,8 +116,8 @@ split. Status 2026-06-12: adapter v6 e4 **passed** the spec §5 acceptance gate
 (plot F1 0.9583 > 0.9412 tier-2 bar; validity and mode accuracy 1.0 on all
 7 slices; 20-query novel-vocabulary probe 17/20 exact) but is **not wired into
 serving** — runtime intent parsing remains tier-1 lexicon + tier-2 few-shot
-Ollama until an explicit serving ticket lands. Spec and audit trail:
-`docs/intent-lora-spec.md`, `docs/CHECKPOINT_LEDGER.md`.
+Ollama until an explicit serving ticket lands. Spec:
+`docs/intent-lora-spec.md`.
 
 ---
 ## 2. High-Level Project Summary

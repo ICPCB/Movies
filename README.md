@@ -159,4 +159,4 @@ This product uses TMDB data (Kaggle TMDB movie dataset v11) and the TMDB image C
 
 - [PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md) — architecture, mood system, data provenance, evaluation results, development history
 - `docs/ARCHITECTURE.md` — detailed engine internals (some pool-size numbers predate the May 2026 retuning; `src/config.py` is authoritative)
-- `docs/CINEMATCH_ULTRAPLAN.md` — the master plan this app was built from
+- `docs/intent-lora-spec.md` — dataset spec and acceptance gate for the intent-parser LoRA
