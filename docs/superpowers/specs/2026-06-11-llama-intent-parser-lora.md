@@ -198,7 +198,8 @@ generator, graders, and reviewers share one written rule:
    trope element. No other verb phrase may appear in gold.
 2. **Evaluative-adjective drop vs type-forming modifier keep.** Subjective
    quality adjectives (kind, gentle, quiet, elderly, little, scrappy, cozy)
-   drop from gold: "a kind wizard mentoring an orphan" →
+   and film-style modifiers in content queries ("slow burn", "cozy" before a
+   genre compound) drop from gold — they ground neither moods nor elements: "a kind wizard mentoring an orphan" →
    `["orphan", "wizard"]`. Type-forming modifiers that change what the
    thing IS stay inside the compound: "wounded bear", "blind veteran",
    "masked vigilante", "alien creature", "corrupt mayor". Contrast:

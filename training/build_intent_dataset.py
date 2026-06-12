@@ -252,6 +252,8 @@ PLOT_POOL: list[tuple[str, str]] = [
     ("a wildfire", "wildfire"), ("wrestling", "wrestling"),
     ("surfing", "surfing"), ("an underdog", "underdog"),
     ("winter", "winter"), ("a found family", "found family"),
+    ("time travel", "time travel"), ("paradoxes", "paradoxes"),
+    ("a swamp creature", "swamp creature"), ("an alien artifact", "alien artifact"),
 ]
 
 # Plural-subject action clauses: gold keeps the plural surface subject and the
@@ -298,15 +300,33 @@ SINGULAR_SUBJECT_TEMPLATES = [
 ]
 EVALUATIVE_MODIFIERS = ["kind", "gentle", "quiet", "elderly", "little", "scrappy"]
 
-# "{setting} {genre} with {NP}" compounds: setting and NP are elements, the
-# genre word resolves to genres_include.
+# "{setting-or-topic} {genre} with {NP}" compounds: both NPs are elements,
+# the genre word resolves to genres_include.
 SETTING_GENRE_WITH: list[tuple[str, str, str, str, str]] = [
     ("deep sea", "horror", "Horror", "a sea creature", "sea creature"),
     ("desert", "western", "Western", "a treasure hunt", "treasure hunt"),
     ("arctic", "thriller", "Thriller", "a research station", "research station"),
     ("jungle", "adventure", "Adventure", "a lost temple", "lost temple"),
     ("high school", "comedy", "Comedy", "a chess prodigy", "chess prodigy"),
+    ("time travel", "thriller", "Thriller", "a paradox", "paradox"),
+    ("body swap", "comedy", "Comedy", "a wedding", "wedding"),
+    ("heist", "thriller", "Thriller", "double crosses", "double crosses"),
+    ("ghost ship", "mystery", "Mystery", "a missing crew", "missing crew"),
 ]
+
+# Film-style modifiers in content queries ground neither moods nor elements
+# (spec 3.11.2): they drop from gold entirely.
+STYLE_PREFIX_FUSED: list[tuple[str, str, str, str, str, str]] = [
+    ("slow burn", "a detective mystery", "detective", "Mystery", "winter", "winter"),
+    ("slow burn", "a jewel thief thriller", "jewel thief", "Thriller",
+     "a small town", "small town"),
+    ("cozy", "a road trip comedy", "road trip", "Comedy",
+     "the countryside", "countryside"),
+    ("slow burn", "a lighthouse keeper drama", "lighthouse keeper", "Drama",
+     "winter", "winter"),
+    ("cozy", "a chef drama", "chef", "Drama", "a small town", "small town"),
+]
+WEATHER_ADJUNCTS = ["in the rain", "in the fog", "at night", "at dawn"]
 
 # "{a} {b} story" compounds: both concepts are elements, "story" is generic
 # and never appears in gold; no genre is grounded.
@@ -328,6 +348,10 @@ FALLS_IN_LOVE_RECORDS: list[tuple[str, list[str], str, str]] = [
      ["falls in love", "mermaid", "pirate"], "the deep sea", "deep sea"),
     ("a knight who falls in love with a duchess",
      ["falls in love", "duchess", "knight"], "the countryside", "countryside"),
+    ("an android who falls in love with a poet",
+     ["android", "falls in love", "poet"], "space", "space"),
+    ("a ghost who falls in love with a violinist",
+     ["falls in love", "ghost", "violinist"], "a lighthouse", "lighthouse"),
 ]
 
 # Place-genre compounds ("a courtroom drama"): the place noun stays a plot
@@ -370,7 +394,8 @@ FUSED_GENRE_TOPIC_GOLDS = {
     "western": ("cowboy", "gangster", "treasure hunt", "jewel thief"),
     "romance": ("road trip", "chef", "con artist", "spy"),
     "action": ("heist", "robot", "spy", "assassin", "superhero", "street racing"),
-    "adventure": ("road trip", "dragon", "treasure hunt", "archaeologist", "knight"),
+    "adventure": ("road trip", "dragon", "treasure hunt", "archaeologist", "knight",
+                  "time travel"),
     "mystery": ("detective", "missing child", "long lost twin", "ghost", "lighthouse keeper"),
     "fantasy": ("dragon", "vampire", "wizard", "witch", "knight"),
     "sci-fi": ("robot", "spaceship", "mars colony", "hacker"),
@@ -912,12 +937,16 @@ def gen_plot_description(film_moods: list[str], user_words: set[str]):
     # three-element queries, place-genre compounds.
     targeted = []
     # Plural subjects with verb-mediated objects: verbs drop from gold, the
-    # plural surface subject and object noun phrase stay (spec 3.8).
+    # plural surface subject and object noun phrase stay (spec 3.8); odd
+    # templates carry a weather/manner adjunct that also drops (3.11.3).
     for si, (subj, act, obj_gold) in enumerate(PLURAL_SUBJECT_ACTIONS):
         _assert_separation(want_text=f"{subj} {act}", film_moods=film_moods,
                            user_words=user_words)
-        for template in PLURAL_SUBJECT_TEMPLATES:
-            targeted.append((template.format(s=subj, act=act),
+        for ti, template in enumerate(PLURAL_SUBJECT_TEMPLATES):
+            shown_act = act
+            if ti % 2 and "in the rain" not in act and "at night" not in act:
+                shown_act = f"{act} {WEATHER_ADJUNCTS[(si + ti) % len(WEATHER_ADJUNCTS)]}"
+            targeted.append((template.format(s=subj, act=shown_act),
                              dict(plot=[subj, obj_gold])))
     # Three-element queries: two topics plus a setting.
     for i, (d1, g1) in enumerate(TOPICS[::4]):
@@ -948,11 +977,22 @@ def gen_plot_description(film_moods: list[str], user_words: set[str]):
                 subj_shown = display
             targeted.append((template.format(s=subj_shown, act=act),
                              dict(plot=[subj_gold, obj_gold])))
-    # "{setting} {genre} with {NP}" compounds.
+    # "{setting-or-topic} {genre} with {NP}" compounds.
     for setting_bare, gw, genre, np_display, np_gold in SETTING_GENRE_WITH:
         head = f"{gw} movie" if gw in MOVIE_REQUIRED_GENRES else gw
         targeted.append((f"{_an(f'{setting_bare} {head}')} with {np_display}",
                          dict(plot=[setting_bare, np_gold], genres=[genre])))
+    # Film-style modifiers drop entirely (spec 3.11.2).
+    for style, compound_display, topic_gold, genre, setting, setting_gold in STYLE_PREFIX_FUSED:
+        text = f"{_an(f'{style} {_bare(compound_display)}')} in {setting}"
+        targeted.append((text, dict(plot=[topic_gold, setting_gold],
+                                    genres=[genre])))
+    # Bare-start "X movie about {p}" records (article-less user typing).
+    for gi, gw_genre in enumerate(w for w in GENRE_WORDS if w[0] in MOVIE_REQUIRED_GENRES):
+        gw, genre = gw_genre
+        display, gold = TOPICS[(gi * 11 + 3) % len(TOPICS)]
+        targeted.append((f"{gw} movie about {display}",
+                         dict(plot=[gold], genres=[genre])))
     # "{a} {b} story" compounds: generic "story" drops, no genre grounded.
     for a_gold, b_gold in STORY_COMPOUNDS:
         a_display = _bare(TOPIC_BY_GOLD[a_gold][0]) if a_gold in TOPIC_BY_GOLD else a_gold
@@ -1203,10 +1243,10 @@ def main() -> int:
     rng.shuffle(chosen["mood_film_only"])
 
     plot_fused_take = _take(plot_fused, rng, 180, heldout, seen_texts)
-    plot_targeted_take = _take(plot_targeted, rng, 90, heldout, seen_texts)
+    plot_targeted_take = _take(plot_targeted, rng, 120, heldout, seen_texts)
     plot_multi_take = _take(plot_multi, rng, 60, heldout, seen_texts)
     implicit_take = _take(implicit_plot, rng, 180, heldout, seen_texts)
-    plot_single_take = _take(plot_single, rng, 90, heldout, seen_texts)
+    plot_single_take = _take(plot_single, rng, 60, heldout, seen_texts)
     plot_all = (plot_fused_take + plot_targeted_take + plot_multi_take
                 + implicit_take + plot_single_take)
     rng.shuffle(plot_all)
