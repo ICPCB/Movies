@@ -30,6 +30,8 @@
 
   --animate-rise: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-kenburns: kenburns 16s ease-out both;
+  --animate-iris: iris 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 
   @keyframes rise {
     from {
@@ -47,6 +49,28 @@
     }
     to {
       background-position: 400px 0;
+    }
+  }
+  /* Slow cinematic push-in for hero backdrops */
+  @keyframes kenburns {
+    from {
+      transform: scale(1.02) translateY(0);
+    }
+    to {
+      transform: scale(1.12) translateY(-2%);
+    }
+  }
+  /* Detail page entrance: blur-to-sharp zoom, like a lens racking focus */
+  @keyframes iris {
+    from {
+      opacity: 0;
+      transform: scale(1.05);
+      filter: blur(14px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+      filter: blur(0);
     }
   }
 }
@@ -101,4 +125,40 @@ body::after {
   &::-webkit-scrollbar {
     display: none;
   }
+}
+
+/* 3D tilt scaffolding: parent provides depth, child rotates */
+@utility perspective-card {
+  perspective: 900px;
+}
+
+@utility tilt-body {
+  transform-style: preserve-3d;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+/* Pointer-following glare; position driven by --glare-x/--glare-y from useTilt */
+@utility tilt-glare {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: var(--glare-o, 0);
+  transition: opacity 0.3s ease;
+  background: radial-gradient(
+    420px circle at var(--glare-x, 50%) var(--glare-y, 50%),
+    rgb(245 207 126 / 0.22),
+    transparent 65%
+  );
+}
+
+/* Edge-darkening vignette for full-bleed imagery */
+@utility vignette {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top, var(--color-night-950) 2%, transparent 45%),
+    linear-gradient(to bottom, rgb(7 8 12 / 0.75), transparent 30%),
+    radial-gradient(120% 90% at 50% 40%, transparent 55%, rgb(7 8 12 / 0.8) 100%);
 }

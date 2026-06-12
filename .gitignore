@@ -60,3 +60,7 @@ cinematch-llama/
 node_modules/
 web/dist/
 *.tsbuildinfo
+
+# Runtime app database & local screenshots
+data/cinematch.db*
+*.jpeg

@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
-import DetailModal from "../components/DetailModal";
+import CinematicHero from "../components/CinematicHero";
 import ModeTabs, { type SearchTab } from "../components/ModeTabs";
 import MoodChips from "../components/MoodChips";
+import MovieDetail from "../components/MovieDetail";
 import MovieGrid from "../components/MovieGrid";
 import Pagination from "../components/Pagination";
+import ReelOverlay from "../components/ReelOverlay";
 import { moodsToIntentFields } from "../data/moods";
 import { api, emptyIntent } from "../lib/api";
 import type { CategoriesResponse, Intent, Movie } from "../lib/types";
@@ -30,6 +32,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [openMovie, setOpenMovie] = useState<Movie | null>(null);
+  const [reel, setReel] = useState<{ pool: Movie[]; result: Movie | null } | null>(null);
   const activeIntent = useRef<Intent | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -134,26 +137,30 @@ export default function Home() {
     void runSearch(intent, 1, `${label} picks`);
   };
 
-  const submitRandom = async () => {
-    setLoading(true);
+  const submitRandom = () => {
     setError(null);
-    try {
-      const movie = await api.random();
-      setResults({
-        movies: [movie],
-        page: 1,
-        totalPool: 1,
-        cacheHit: false,
-        cacheKey: null,
-        headline: "The reel has spoken",
+    setReel({ pool: results?.movies ?? [], result: null });
+    api
+      .random()
+      .then((movie) => setReel((current) => (current ? { ...current, result: movie } : current)))
+      .catch((cause) => {
+        setReel(null);
+        setError(cause instanceof Error ? cause.message : String(cause));
       });
-      setOpenMovie(movie);
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : String(cause));
-    } finally {
-      setLoading(false);
-    }
   };
+
+  const landRandom = useCallback((movie: Movie) => {
+    setReel(null);
+    setResults({
+      movies: [movie],
+      page: 1,
+      totalPool: 1,
+      cacheHit: false,
+      cacheKey: null,
+      headline: "The reel has spoken",
+    });
+    setOpenMovie(movie);
+  }, []);
 
   const goToPage = (page: number) => {
     const intent = activeIntent.current;
@@ -179,21 +186,19 @@ export default function Home() {
   return (
     <>
       {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(700px_300px_at_50%_-60px,rgb(232_179_75/0.12),transparent_70%)]" />
-        <div className="mx-auto max-w-4xl px-4 pb-10 pt-16 text-center sm:px-6 sm:pt-24">
+      <CinematicHero onOpen={setOpenMovie}>
           <p className="animate-rise text-xs font-medium uppercase tracking-[0.3em] text-gold-500">
             local · private · real movies only
           </p>
           <h1
-            className="animate-rise mt-4 font-display text-4xl font-bold leading-tight tracking-tight text-snow sm:text-6xl"
+            className="animate-rise mt-4 font-display text-4xl font-bold leading-tight tracking-tight text-snow drop-shadow-[0_2px_16px_rgba(0,0,0,0.85)] sm:text-6xl"
             style={{ animationDelay: "60ms" }}
           >
             Find the film your
             <span className="text-gold-500"> evening deserves</span>
           </h1>
           <p
-            className="animate-rise mx-auto mt-4 max-w-xl text-sm leading-relaxed text-fog-400 sm:text-base"
+            className="animate-rise mx-auto mt-4 max-w-xl text-sm leading-relaxed text-fog-300 drop-shadow-[0_1px_8px_rgba(0,0,0,0.9)] sm:text-base"
             style={{ animationDelay: "120ms" }}
           >
             Tell CineMatch how you feel or what you want to watch. A local engine searches
@@ -316,8 +321,7 @@ export default function Home() {
               {error}
             </p>
           )}
-        </div>
-      </section>
+      </CinematicHero>
 
       {/* Results */}
       <section ref={resultsRef} className="mx-auto max-w-7xl scroll-mt-20 px-4 sm:px-6">
@@ -352,11 +356,20 @@ export default function Home() {
         )}
       </section>
 
-      <DetailModal
+      <MovieDetail
         movie={openMovie}
         cacheKey={results?.cacheKey}
         onClose={() => setOpenMovie(null)}
       />
+
+      {reel && (
+        <ReelOverlay
+          pool={reel.pool}
+          result={reel.result}
+          onDone={landRandom}
+          onCancel={() => setReel(null)}
+        />
+      )}
     </>
   );
 }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTilt } from "../hooks/useTilt";
 import { asList, posterUrl } from "../lib/tmdb";
 import type { Movie } from "../lib/types";
 
@@ -10,6 +11,7 @@ interface MovieCardProps {
 
 export default function MovieCard({ movie, index = 0, onOpen }: MovieCardProps) {
   const [imageFailed, setImageFailed] = useState(false);
+  const tilt = useTilt(7);
   const poster = posterUrl(movie.poster_path);
   const genres = asList(movie.genres).slice(0, 3);
   const moods = (movie.film_mood_tags ?? []).slice(0, 3);
@@ -19,17 +21,22 @@ export default function MovieCard({ movie, index = 0, onOpen }: MovieCardProps) 
     <button
       type="button"
       onClick={() => onOpen(movie)}
-      className="group animate-rise text-left"
+      className="group animate-rise perspective-card text-left"
       style={{ animationDelay: `${Math.min(index, 11) * 45}ms` }}
     >
-      <div className="relative aspect-[2/3] overflow-hidden rounded-2xl bg-night-700 shadow-card ring-1 ring-night-600/50 transition-all duration-300 group-hover:-translate-y-1.5 group-hover:shadow-glow">
+      <div
+        ref={tilt.ref}
+        onPointerMove={tilt.onPointerMove}
+        onPointerLeave={tilt.onPointerLeave}
+        className="tilt-body relative aspect-[2/3] overflow-hidden rounded-2xl bg-night-700 shadow-card ring-1 ring-night-600/50 group-hover:shadow-glow"
+      >
         {poster && !imageFailed ? (
           <img
             src={poster}
             alt={movie.title}
             loading="lazy"
             onError={() => setImageFailed(true)}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
+            className="h-full w-full object-cover"
           />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-night-600 via-night-700 to-night-800 p-4">
@@ -42,6 +49,7 @@ export default function MovieCard({ movie, index = 0, onOpen }: MovieCardProps) 
           </div>
         )}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-night-950/95 via-night-950/15 to-transparent opacity-80 transition-opacity duration-300 group-hover:opacity-95" />
+        <div className="tilt-glare" />
         {rating && (
           <span className="absolute right-2.5 top-2.5 rounded-full bg-night-950/80 px-2 py-0.5 text-xs font-semibold text-gold-400 ring-1 ring-gold-500/30 backdrop-blur">
             ★ {rating}
