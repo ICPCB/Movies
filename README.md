@@ -51,8 +51,9 @@ The `engine/` layer treats `src/` strictly as a read-only library: mood logic is
 ## Requirements
 
 - Python 3.10+ with a project venv (the API must run under it — see below)
-- `cinematch-llama/.venv` with PyTorch, Transformers, and PEFT for the local
-  intent-LoRA sidecar
+- `cinematch-llama/.venv` with PyTorch, Transformers, PEFT, and bitsandbytes
+  for the local intent-LoRA sidecar (loads the base model in 4-bit NF4 so it
+  fits alongside the retrieval models on an 8 GB GPU)
 - Node 18+ for the web frontend
 - `data/movies_clean.csv` and the `data/chroma_bgem3/` vector index (ship with the project or rebuild below from the [Kaggle TMDB dataset](https://www.kaggle.com/datasets/asaniczka/tmdb-movies-dataset-2023-930k-movies))
 - Optional: [Ollama](https://ollama.com) with `llama3.2` for explanations, LLM query expansion, and tier-2 intent parsing — everything degrades gracefully without it
@@ -139,6 +140,7 @@ The API process layers its own runtime knobs on top via environment variables (t
 | `CINEMATCH_LORA_ENABLED` | `1` | `0` = disable the local LoRA parser and use the fallback parser |
 | `CINEMATCH_LORA_URL` | `http://127.0.0.1:8765` | local LoRA sidecar address |
 | `CINEMATCH_LORA_TIMEOUT` | `30` | per-request LoRA timeout in seconds |
+| `CINEMATCH_LORA_4BIT` | `1` | `0` = load the sidecar base model in bf16 instead of 4-bit NF4 (needs ~2 GB more VRAM) |
 | `CINEMATCH_DB_URL` | `sqlite:///data/cinematch.db` | SQLAlchemy database URL (tests use in-memory) |
 
 ## Tests and evaluation

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -23,16 +24,37 @@ ADAPTER_DIR = REPO / "cinematch-llama" / "outputs" / "intent_lora_v6_e4"
 MAX_NEW_TOKENS = 320
 
 
+def _load_base_model() -> AutoModelForCausalLM:
+    # 4-bit NF4 keeps the 1B base under ~1 GB VRAM so the sidecar can share
+    # an 8 GB GPU with the BGE-M3 embedder and the cross-encoder reranker.
+    # CINEMATCH_LORA_4BIT=0 forces the original bf16 load.
+    if os.getenv("CINEMATCH_LORA_4BIT", "1") != "0" and torch.cuda.is_available():
+        try:
+            from transformers import BitsAndBytesConfig
+
+            return AutoModelForCausalLM.from_pretrained(
+                MODEL_DIR,
+                quantization_config=BitsAndBytesConfig(
+                    load_in_4bit=True,
+                    bnb_4bit_quant_type="nf4",
+                    bnb_4bit_compute_dtype=torch.bfloat16,
+                ),
+                device_map="auto",
+            )
+        except Exception as error:
+            print(f"[lora-server] 4-bit load failed ({error}); using bf16", flush=True)
+    return AutoModelForCausalLM.from_pretrained(
+        MODEL_DIR,
+        dtype=torch.bfloat16,
+        device_map="auto",
+    )
+
+
 class IntentModel:
     def __init__(self) -> None:
         self.tokenizer = AutoTokenizer.from_pretrained(MODEL_DIR)
         self.tokenizer.pad_token = self.tokenizer.eos_token
-        base = AutoModelForCausalLM.from_pretrained(
-            MODEL_DIR,
-            dtype=torch.bfloat16,
-            device_map="auto",
-        )
-        self.model = PeftModel.from_pretrained(base, ADAPTER_DIR)
+        self.model = PeftModel.from_pretrained(_load_base_model(), ADAPTER_DIR)
         self.model.eval()
         self._lock = threading.Lock()
 
