@@ -50,6 +50,8 @@ Thumbs.db
 # Temp / test caches / session dumps
 .pytest_cache/
 .tmp/
+.playwright-mcp/
+.codegraph/
 codex-*.txt
 graphify-out/
 archive/

@@ -39,6 +39,10 @@ labels/   Mood vocabularies, mapping tables, and 27,758 deterministic
           per-movie film-mood labels — all with honest provenance
 eval/     Eval harness — graded relevance metrics, intent-parser eval,
           latency benchmark, regression gates
+training/ Intent-LoRA dataset pipeline — deterministic 3,600-record
+          generator + fixed prompt contract (adapter gate-passed, not
+          yet wired into serving; weights live in gitignored
+          cinematch-llama/)
 data/     movies_clean.csv (27,762 rows), chroma_bgem3/ vector index,
           cinematch.db app database (runtime-generated)
 ```
@@ -133,6 +137,9 @@ venv\Scripts\python.exe -m pytest api/tests -q
 
 # Eval-harness unit tests (model-free)
 python -m unittest discover -s eval/tests -t .
+
+# Training-pipeline unit tests (prompt format + dataset builder, model-free)
+python -m pytest training -q
 
 # Intent-parser eval (tier 1, deterministic, offline)
 python -m eval.scripts.intent_parser_eval

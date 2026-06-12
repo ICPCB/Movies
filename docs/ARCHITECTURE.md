@@ -1,83 +1,127 @@
 # CineMatch — Architecture Reference
 
 > Maintained by inspection of source files.
-> Last updated: 2026-05-19
+> Last updated: 2026-06-12 (project finalization)
 >
-> **2026-06-11 note:** the legacy Gradio UI (`app.py`, port 7860) described below has been **removed**. The serving entry points are now the FastAPI backend (`api/`) and the React web app (`web/`) — see `PROJECT_OVERVIEW.md`. The `src/` retrieval-engine internals documented here are unchanged and still authoritative; read `app.py` references as describing the retired UI layer only.
+> **2026-06-11 note:** the legacy Gradio UI (`app.py`, port 7860) described in sections 4–20 has been **removed**, along with the legacy wrappers `recommend_bgem3.py` and `hybrid_recommend.py`. The serving entry points are the FastAPI backend (`api/`) and the React web app (`web/`) — see `PROJECT_OVERVIEW.md`. The `src/` retrieval-engine internals documented below are unchanged and still authoritative; read `app.py` references as describing the retired UI layer only.
+>
+> **2026-06-12 note:** section 1 (tree) and section 1b (serving + intent architecture) below reflect the final project state, including the `engine/`, `api/`, `web/`, `training/`, and `labels/` layers added after the original document was written.
 
 ---
 
-## 1. Project Tree Overview
+## 1. Project Tree Overview (final, 2026-06-12)
 
 ```
 Movies/
 │
-├── app.py                        ← Gradio UI entry point; delegates all logic to src/
-├── AGENTS.md                     ← Project rules, hard constraints, pipeline specs
+├── 01.clean_data.py              ← One-shot data-cleaning script (raw TMDB → movies_clean.csv)
+├── 02. Embed_BGEM3.py            ← One-shot ChromaDB ingestion script (BGE-M3 index build)
+├── AGENTS.md / CLAUDE.md         ← Multi-agent governance rules
+├── README.md                     ← Setup, run, and test commands
+├── PROJECT_OVERVIEW.md           ← Architecture, mood system, data provenance, eval results
+├── CINEMATCH_ULTRAPLAN.md        ← Master plan the app was built from
 │
-├── 01.clean_data.py              ← One-shot data-cleaning script (not imported at runtime)
-├── 02. Embed_BGEM3.py            ← One-shot ChromaDB ingestion script (not imported at runtime)
+├── web/                          ← React 19 + Vite + Tailwind v4 UI (port 5173, proxies /api)
+├── api/                          ← FastAPI backend (port 8000)
+│   ├── main.py                   ← App factory, health, model warm-up
+│   ├── routes_search.py          ← /api/search (mood / description / hybrid / category / random)
+│   ├── routes_library.py         ← favorites, watchlist, history
+│   └── db.py, db_models.py       ← SQLite (data/cinematch.db) via SQLAlchemy
 │
-├── recommend_bgem3.py            ← Legacy wrapper → delegates to src/pipelines/advanced.py
-├── hybrid_recommend.py           ← Legacy wrapper → delegates to src/pipelines/hybrid.py
+├── engine/                       ← Intent layer between api/ and src/ (src/ is read-only to it)
+│   ├── intent_parser.py          ← Two-tier parser: tier-1 lexicon, tier-2 few-shot Ollama
+│   ├── intent_schema.py          ← Intent JSON contract + validation
+│   ├── intent_query_builder.py   ← Intent → retrieval query / filters / boosts
+│   ├── mood_labels.py            ← Per-movie film-mood label lookup
+│   ├── movie_store.py            ← movies_clean.csv access
+│   └── recommender.py            ← Orchestrates retrieval + mood filtering/boosting
 │
-├── src/
-│   ├── __init__.py               ← Empty namespace marker
-│   ├── config.py                 ← All shared constants (paths, model names, top-k values, boosts)
-│   ├── models.py                 ← Lazy singleton loaders for SentenceTransformer + CrossEncoder
-│   │
-│   ├── retrieval/
-│   │   ├── __init__.py           ← Empty namespace marker
-│   │   ├── semantic.py           ← BGE-M3 + ChromaDB semantic search; returns candidates with semantic_score
-│   │   ├── bm25.py               ← Field-aware BM25 over movies_clean.csv; returns candidates with bm25_score
-│   │   ├── fusion.py             ← Reciprocal Rank Fusion (RRF); fuses semantic + BM25 lists by movie_key
-│   │   ├── reranker.py           ← BGE CrossEncoder reranker; scores query–document pairs; returns rerank_score
-│   │   ├── filters.py            ← Natural-language filter parser (year range, decade, vote_average)
-│   │   └── query_processor.py   ← English query normalization (normalize_query)
-│   │
-│   ├── pipelines/
-│   │   ├── __init__.py           ← Empty namespace marker
-│   │   ├── basic.py              ← Basic pipeline: semantic only, no reranker, no LLM
-│   │   ├── advanced.py           ← Advanced pipeline: LLM expand → semantic → reranker → LLM explain
-│   │   └── hybrid.py            ← Hybrid pipeline: semantic + BM25 → RRF → reranker → LLM explain
-│   │
-│   ├── llm/
-│   │   ├── __init__.py           ← Empty namespace marker
-│   │   ├── langchain_ollama.py   ← Ollama LLM client; expand_query, explain_movies_batch, _fallback_explanation
-│   │   └── prompts.py           ← Prompt templates for query expansion and batch explanation
-│   │
-│   └── utils/
-│       ├── __init__.py           ← Empty namespace marker
-│       └── dedup.py             ← Stable movie key generation + deduplication helper
+├── src/                          ← PROTECTED production retrieval engine (sections 3–13 below)
+│   ├── config.py                 ← All shared constants (paths, models, pools, weights)
+│   ├── models.py                 ← Lazy singletons: BGE-M3 + bge-reranker-v2-m3
+│   ├── retrieval/                ← semantic.py, bm25.py, fusion.py (RRF), reranker.py, filters.py
+│   ├── pipelines/                ← basic.py, advanced.py, hybrid.py
+│   ├── llm/                      ← langchain_ollama.py (expand/explain), prompts.py
+│   └── utils/dedup.py            ← Stable movie keys + dedup
 │
-├── scripts/
-│   ├── quality_smoke_test.py    ← CLI smoke test; runs benchmark queries; prints all score fields + warnings
-│   └── print_dataset_stats.py   ← Verifies config DATASET_* constants against the live cleaned CSV
+├── labels/                       ← Mood vocabularies (18 user / 24 film), user→film map,
+│                                   27,758 deterministic per-movie film-mood labels + validators
+├── training/                     ← Intent-LoRA dataset pipeline (see §1b)
+│   ├── build_intent_dataset.py   ← Deterministic 3,600-record generator (seeded, byte-stable)
+│   ├── prompt_format.py          ← Single source of truth for the LoRA prompt template
+│   └── *.jsonl                   ← Generated dataset (6 categories × 600)
 │
-└── data/
-    ├── TMDB_movie_dataset_v11.csv  ← Original raw TMDB dataset (large pre-filter source CSV)
-    ├── movies_clean.csv            ← Cleaned and enriched dataset (output of 01.clean_data.py)
-    └── chroma_bgem3/               ← Persisted ChromaDB vector store (output of 02. Embed_BGEM3.py)
+├── eval/                         ← Eval harness: graded relevance metrics, intent_v1 eval,
+│   ├── queries/intent_v1.jsonl   ← 84-query held-out intent eval (7 slices × 12)
+│   ├── scripts/                  ← run_pipelines, compute_metrics, intent_parser_eval, latency
+│   └── runs/                     ← Run artifacts (gitignored except tracked gold/metrics)
+│
+├── scripts/                      ← quality_smoke_test.py, print_dataset_stats.py
+├── docs/                         ← This file, AGENT_PIPELINE.md, superpowers/ (specs, ledger)
+├── data/                         ← TMDB raw CSV, movies_clean.csv, chroma_bgem3/, cinematch.db
+└── cinematch-llama/              ← (gitignored, local-only) Llama-3.2-1B base weights, training
+                                    venv, LoRA adapters, probe artifacts
 ```
 
 ### File roles by category
 
 | Category | Files |
 |---|---|
-| UI / entry point | `app.py` |
-| Config | `src/config.py` |
+| Serving entry points | `api/main.py` (FastAPI, port 8000), `web/` (Vite dev server, port 5173) |
+| Intent layer | `engine/intent_parser.py`, `engine/intent_schema.py`, `engine/intent_query_builder.py`, `engine/recommender.py` |
+| Config | `src/config.py` (+ `CINEMATCH_*` env vars layered by `api/`) |
 | Model loading | `src/models.py` |
-| Retrieval | `src/retrieval/semantic.py`, `src/retrieval/bm25.py`, `src/retrieval/fusion.py`, `src/retrieval/reranker.py`, `src/retrieval/filters.py`, `src/retrieval/query_processor.py` |
-| Pipelines | `src/pipelines/basic.py`, `src/pipelines/advanced.py`, `src/pipelines/hybrid.py` |
+| Retrieval | `src/retrieval/semantic.py`, `bm25.py`, `fusion.py`, `reranker.py`, `filters.py`, `query_processor.py` |
+| Pipelines | `src/pipelines/basic.py`, `advanced.py`, `hybrid.py` |
 | LLM / explanation | `src/llm/langchain_ollama.py`, `src/llm/prompts.py` |
-| Utils | `src/utils/dedup.py` |
-| Scripts / tests | `scripts/quality_smoke_test.py`, `scripts/print_dataset_stats.py` |
-| Data | `data/movies_clean.csv`, `data/chroma_bgem3/` |
+| Mood labels | `labels/*.json`, `labels/movie_mood_labels.jsonl`, `labels/build_movie_mood_labels.py`, `labels/validate_labels.py` |
+| LoRA training | `training/build_intent_dataset.py`, `training/prompt_format.py`, `cinematch-llama/scripts/*` (local) |
+| Eval | `eval/scripts/*`, `eval/queries/intent_v1.jsonl`, `eval/tests/*` |
+| Scripts / tests | `scripts/quality_smoke_test.py`, `scripts/print_dataset_stats.py`, `api/tests/`, `src/tests/`, `training/test_prompt_format.py` |
+| Data | `data/movies_clean.csv`, `data/chroma_bgem3/`, `data/cinematch.db` |
 | One-shot scripts | `01.clean_data.py`, `02. Embed_BGEM3.py` |
-| Legacy compatibility | `recommend_bgem3.py`, `hybrid_recommend.py` |
 
 ---
 
+## 1b. Serving and Intent Architecture (2026-06-12)
+
+Request flow:
+
+```
+web/ (React)  →  api/ (FastAPI)  →  engine/ (intent + mood)  →  src/ (retrieval, protected)
+                                          │
+                                          └── labels/ (film-mood labels, vocabularies)
+```
+
+1. **Intent parsing** (`engine/intent_parser.py`): tier-1 is a deterministic
+   user-mood lexicon (18 categories, mapped to 24 film moods via
+   `labels/user_mood_map.json`); tier-2 is few-shot `llama3.2` on Ollama for
+   plot/hybrid/avoid parsing. Output is the validated intent JSON contract in
+   `engine/intent_schema.py`.
+2. **Query building** (`engine/intent_query_builder.py`): intent →
+   free-text retrieval query + genre/era filters + film-mood rank boosts.
+3. **Retrieval** (`src/`): BGE-M3 semantic + field-boosted BM25 → RRF fusion →
+   `bge-reranker-v2-m3` cross-encoder rerank (sections 3–13 below remain the
+   authoritative reference for these internals).
+4. **Mood application** (`engine/recommender.py`): film-mood filters and rank
+   nudges are applied post-retrieval; `src/` is never modified.
+
+**Intent-LoRA pipeline** (offline, local-only): `training/build_intent_dataset.py`
+deterministically generates 3,600 records (seeded, byte-identical on rebuild,
+held-out filter against `eval/queries/intent_v1.jsonl`) →
+`cinematch-llama/scripts/train_intent_lora.py` trains a LoRA adapter on local
+Llama-3.2-1B base weights using the fixed prompt contract in
+`training/prompt_format.py` → `generate_intent_predictions.py` +
+`grade_intent_predictions.py` grade against intent_v1 and the held-out test
+split. Status 2026-06-12: adapter v6 e4 **passed** the spec §5 acceptance gate
+(plot F1 0.9583 > 0.9412 tier-2 bar; validity and mode accuracy 1.0 on all
+7 slices; 20-query novel-vocabulary probe 17/20 exact) but is **not wired into
+serving** — runtime intent parsing remains tier-1 lexicon + tier-2 few-shot
+Ollama until an explicit serving ticket lands. Spec and audit trail:
+`docs/superpowers/specs/2026-06-11-llama-intent-parser-lora.md`,
+`docs/superpowers/AUTONOMOUS_CHECKPOINT_LEDGER.md`.
+
+---
 ## 2. High-Level Project Summary
 
 **CineMatch** is an English-query movie recommendation and semantic search system built on English TMDB metadata after ingest filtering. The indexed movies may have any original language when English metadata is available. A user describes a film in natural language and the system returns the most relevant movies ranked by one of three pipeline modes.
