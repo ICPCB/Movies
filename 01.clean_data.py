@@ -1,6 +1,8 @@
 import pandas as pd
 
 # ---------- CONFIG ----------
+# Raw dataset download:
+# https://www.kaggle.com/datasets/asaniczka/tmdb-movies-dataset-2023-930k-movies
 INPUT_FILE = "data/TMDB_movie_dataset_v11.csv"
 OUTPUT_FILE = "data/movies_clean.csv"
 

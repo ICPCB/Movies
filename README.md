@@ -53,7 +53,7 @@ The `engine/` layer treats `src/` strictly as a read-only library: mood logic is
 
 - Python 3.10+ with a project venv (the API must run under it — see below)
 - Node 18+ for the web frontend
-- `data/movies_clean.csv` and the `data/chroma_bgem3/` vector index (ship with the project or rebuild below)
+- `data/movies_clean.csv` and the `data/chroma_bgem3/` vector index (ship with the project or rebuild below from the [Kaggle TMDB dataset](https://www.kaggle.com/datasets/asaniczka/tmdb-movies-dataset-2023-930k-movies))
 - Optional: [Ollama](https://ollama.com) with `llama3.2` for explanations, LLM query expansion, and tier-2 intent parsing — everything degrades gracefully without it
 
 Install backend dependencies into the venv:
@@ -99,7 +99,9 @@ Open **http://localhost:5173** — the Vite dev server proxies `/api` to port 80
 Skip this if `data/movies_clean.csv` and `data/chroma_bgem3/` already exist.
 
 ```powershell
-# 1. Clean the raw Kaggle TMDB dump (data/TMDB_movie_dataset_v11.csv)
+# 1. Clean the raw Kaggle TMDB dump — download TMDB_movie_dataset_v11.csv from
+#    https://www.kaggle.com/datasets/asaniczka/tmdb-movies-dataset-2023-930k-movies
+#    and place it at data/TMDB_movie_dataset_v11.csv first
 python 01.clean_data.py
 
 # 2. Build the BGE-M3 ChromaDB index (refuses a non-empty collection;
@@ -153,7 +155,7 @@ The full graded-relevance eval pipeline (`eval/scripts/run_pipelines.py` → `ll
 
 ## Attribution
 
-This product uses TMDB data (Kaggle TMDB movie dataset v11) and the TMDB image CDN. **Powered by TMDB** — not endorsed or certified by TMDB.
+This product uses TMDB data ([Kaggle TMDB movie dataset v11](https://www.kaggle.com/datasets/asaniczka/tmdb-movies-dataset-2023-930k-movies)) and the TMDB image CDN. **Powered by TMDB** — not endorsed or certified by TMDB.
 
 ## More documentation
 

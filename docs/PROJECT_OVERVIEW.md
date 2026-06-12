@@ -93,7 +93,7 @@ At serving time the mood layer never touches retrieval scores. `engine/recommend
 
 ## 5. Data
 
-- **Source:** Kaggle TMDB movie dataset v11 (~597 MB raw). `01.clean_data.py` keeps released, non-adult movies with English metadata, ≥50-char overviews, and ≥50 votes, dedupes on title+year, and emits `data/movies_clean.csv` — **27,762 rows** (the authoritative count lives in `src/config.py: DATASET_ROW_COUNT`; the CSV's physical line count is higher because overviews contain newlines).
+- **Source:** [Kaggle TMDB movie dataset v11](https://www.kaggle.com/datasets/asaniczka/tmdb-movies-dataset-2023-930k-movies) (~597 MB raw). `01.clean_data.py` keeps released, non-adult movies with English metadata, ≥50-char overviews, and ≥50 votes, dedupes on title+year, and emits `data/movies_clean.csv` — **27,762 rows** (the authoritative count lives in `src/config.py: DATASET_ROW_COUNT`; the CSV's physical line count is higher because overviews contain newlines).
 - **Vector index:** `02. Embed_BGEM3.py` embeds a structured document per movie with BGE-M3 into ChromaDB (`data/chroma_bgem3/`, ~277 MB, 27,762 vectors).
 - **App database:** `data/cinematch.db` (SQLite, WAL) is created on API startup — favorites, watchlist (with watched tracking), search history, the recommendation cache, and a mood-labels table. It is runtime-generated and not version-controlled.
 - **Attribution:** TMDB data and image CDN; "Powered by TMDB — not endorsed or certified by TMDB" appears in the UI footer. Posters/backdrops come from `image.tmdb.org` with a local placeholder fallback.

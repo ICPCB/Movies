@@ -124,7 +124,7 @@ Ollama until an explicit serving ticket lands. Spec:
 
 **CineMatch** is an English-query movie recommendation and semantic search system built on English TMDB metadata after ingest filtering. The indexed movies may have any original language when English metadata is available. A user describes a film in natural language and the system returns the most relevant movies ranked by one of three pipeline modes.
 
-**Dataset:** `data/movies_clean.csv` — derived from `TMDB_movie_dataset_v11.csv` by `01.clean_data.py`. It contains title, overview, genres, keywords, tagline, release_date, year, vote_average, vote_count, poster_path, and a pre-built `document` field used for embedding.
+**Dataset:** `data/movies_clean.csv` — derived from `TMDB_movie_dataset_v11.csv` (download: <https://www.kaggle.com/datasets/asaniczka/tmdb-movies-dataset-2023-930k-movies>) by `01.clean_data.py`. It contains title, overview, genres, keywords, tagline, release_date, year, vote_average, vote_count, poster_path, and a pre-built `document` field used for embedding.
 
 ### Dataset & Scope
 
